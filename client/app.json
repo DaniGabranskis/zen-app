@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "zen-app",
+    "slug": "zen-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true
+    },
+    "web": {
+    }
+  }
+}

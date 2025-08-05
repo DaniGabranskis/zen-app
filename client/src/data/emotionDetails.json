@@ -1,0 +1,51 @@
+[
+  {
+    "group": "Confusion",
+    "display": "Confusion",
+    "label": "Fog of Mind",
+    "description": "A sense of disorientation, uncertainty or foggy awareness.",
+    "color": ["#636FA4", "#E8CBC0"]
+  },
+  {
+    "group": "AnxiousTension",
+    "display": "Anxious & Tension",
+    "label": "Inner Alarm",
+    "description": "Inner alertness, pressure, and tightness—like your system is on high alert.",
+    "color": ["#ff9a9e", "#fad0c4"]
+  },
+  {
+    "group": "FrustrationAnger",
+    "display": "Frustration & Anger",
+    "label": "Blocked Energy",
+    "description": "Strong emotional energy without an outlet—tension, resistance, or irritation.",
+    "color": ["#f5576c", "#f093fb"]
+  },
+  {
+    "group": "SadnessOverload",
+    "display": "Sadness & Overload",
+    "label": "Emotional Weight",
+    "description": "A feeling of heaviness, fatigue or loss—emotional exhaustion.",
+    "color": ["#a1c4fd", "#c2e9fb"]
+  },
+  {
+    "group": "Disconnected",
+    "display": "Disconnected",
+    "label": "Distant State",
+    "description": "A sense of being emotionally cut off, isolated or not present.",
+    "color": ["#6dd5ed", "#2193b0"]
+  },
+  {
+    "group": "CalmClarityGratitude",
+    "display": "Calm & Clarity & Gratitude",
+    "label": "Centered & Aware",
+    "description": "Grounded and peaceful with a sense of meaning or appreciation.",
+    "color": ["#89f7fe", "#66a6ff"]
+  },
+  {
+    "group": "Joy",
+    "display": "Joy",
+    "label": "Lightness of Being",
+    "description": "Ease, uplift and natural emotional flow—feeling light and present.",
+    "color": ["#fddb92", "#d1fdff"]
+  }
+]

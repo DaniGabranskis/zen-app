@@ -1,0 +1,248 @@
+{
+  "L1": [
+    {
+      "id": "L1-1",
+      "text": "How did your body feel when you first woke up?",
+      "options": {
+        "Energized and light": ["Calm", "Gratitude"],
+        "Heavy or slow to start": ["Sadness", "Overload"]
+      }
+    },
+    {
+      "id": "L1-2",
+      "text": "Did you feel any physical tension or discomfort during the day?",
+      "options": {
+        "Yes, it showed up in my body": ["Tension", "Frustration"],
+        "No, I felt physically fine": ["Calm", "Clarity"]
+      }
+    },
+    {
+      "id": "L1-3",
+      "text": "Was your body more still or more restless today?",
+      "options": {
+        "My body felt restless or agitated": ["Overload", "Anxiety"],
+        "My body felt still and grounded": ["Calm", "Centered"]
+      }
+    },
+    {
+      "id": "L1-4",
+      "text": "By the end of the day, your body felt...",
+      "options": {
+        "Balanced and steady": ["Clarity", "Gratitude"],
+        "Worn out or drained": ["Overload", "Sadness"]
+      }
+    }
+  ],
+
+  "L2": [
+    {
+      "id": "L2-1",
+      "text": "How did you respond to small challenges today?",
+      "options": {
+        "I stayed flexible or calm": ["Calm", "Clarity"],
+        "I felt irritated or reactive": ["Frustration", "Anger"]
+      }
+    },
+    {
+      "id": "L2-2",
+      "text": "Did you avoid anything emotional today?",
+      "options": {
+        "Yes, I pushed it away": ["Anxious", "Disconnected"],
+        "No, I stayed present": ["Clarity", "Gratitude"]
+    }
+    },
+    {
+      "id": "L2-3",
+      "text": "How did you interact with people today?",
+      "options": {
+        "Open and connected": ["Joy", "Gratitude"],
+        "Closed off or distant": ["Disconnected", "Anxious"]
+      }
+    },
+    {
+      "id": "L2-4",
+      "text": "Did you feel in control of your reactions?",
+      "options": {
+        "Yes, mostly steady": ["Calm", "Clarity"],
+        "No, I was more impulsive or stuck": ["Anger", "Confusion"]
+      }
+    }
+  ],
+
+  "L3":
+  [
+  {
+  "id": "L3-Confusion-1",
+  "group": "Confusion",
+  "step": [
+    {
+      "type": "confirm",
+      "text": "Do you feel like you couldn't make sense of how you felt today?",
+      "options": {
+        "Yes, I really didn't understand myself": "CONFIRM_CONFUSION",
+        "No, I think I know what I felt": "REJECT_CONFUSION"
+      }
+    },
+    {
+      "type": "exit",
+      "if": "CONFIRM_CONFUSION",
+      "emotion": "Confusion"
+    },
+    {
+      "type": "branch",
+      "if": "REJECT_CONFUSION",
+      "text": "Which of these better describes your emotional state today?",
+      "options": {
+        "It was mostly anxiety": ["Anxious"],
+        "I felt emotionally disconnected": ["Disconnected"],
+        "I was emotionally exhausted": ["Overload"],
+        "There was some irritation": ["Frustration"]
+      }
+    }
+  ]
+},
+  {
+  "id": "L3-Anxious-Tension-2",
+  "group": "Anxious-Tension",
+  "question": "What best describes the inner state you experienced today?",
+  "allowCustomAnswer": true
+},
+  {
+  "id": "L3-Frustration-Anger-3",
+  "group": "Frustration-Anger",
+  "question": "What kind of tension or friction stood out most today?",
+  "allowCustomAnswer": true
+},
+  {
+  "id": "L3-Overload-Sadness-4",
+  "group": "Overload-Sadness",
+  "question": "What kind of heaviness or depletion described your day best?",
+  "allowCustomAnswer": true
+},
+  {
+  "id": "L3-Joy-5",
+  "group": "Joy",
+  "question": "Was there a moment today that felt uplifting or quietly good?",
+  "allowCustomAnswer": true
+},
+  {
+  "id": "L3-Calm-Clarity-Gratitude-6",
+  "group": "Calm-Clarity-Gratitude",
+  "question": "What best describes the atmosphere within you today?",
+  "allowCustomAnswer": true
+}
+,
+  {
+  "id": "L3-Disconnected-7",
+  "group": "Disconnected",
+  "question": "Was there a sense of distance or emotional absence today?",
+  "allowCustomAnswer": true
+}
+],
+  "L4": [
+    {
+      "id": "L4-Confusion-1",
+      "group": "Confusion",
+      "question": "What made it hard to feel clear today?",
+      "allowCustomAnswer": true
+    },
+    {
+      "id": "L4-Anxious-Tension-1",
+      "group": "Anxious-Tension",
+      "question": "What triggered your tension or restlessness today?",
+      "allowCustomAnswer": true
+    },
+    {
+      "id": "L4-Anxious-Tension-2",
+      "group": "Anxious-Tension",
+      "question": "Why do you think it affected you the way it did?",
+      "allowCustomAnswer": true
+    },
+    {
+      "id": "L4-Frustration-Anger-1",
+      "group": "Frustration-Anger",
+      "question": "What made things feel blocked or irritating today?",
+      "allowCustomAnswer": true
+    },
+    {
+      "id": "L4-Frustration-Anger-2",
+      "group": "Frustration-Anger",
+      "question": "What made this so hard to tolerate?",
+      "allowCustomAnswer": true
+    },
+    {
+      "id": "L4-Overload-Sadness-1",
+      "group": "Overload-Sadness",
+      "question": "What weighed you down the most today?",
+      "allowCustomAnswer": true
+    },
+    {
+      "id": "L4-Overload-Sadness-2",
+      "group": "Overload-Sadness",
+      "question": "Why do you think this had such an impact on you?",
+      "allowCustomAnswer": true
+    },
+    {
+      "id": "L4-Joy-1",
+      "group": "Joy",
+      "question": "What gave you a genuine sense of joy today?",
+      "allowCustomAnswer": true
+    },
+    {
+      "id": "L4-Calm-Clarity-Gratitude-1",
+      "group": "Calm-Clarity-Gratitude",
+      "question": "What helped you feel grounded or at ease today?",
+      "allowCustomAnswer": true
+    },
+    {
+      "id": "L4-Disconnected-1",
+      "group": "Disconnected",
+      "question": "What made it hard to feel connected today?",
+      "allowCustomAnswer": true
+    }
+  ],
+  "L5": [
+  {
+    "id": "L5-Confusion",
+    "group": "Confusion",
+    "question": "What insight can you take from this confusion?",
+    "allowCustomAnswer": true
+  },
+  {
+    "id": "L5-Anxious-Tension",
+    "group": "AnxiousTension",
+    "question": "What insight can you take from your inner tension or anxiety?",
+    "allowCustomAnswer": true
+  },
+  {
+    "id": "L5-Frustration-Anger",
+    "group": "FrustrationAnger",
+    "question": "What insight can you take from your frustration or anger?",
+    "allowCustomAnswer": true
+  },
+  {
+    "id": "L5-Sadness-Overload",
+    "group": "SadnessOverload",
+    "question": "What insight can you take from your emotional weight?",
+    "allowCustomAnswer": true
+  },
+  {
+    "id": "L5-Disconnected",
+    "group": "Disconnected",
+    "question": "What insight can you take from your sense of disconnection?",
+    "allowCustomAnswer": true
+  },
+  {
+    "id": "L5-Calm-Clarity-Gratitude",
+    "group": "CalmClarityGratitude",
+    "question": "What did your calm or clarity tell you today?",
+    "allowCustomAnswer": true
+  },
+  {
+    "id": "L5-Joy",
+    "group": "Joy",
+    "question": "What insight can you take from your joy today?",
+    "allowCustomAnswer": true
+  }
+]
+}

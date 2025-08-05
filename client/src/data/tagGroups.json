@@ -1,0 +1,62 @@
+{
+  "groups": {
+    "Overload": {
+      "tags": ["stress", "tension", "burnout", "routine", "monotony", "head", "back", "fullbody"],
+      "description": "This group reflects stress, pressure and overwhelming sensations.",
+      "colors": ["#f7d794", "#f8a5c2"]
+    },
+    "Disconnection": {
+      "tags": ["disconnected", "isolated", "lonely", "no-control", "isolation"],
+      "description": "This group reflects feelings of isolation, loneliness or detachment.",
+      "colors": ["#778beb", "#e77f67"]
+    },
+    "Sadness": {
+      "tags": ["sadness", "apathy", "loss", "hopeless", "despair", "low"],
+      "description": "This group reflects emotional pain, loss or hopelessness.",
+      "colors": ["#63cdda", "#786fa6"]
+    },
+    "Hope": {
+      "tags": ["hopeful", "positive", "content", "anticipation", "excited", "plan"],
+      "description": "This group reflects optimism, motivation and anticipation of positive outcomes.",
+      "colors": ["#55efc4", "#81ecec"]
+    },
+    "Clarity": {
+      "tags": ["clear", "relaxed", "comfort", "connected", "social"],
+      "description": "This group reflects mental clarity, relaxation and social connection.",
+      "colors": ["#dff9fb", "#c7ecee"]
+    },
+    "Anxiety": {
+      "tags": ["anxiety", "panic", "crisis", "negative", "thoughts"],
+      "description": "This group reflects worry, negative thought patterns and internal struggle.",
+      "colors": ["#f6e58d", "#ffbe76"]
+    },
+    "Fatigue": {
+      "tags": ["tired", "sleep", "illness", "chronic", "mid-term", "short-term", "acute"],
+      "description": "This group reflects exhaustion, sickness and low physical energy.",
+      "colors": ["#d1ccc0", "#ff7979"]
+    },
+    "Motivation": {
+      "tags": ["motivation", "goal", "project", "high", "rest"],
+      "description": "This group reflects action, goals, and future-oriented energy.",
+      "colors": ["#badc58", "#6ab04c"]
+    },
+    "Neutrality": {
+      "tags": ["neutral", "random"],
+      "description": "This group reflects emotional neutrality or randomness.",
+      "colors": ["#95afc0", "#dff9fb"]
+    },
+    "Emergency": {
+      "tags": ["help", "need-help", "no-plan"],
+      "description": "This group reflects urgent need, lack of plan or cry for help.",
+      "colors": ["#e17055", "#ff7675"]
+    },
+    "Other": {
+      "tags": ["other", "body", "stomach"],
+      "description": "This group includes tags that do not fit into primary emotional categories.",
+      "colors": ["#ccc", "#999"]
+    }
+  },
+  "ungrouped": {
+    "tags": ["conflict", "energy"]
+  }
+}
