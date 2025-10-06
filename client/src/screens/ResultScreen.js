@@ -16,8 +16,7 @@ import useStore from '../store/useStore';
 import ScreenWrapper from '../components/ScreenWrapper';
 import useThemeVars from '../hooks/useThemeVars';
 import tagGroupsData from '../data/tagGroups.json';
-import openai from '../utils/openaiClient';
-import buildPrompt from '../utils/promptBuilder';
+import { generateInsight } from '../services/aiService';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const P = Math.round(SCREEN_WIDTH * 0.05);
@@ -144,45 +143,31 @@ export default function ResultScreen() {
   const [encouragement, setEncouragement] = useState(fromHistory ? route.params?.encouragement : route.params?.encouragement || '');
 
 useEffect(() => {
-  console.log('🌀 isGenerating =', isGenerating);
-  console.log('🌀 loading =', loading);
+  // Purpose: Fetch AI (or fallback) once the screen mounts.
+  // Why: Keep UI responsive; never let parsing/network break UX.
   if (fromHistory) return;
+  let cancelled = false;
+
   const fetchAI = async () => {
-    let parsed = {
-      insight: '',
-      tips: [],
-      encouragement: '',
-    };
-
+    setLoading(true);
+    let parsed = { insight: '', tips: [], encouragement: '' };
     try {
-      const prompt = buildPrompt({ answers });
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          { role: 'system', content: 'You are a mindful assistant helping users reflect.' },
-          { role: 'user', content: prompt },
-        ],
-      });
-
-      const raw = completion.choices[0].message.content.trim();
-      parsed = JSON.parse(raw);
-
+      const { result, source } = await generateInsight(answers);
+      if (cancelled) return;
+      parsed = result;
       setInsight(parsed.insight);
       setTips(parsed.tips);
       setEncouragement(parsed.encouragement);
-
+      if (source === 'local') console.log('ℹ️ local fallback used');
     } catch (err) {
-      console.error('❌ AI insight load failed:', err);
-      parsed = {
-        insight: '',
-        tips: [],
-        encouragement: 'You did well reflecting today.',
-      };
+      console.warn('❌ generateInsight failed:', err);
+      parsed = { insight: '', tips: [], encouragement: 'You did well reflecting today.' };
       setInsight(parsed.insight);
       setTips(parsed.tips);
       setEncouragement(parsed.encouragement);
     } finally {
-      setLoading(false);
+      if (!cancelled) setLoading(false);
+      // NOTE: save to history regardless of source for consistency
       addHistory({
         date: new Date().toISOString(),
         score,
@@ -199,6 +184,7 @@ useEffect(() => {
   };
 
   fetchAI();
+  return () => { cancelled = true; };
 }, []);
 
 

@@ -1,3 +1,6 @@
+// services/aiService.js
+// Purpose: Centralize AI call with retries, timeout, safe JSON, and fallback.
+// Why: Keep UI simple and robust; avoid duplicating risky logic.
 import openai from '../utils/openaiClient';
 import buildPrompt from '../utils/promptBuilder';
 import { normalizeAiResult } from '../utils/aiSchema';
@@ -5,6 +8,8 @@ import { withBackoff, withTimeout } from '../utils/aiBackoff';
 import { generateLocalAdvice } from '../utils/localAdvice';
 
 function safeParse(text) {
+  // Purpose: Safely parse JSON possibly wrapped with extra text.
+  // Why: Models sometimes add stray characters; we recover the JSON core.
   try { return JSON.parse(text); }
   catch {
     const s = text.indexOf('{'), e = text.lastIndexOf('}');
@@ -20,7 +25,7 @@ export async function generateInsight(answers) {
     const prompt = buildPrompt({ answers });
     const req = async () => {
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o-mini', // Use a strong, cost-efficient model. Change if needed.
         messages: [
           { role: 'system', content: [
             'You are a concise, kind, trauma-informed reflection coach.',
@@ -44,7 +49,7 @@ export async function generateInsight(answers) {
     const result = await online();
     return { result, source: 'ai' };
   } catch (e) {
-    console.warn('[AI fallback]', e?.message || e);
+    console.warn('[AI fallback]', e?.message || e); // technical log, no PII
     const local = generateLocalAdvice(answers);
     return { result: normalizeAiResult(local), source: 'local' };
   }

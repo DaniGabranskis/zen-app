@@ -1,13 +1,10 @@
-/**
- * Returns prompt string for OpenAI based on answers array.
- * Answers: [{questionId, answerText}]
- * Result is a formatted reflection prompt for the AI.
- */
+// Purpose: Build an instruction that forces a strict JSON response.
+// Why: Reduce chances of non-JSON output and improve content quality.
 module.exports = function buildPrompt({ answers }) {
   const formatted = (answers || [])
-    .map(a => {
-      const q = String(a.questionId || '').slice(0, 80);
-      const ans = String(a.answerText || '').slice(0, 400);
+    .map((a) => {
+      const q = String(a.questionId || '').slice(0, 80);        // keep short
+      const ans = String(a.answerText || '').slice(0, 400);      // keep short
       const tags = Array.isArray(a.tags) ? a.tags.join(', ') : '';
       return `Q: ${q}\nA: ${ans}${tags ? `\nTags: ${tags}` : ''}`;
     })

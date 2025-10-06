@@ -16,23 +16,14 @@ const P_SMALL = Math.round(SCREEN_WIDTH * 0.02);
  */
 
 export default function HistoryScreen({ navigation }) {
-  // Theme color for calendar (to force Calendar re-render on theme change)
+  // NOTE: we need theme first to build calendarKey safely
+  const { bgcolor, textMain, cardBg, data, divider, button } = useThemeVars();
+
+  // Purpose: force Calendar re-render on theme change (key depends on cardBg)
   const calendarKey = `calendar-${cardBg}`;
 
   // 'list' for flat list, 'calendar' for calendar visualization
   const [showCalendar, setShowCalendar] = useState(false);
-  const [dateFilter, setDateFilter] = useState({ from: null, to: null });
-  const [sortType, setSortType] = useState('dateDesc');
-  const sortOptions = [
-    { label: 'Date ↓', value: 'dateDesc' },
-    { label: 'Date ↑', value: 'dateAsc' },
-    { label: 'Score ↓', value: 'scoreDesc' },
-    { label: 'Score ↑', value: 'scoreAsc' },
-  ];
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  
-  //Theme variables
-  const { bgcolor, textMain, cardBg, data, divider, button } = useThemeVars();
 
   const [dropdownAnchorY, setDropdownAnchorY] = useState(0);
   const sortButtonRef = useRef(null);
@@ -351,8 +342,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   dropdownItem: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    // Purpose: unified dropdown item style (avoid duplicates)
+    paddingVertical: 10,
+    paddingHorizontal: 14,
     borderRadius: 14,
   },
   selectedItem: {
@@ -379,10 +371,6 @@ const styles = StyleSheet.create({
   dropdownButtonText: {
     color: '#333',
     fontSize: 14,
-  },
-  dropdownItem: {
-    paddingVertical: 10,
-    paddingHorizontal: 14,
   },
   activeItem: {
     backgroundColor: '#f0f0f0',
