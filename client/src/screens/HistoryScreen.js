@@ -1,46 +1,60 @@
+// screens/HistoryScreen.js
+// Purpose: Display saved reflections as a list or a calendar with filters/sorting.
+// Why: Let users review their past days quickly and visually.
+
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions, ScrollView  } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions } from 'react-native';
+import { Calendar } from 'react-native-calendars';
 import useStore from '../store/useStore';
 import useThemeVars from '../hooks/useThemeVars';
-import ScreenWrapper from '../components/ScreenWrapper';
-import { Calendar } from 'react-native-calendars';
 import useResponsive from '../hooks/useResponsive';
+import ScreenWrapper from '../components/ScreenWrapper';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const { width, height, rem, pad, corner, font } = useResponsive();
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const P_SMALL = Math.round(SCREEN_WIDTH * 0.02);
-/**
- * HistoryScreen — displays all user's reflection history.
- * User can switch between list and calendar view.
- * Each entry opens ResultModal for detailed review.
- */
 
 export default function HistoryScreen({ navigation }) {
-  // NOTE: we need theme first to build calendarKey safely
+  // NOTE: get theme first, then compute keys that depend on theme
   const { bgcolor, textMain, cardBg, data, divider, button } = useThemeVars();
 
   // Purpose: force Calendar re-render on theme change (key depends on cardBg)
   const calendarKey = `calendar-${cardBg}`;
 
-  // 'list' for flat list, 'calendar' for calendar visualization
+  // Responsive helpers (optional vars if you use them in styles)
+  const { pad, corner } = useResponsive();
+
+  // View mode: list or calendar
   const [showCalendar, setShowCalendar] = useState(false);
 
-  const [dropdownAnchorY, setDropdownAnchorY] = useState(0);
-  const sortButtonRef = useRef(null);
-  const [dropdownAnchor, setDropdownAnchor] = useState({ x: 0, y: 0 });
-  
+  // Date filter state: { from: 'YYYY-MM-DD' | null, to: 'YYYY-MM-DD' | null }
+  const [dateFilter, setDateFilter] = useState({ from: null, to: null });
 
-  // All days saved in store
+  // Sorting state and options
+  const [sortType, setSortType] = useState('dateDesc');
+  const sortOptions = [
+    { label: 'Date ↓', value: 'dateDesc' },
+    { label: 'Date ↑', value: 'dateAsc' },
+    { label: 'Score ↓', value: 'scoreDesc' },
+    { label: 'Score ↑', value: 'scoreAsc' },
+  ];
+
+  // Dropdown state and anchor (for absolute-positioned menu)
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const sortButtonRef = useRef(null);
+  const [dropdownAnchor, setDropdownAnchor] = useState({ x: 0, y: 0, width: 200 });
+
+  // All history entries from store
   const history = useStore((state) => state.history);
 
-    const getScoreColor = (score) => {
+  // Helper: map score (0..100) to a color bar
+  const getScoreColor = (score) => {
     if (typeof score !== 'number') return '#ccc';
-    if (score < 33) return '#EF4444';
-    if (score < 66) return '#FACC15';
-    return '#22C55E';
+    if (score < 33) return '#EF4444';   // red for low
+    if (score < 66) return '#FACC15';   // yellow for mid
+    return '#22C55E';                   // green for high
   };
 
-  // Build marked dates for Calendar from all history entries
+  // Build marked dates for Calendar (one dot per day, colored by score)
   const markedDates = useMemo(() => {
     const marked = {};
     history.forEach((item) => {
@@ -50,34 +64,23 @@ export default function HistoryScreen({ navigation }) {
         selected: true,
         selectedColor: color,
         customStyles: {
-          container: {
-            backgroundColor: color,
-            borderRadius: 8,
-          },
-          text: {
-            color: 'white',
-            fontWeight: 'bold',
-          },
+          container: { backgroundColor: color, borderRadius: 8 },
+          text: { color: 'white', fontWeight: 'bold' },
         },
       };
     });
     return marked;
   }, [history]);
 
-  // Renders title, divider, and layout switch buttons
+  // Header with title and divider
   const renderHeader = () => (
-    <>
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: textMain }]}>Your History</Text>
-        <View style={[styles.divider, { backgroundColor: divider }]} />
-      </View>
-    </>
+    <View style={stylesHeader.header}>
+      <Text style={[stylesHeader.title, { color: textMain }]}>Your History</Text>
+      <View style={[stylesHeader.divider, { backgroundColor: divider }]} />
+    </View>
   );
 
-    /**
-   * Renders a single history entry as a card
-   * Opens ResultModal with all details on press
-   */
+  // Single history card
   const renderCard = (item) => {
     const date = new Date(item.date).toLocaleDateString();
     const label = item.dominantGroup || 'Unknown';
@@ -86,41 +89,46 @@ export default function HistoryScreen({ navigation }) {
 
     return (
       <TouchableOpacity
-        style={[styles.card, { backgroundColor: cardBg }]}
+        style={[stylesCard.card, { backgroundColor: cardBg }]}
         onPress={() =>
           navigation.navigate('ResultModal', {
             ...item,
-            fromHistory: true,     // Used by ResultScreen to alter layout/behavior
+            fromHistory: true, // ResultScreen adapts layout/behavior when opened from history
           })
         }
       >
-        <View style={[styles.corner, { backgroundColor: barColor }]} />
-        <View style={[styles.colorBar, { backgroundColor: barColor }]} />
-        <Text style={[styles.date, { color: data }]}>{date}</Text>
-        <Text style={styles.emotionLine}>{label}</Text>
-        <Text style={styles.score}>Score: {item.score}/100</Text>
-        <Text numberOfLines={3} style={styles.preview}>{preview}...</Text>
+        <View style={[stylesCard.corner, { backgroundColor: barColor, width: corner, height: corner }]} />
+        <Text style={[stylesCard.date, { color: data }]}>{date}</Text>
+        <Text style={stylesCard.emotionLine}>{label}</Text>
+        <Text style={stylesCard.score}>Score: {item.score}/100</Text>
+        <Text numberOfLines={3} style={stylesCard.preview}>{preview}...</Text>
       </TouchableOpacity>
     );
   };
 
+  // Controls: toggle calendar + sort dropdown
   const renderFilterControls = () => (
-    <View style={styles.controlsWrapper}>
-      <TouchableOpacity style={[
-        styles.calendarButton,
-        showCalendar && styles.calendarButtonActive, {backgroundColor: button}
-      ]} onPress={() => setShowCalendar(!showCalendar)}>
-        <Text style={styles.buttonText}>
+    <View style={stylesControls.controlsWrapper}>
+      <TouchableOpacity
+        style={[
+          stylesControls.calendarButton,
+          showCalendar && stylesControls.calendarButtonActive,
+          { backgroundColor: button },
+        ]}
+        onPress={() => setShowCalendar(!showCalendar)}
+      >
+        <Text style={stylesControls.buttonText}>
           {showCalendar ? 'Hide Calendar' : 'Calendar'}
         </Text>
       </TouchableOpacity>
 
-      <View style={styles.dropdownContainer}>
+      <View style={stylesControls.dropdownContainer}>
         <TouchableOpacity
           ref={sortButtonRef}
           style={[
-            styles.button,
-            dropdownOpen && styles.sortButtonOpen, {backgroundColor: button}
+            stylesControls.button,
+            dropdownOpen && stylesControls.sortButtonOpen,
+            { backgroundColor: button },
           ]}
           onPress={() => {
             if (sortButtonRef.current) {
@@ -131,39 +139,43 @@ export default function HistoryScreen({ navigation }) {
             }
           }}
         >
-          <Text style={styles.buttonText}>
-            Sort by {sortOptions.find(o => o.value === sortType)?.label}
+          <Text style={stylesControls.buttonText}>
+            Sort by {sortOptions.find((o) => o.value === sortType)?.label}
           </Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 
-  const filteredHistory = [...history]
-  .filter(item => {
-    if (!dateFilter.from && !dateFilter.to) return true;
-    const date = new Date(item.date);
-    const from = dateFilter.from ? new Date(dateFilter.from) : null;
-    const to = dateFilter.to ? new Date(dateFilter.to) : null;
-    if (from && date < from) return false;
-    if (to && date > to) return false;
-    return true;
-  })
-  .sort((a, b) => {
-    if (sortType === 'dateDesc') return new Date(b.date) - new Date(a.date);
-    if (sortType === 'dateAsc') return new Date(a.date) - new Date(b.date);
-    if (sortType === 'scoreDesc') return b.score - a.score;
-    if (sortType === 'scoreAsc') return a.score - b.score;
-    return 0;
-  });
+  // Filter + sort pipeline
+  const filteredHistory = useMemo(() => {
+    const list = [...history].filter((item) => {
+      if (!dateFilter.from && !dateFilter.to) return true;
+      const date = new Date(item.date);
+      const from = dateFilter.from ? new Date(dateFilter.from) : null;
+      const to = dateFilter.to ? new Date(dateFilter.to) : null;
+      if (from && date < from) return false;
+      if (to && date > to) return false;
+      return true;
+    });
 
-  // --- Main Render: Switches between List and Calendar layouts ---
+    list.sort((a, b) => {
+      if (sortType === 'dateDesc') return new Date(b.date) - new Date(a.date);
+      if (sortType === 'dateAsc') return new Date(a.date) - new Date(b.date);
+      if (sortType === 'scoreDesc') return b.score - a.score;
+      if (sortType === 'scoreAsc') return a.score - b.score;
+      return 0;
+    });
+
+    return list;
+  }, [history, dateFilter, sortType]);
+
   return (
-  <ScreenWrapper style={[styles.container, { backgroundColor: bgcolor }]}>
+    <ScreenWrapper style={[stylesPage.container, { backgroundColor: bgcolor }]}>
       <FlatList
         data={filteredHistory}
         keyExtractor={(item, index) => `${item.date}-${index}`}
-        contentContainerStyle={{...styles.content, paddingBottom: height * 0.07,}}
+        contentContainerStyle={{ ...stylesPage.content, paddingBottom: 40 }}
         ListHeaderComponent={() => (
           <>
             {renderHeader()}
@@ -174,6 +186,7 @@ export default function HistoryScreen({ navigation }) {
                 markingType="custom"
                 markedDates={markedDates}
                 onDayPress={(day) => {
+                  // Purpose: toggle date range selection: first tap sets from, second sets to
                   if (!dateFilter.from || (dateFilter.from && dateFilter.to)) {
                     setDateFilter({ from: day.dateString, to: null });
                   } else {
@@ -182,7 +195,7 @@ export default function HistoryScreen({ navigation }) {
                     if (toDate < fromDate) {
                       setDateFilter({ from: day.dateString, to: dateFilter.from });
                     } else {
-                      setDateFilter(prev => ({ ...prev, to: day.dateString }));
+                      setDateFilter((prev) => ({ ...prev, to: day.dateString }));
                     }
                   }
                 }}
@@ -212,14 +225,15 @@ export default function HistoryScreen({ navigation }) {
           </>
         )}
         ListEmptyComponent={() => (
-          <Text style={styles.empty}>You haven't saved any days yet.</Text>
+          <Text style={stylesPage.empty}>You haven't saved any days yet.</Text>
         )}
         renderItem={({ item }) => renderCard(item)}
       />
+
       {dropdownOpen && (
         <View
           style={[
-            styles.dropdownMenuGlobal,
+            stylesControls.dropdownMenuGlobal,
             {
               top: dropdownAnchor.y,
               left: dropdownAnchor.x,
@@ -232,73 +246,79 @@ export default function HistoryScreen({ navigation }) {
             <TouchableOpacity
               key={opt.value}
               style={[
-                styles.dropdownItem,
-                opt.value === sortType && styles.activeItem,
+                stylesControls.dropdownItem,
+                opt.value === sortType && stylesControls.selectedItem,
               ]}
               onPress={() => {
                 setSortType(opt.value);
                 setDropdownOpen(false);
               }}
             >
-              <Text style={styles.dropdownItemText}>{opt.label}</Text>
+              <Text style={stylesControls.dropdownItemText}>{opt.label}</Text>
             </TouchableOpacity>
           ))}
         </View>
       )}
-  </ScreenWrapper>
-);
+    </ScreenWrapper>
+  );
 }
 
-const styles = StyleSheet.create({
+/* ================== Styles ================== */
+// Split into small groups for readability.
+
+const stylesPage = StyleSheet.create({
+  container: { flex: 1 },
   content: {
     flexGrow: 1,
     justifyContent: 'flex-start',
   },
-  header: {
-    width: '100%',
-    alignItems: 'center',
-    marginTop: pad * 2, 
+  empty: {
+    fontSize: Math.round(SCREEN_WIDTH * 0.042),
+    textAlign: 'center',
+    marginTop: 20,
   },
+});
+
+const stylesHeader = StyleSheet.create({
+  header: { width: '100%', alignItems: 'center', marginTop: 16 },
   title: {
     fontSize: Math.round(SCREEN_WIDTH * 0.08),
     fontWeight: '800',
     textAlign: 'center',
     alignSelf: 'center',
-    marginBottom: pad,
+    marginBottom: 16,
   },
   divider: {
     height: 1.5,
     width: Math.round(SCREEN_WIDTH * 0.5),
     alignSelf: 'center',
     opacity: 0.12,
-    marginBottom: pad,
+    marginBottom: 16,
   },
-  empty: {
-    fontSize: Math.round(SCREEN_WIDTH * 0.042),
-    textAlign: 'center',
-    marginTop: pad * 2,
+});
+
+const stylesCard = StyleSheet.create({
+  card: {
+    alignSelf: 'center',
+    borderRadius: Math.round(SCREEN_WIDTH * 0.05),
+    padding: 16,
+    paddingLeft: 28,              // give content extra space from the left stripe
+    marginBottom: 16,
+    elevation: 2,
+    width: SCREEN_WIDTH * 0.9,
+    maxWidth: 480,
+    position: 'relative',
+    overflow: 'hidden',           // clip children to rounded corners
   },
   corner: {
     position: 'absolute',
     top: 0,
     right: 0,
-    width: corner,
-    height: corner,
-    borderBottomLeftRadius: corner,
+    borderBottomLeftRadius: 16,
     zIndex: 2,
   },
-  card: {
-    alignSelf: 'center',
-    borderRadius: Math.round(SCREEN_WIDTH * 0.05),
-    padding: pad,
-    marginBottom: pad,
-    elevation: 2,
-    width: SCREEN_WIDTH * 0.9,
-    maxWidth: 480,
-    position: 'relative',
-  },
   date: {
-    fontSize: Math.round(SCREEN_WIDTH * 0.040),
+    fontSize: Math.round(SCREEN_WIDTH * 0.04),
     marginBottom: P_SMALL,
   },
   emotionLine: {
@@ -306,10 +326,17 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: P_SMALL * 1.4,
   },
+  score: {
+    fontSize: Math.round(SCREEN_WIDTH * 0.04),
+    marginBottom: P_SMALL,
+  },
   preview: {
     fontSize: Math.round(SCREEN_WIDTH * 0.04),
     color: '#333',
   },
+});
+
+const stylesControls = StyleSheet.create({
   controlsWrapper: {
     alignItems: 'center',
     flexDirection: 'row',
@@ -318,16 +345,14 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   calendarButton: {
-    backgroundColor: '#A78BFA',
     paddingVertical: 10,
     paddingHorizontal: 18,
     borderRadius: 20,
   },
   calendarButtonActive: {
-    backgroundColor: '#7C3AED', // немного темнее, чтобы выглядело как "нажато"
+    opacity: 0.92, // simple pressed effect
   },
   button: {
-    backgroundColor: '#A78BFA',
     paddingVertical: 10,
     paddingHorizontal: 18,
     borderRadius: 20,
@@ -341,47 +366,9 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     fontSize: 16,
   },
-  dropdownItem: {
-    // Purpose: unified dropdown item style (avoid duplicates)
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 14,
-  },
-  selectedItem: {
-    backgroundColor: '#A78BFA',
-  },
-  dropdownItemText: {
-    color: 'white',
-    fontSize: 14,
-    textAlign: 'center',
-    fontWeight: '500',
-  },
-  dropdownContainer: {
-    position: 'relative',
-    alignItems: 'center',
-  },
-  dropdownButton: {
-    backgroundColor: '#F4F4F4',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    borderColor: '#ddd',
-    borderWidth: 1,
-  },
-  dropdownButtonText: {
-    color: '#333',
-    fontSize: 14,
-  },
-  activeItem: {
-    backgroundColor: '#f0f0f0',
-  },
-  dropdownItemText: {
-    fontSize: 14,
-    color: '#333',
-  },
+  dropdownContainer: { position: 'relative', alignItems: 'center' },
   dropdownMenuGlobal: {
     position: 'absolute',
-    backgroundColor: '#fff',
     paddingVertical: 4,
     elevation: 5,
     shadowColor: '#000',
@@ -393,5 +380,18 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 0,
     borderBottomLeftRadius: 14,
     borderBottomRightRadius: 14,
+  },
+  dropdownItem: {
+    // unified style (avoid duplicates)
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+  },
+  selectedItem: { backgroundColor: '#A78BFA' },
+  dropdownItemText: {
+    fontSize: 14,
+    color: 'white',
+    textAlign: 'center',
+    fontWeight: '500',
   },
 });

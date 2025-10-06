@@ -16,7 +16,7 @@ import useStore from '../store/useStore';
 import ScreenWrapper from '../components/ScreenWrapper';
 import useThemeVars from '../hooks/useThemeVars';
 import tagGroupsData from '../data/tagGroups.json';
-import { generateInsight } from '../services/aiService';
+import { generateInsight } from '../utils/aiService';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const P = Math.round(SCREEN_WIDTH * 0.05);
