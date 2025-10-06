@@ -181,46 +181,55 @@ export default function HistoryScreen({ navigation }) {
             {renderHeader()}
             {renderFilterControls()}
             {showCalendar && (
-              <Calendar
-                key={calendarKey}
-                markingType="custom"
-                markedDates={markedDates}
-                onDayPress={(day) => {
-                  // Purpose: toggle date range selection: first tap sets from, second sets to
-                  if (!dateFilter.from || (dateFilter.from && dateFilter.to)) {
-                    setDateFilter({ from: day.dateString, to: null });
-                  } else {
-                    const fromDate = new Date(dateFilter.from);
-                    const toDate = new Date(day.dateString);
-                    if (toDate < fromDate) {
-                      setDateFilter({ from: day.dateString, to: dateFilter.from });
-                    } else {
-                      setDateFilter((prev) => ({ ...prev, to: day.dateString }));
-                    }
-                  }
-                }}
-                theme={{
-                  calendarBackground: cardBg,
-                  selectedDayBackgroundColor: '#A78BFA',
-                  selectedDayTextColor: '#fff',
-                  textDisabledColor: '#8B8B8B',
-                  textMonthFontWeight: 'bold',
-                  textMonthFontSize: Math.round(SCREEN_WIDTH * 0.05),
-                  arrowColor: textMain,
-                  textSectionTitleColor: textMain,
-                  textDayFontWeight: '500',
-                  textDayFontSize: Math.round(SCREEN_WIDTH * 0.042),
-                  textDayHeaderFontSize: Math.round(SCREEN_WIDTH * 0.038),
-                  borderWidth: 0,
-                }}
+              <View
                 style={{
-                  borderRadius: 18,
+                  // Purpose: match card width and edges exactly
+                  width: '92%',                 // same as cards
+                  alignSelf: 'center',          // center within screen
+                  borderRadius: corner,         // same rounding as cards
+                  overflow: 'hidden',           // clip calendar to rounded corners
+                  backgroundColor: cardBg,      // same background as cards
                   elevation: 2,
-                  overflow: 'hidden',
-                  marginTop: 10,
-                  marginBottom: 12,
+                  marginTop: pad * 0.6,
+                  marginBottom: pad * 0.8,
                 }}
-              />
+              >
+                <Calendar
+                  key={calendarKey}
+                  markingType="custom"
+                  markedDates={markedDates}
+                  onDayPress={(day) => {
+                    // Purpose: toggle date range selection
+                    if (!dateFilter.from || (dateFilter.from && dateFilter.to)) {
+                      setDateFilter({ from: day.dateString, to: null });
+                    } else {
+                      const fromDate = new Date(dateFilter.from);
+                      const toDate = new Date(day.dateString);
+                      if (toDate < fromDate) {
+                        setDateFilter({ from: day.dateString, to: dateFilter.from });
+                      } else {
+                        setDateFilter((prev) => ({ ...prev, to: day.dateString }));
+                      }
+                    }
+                  }}
+                  theme={{
+                    // Purpose: remove internal borders and keep colors consistent
+                    calendarBackground: cardBg,
+                    selectedDayBackgroundColor: '#A78BFA',
+                    selectedDayTextColor: '#fff',
+                    textDisabledColor: '#8B8B8B',
+                    arrowColor: textMain,
+                    textSectionTitleColor: textMain,
+                    textDayFontWeight: '500',
+                    borderWidth: 0,
+                  }}
+                  style={{
+                    // Purpose: let calendar fill wrapper exactly
+                    width: '100%',
+                    backgroundColor: 'transparent',
+                  }}
+                />
+              </View>
             )}
           </>
         )}
