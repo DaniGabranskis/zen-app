@@ -9,9 +9,10 @@ if (!OPENAI_API_KEY || OPENAI_API_KEY.length < 20) {
 // Creates a singleton OpenAI client instance with API key from env
 const openai = new OpenAI({
   apiKey: OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true,
+  // НЕ используем dangerouslyAllowBrowser в проде
 });
 
-console.log('[✅ OpenAI] Initialized with API key:', OPENAI_API_KEY.slice(0, 5) + '...');
+// без логирования ключа
+console.log('[✅ OpenAI] OpenAI client initialized');
 
 export default openai;

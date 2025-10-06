@@ -4,22 +4,34 @@
  * Result is a formatted reflection prompt for the AI.
  */
 module.exports = function buildPrompt({ answers }) {
-  const formatted = answers
-    .map((a, i) => `Q: ${a.questionId}\nA: ${a.answerText}`)
+  const formatted = (answers || [])
+    .map(a => {
+      const q = String(a.questionId || '').slice(0, 80);
+      const ans = String(a.answerText || '').slice(0, 400);
+      const tags = Array.isArray(a.tags) ? a.tags.join(', ') : '';
+      return `Q: ${q}\nA: ${ans}${tags ? `\nTags: ${tags}` : ''}`;
+    })
     .join('\n\n');
 
   return `
-The user completed a structured emotional reflection. Here are their answers:
+User completed a structured reflection. Their anonymized answers:
 
-${formatted}
+${formatted || '(no answers provided)'}
 
-Now return a valid JSON object like this:
+Return ONLY a valid JSON object with keys:
 {
-  "insight": "One thoughtful paragraph about the user's inner state",
-  "tips": ["Practical tip 1", "Helpful tip 2"],
-  "encouragement": "One kind sentence to close the reflection"
+  "insight": "1 short paragraph (<=3 sentences). Kind, specific, neutral.",
+  "tips": [
+    "2-4 actionable steps (<=14 words each). No emojis.",
+    "Start with a verb. Avoid generic platitudes."
+  ],
+  "encouragement": "1 sentence that acknowledges effort and agency (<=20 words)."
 }
 
-Be clear, concise, kind and practical. Respond only with valid JSON.
-`;
+Constraints:
+- English, CEFR B2, globally neutral.
+- No diagnoses, no guarantees, no medical claims.
+- Be practical, plain language. Do not mention JSON or schema.
+- Output JSON only — no extra text.
+`.trim();
 };
