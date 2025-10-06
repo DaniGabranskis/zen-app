@@ -3,6 +3,7 @@
 // Why: Let users review their past days quickly and visually.
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import useStore from '../store/useStore';
@@ -42,6 +43,7 @@ export default function HistoryScreen({ navigation }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const sortButtonRef = useRef(null);
   const [dropdownAnchor, setDropdownAnchor] = useState({ x: 0, y: 0, width: 200 });
+  const insets = useSafeAreaInsets(); // Purpose: read safe-area paddings from device
 
   // All history entries from store
   const history = useStore((state) => state.history);
@@ -105,6 +107,23 @@ export default function HistoryScreen({ navigation }) {
       </TouchableOpacity>
     );
   };
+
+  // Purpose: detect if a hex color looks dark to adjust weekday header contrast
+  const isHexDark = (hex) => {
+    try {
+      const h = (hex || '').replace('#', '');
+      const r = parseInt(h.slice(0, 2), 16);
+      const g = parseInt(h.slice(2, 4), 16);
+      const b = parseInt(h.slice(4, 6), 16);
+      const luminance = 0.299 * r + 0.587 * g + 0.114 * b; // perceived brightness
+      return luminance < 140; // tweak if needed
+    } catch {
+      return false;
+    }
+  };
+  // Use whole-screen background to detect dark mode, not card color
+  const isDark = isHexDark(bgcolor);
+  const weekHeaderColor = isDark ? '#6E6E6E' : '#4A4A4A';
 
   // Controls: toggle calendar + sort dropdown
   const renderFilterControls = () => (
@@ -175,7 +194,11 @@ export default function HistoryScreen({ navigation }) {
       <FlatList
         data={filteredHistory}
         keyExtractor={(item, index) => `${item.date}-${index}`}
-        contentContainerStyle={{ ...stylesPage.content, paddingBottom: 40 }}
+        contentContainerStyle={{
+          ...stylesPage.content,
+          // Purpose: avoid empty gap while keeping content clear of the tab bar
+          paddingBottom: 0, // no extra gap at the bottom
+        }}
         ListHeaderComponent={() => (
           <>
             {renderHeader()}
@@ -188,7 +211,7 @@ export default function HistoryScreen({ navigation }) {
                   alignSelf: 'center',          // center within screen
                   borderRadius: corner,         // same rounding as cards
                   overflow: 'hidden',           // clip calendar to rounded corners
-                  backgroundColor: cardBg,      // same background as cards
+                  backgroundColor: button, // dropdown uses same color as Sort button
                   elevation: 2,
                   marginTop: pad * 0.6,
                   marginBottom: pad * 0.8,
@@ -219,7 +242,9 @@ export default function HistoryScreen({ navigation }) {
                     selectedDayTextColor: '#fff',
                     textDisabledColor: '#8B8B8B',
                     arrowColor: textMain,
-                    textSectionTitleColor: textMain,
+                    textSectionTitleColor: weekHeaderColor, // weekday strip (Sun..Sat)
+                    monthTextColor: textMain,               // month title color
+                    dayTextColor: textMain,                 // days color
                     textDayFontWeight: '500',
                     borderWidth: 0,
                   }}
@@ -240,34 +265,45 @@ export default function HistoryScreen({ navigation }) {
       />
 
       {dropdownOpen && (
-        <View
+  // Purpose: overlay contains backdrop and menu to control stacking on Android
+  <View style={stylesControls.overlay}>
+    {/* Backdrop catches outside taps */}
+    <TouchableOpacity
+      activeOpacity={1}
+      onPress={() => setDropdownOpen(false)}
+      style={stylesControls.overlayBackdrop}
+    />
+
+    {/* Dropdown menu above the backdrop */}
+    <View
+      style={[
+        stylesControls.dropdownMenuGlobal,
+        {
+          top: dropdownAnchor.y,
+          left: dropdownAnchor.x,
+          width: dropdownAnchor.width,
+          backgroundColor: cardBg,
+        },
+      ]}
+    >
+      {sortOptions.map((opt) => (
+        <TouchableOpacity
+          key={opt.value}
           style={[
-            stylesControls.dropdownMenuGlobal,
-            {
-              top: dropdownAnchor.y,
-              left: dropdownAnchor.x,
-              width: dropdownAnchor.width,
-              backgroundColor: cardBg,
-            },
+            stylesControls.dropdownItem,
+            opt.value === sortType && stylesControls.selectedItem,
           ]}
+          onPress={() => {
+            setSortType(opt.value);
+            setDropdownOpen(false);
+          }}
         >
-          {sortOptions.map((opt) => (
-            <TouchableOpacity
-              key={opt.value}
-              style={[
-                stylesControls.dropdownItem,
-                opt.value === sortType && stylesControls.selectedItem,
-              ]}
-              onPress={() => {
-                setSortType(opt.value);
-                setDropdownOpen(false);
-              }}
-            >
-              <Text style={stylesControls.dropdownItemText}>{opt.label}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
+          <Text style={stylesControls.dropdownItemText}>{opt.label}</Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  </View>
+)}
     </ScreenWrapper>
   );
 }
@@ -376,20 +412,6 @@ const stylesControls = StyleSheet.create({
     fontSize: 16,
   },
   dropdownContainer: { position: 'relative', alignItems: 'center' },
-  dropdownMenuGlobal: {
-    position: 'absolute',
-    paddingVertical: 4,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    zIndex: 100,
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-    borderBottomLeftRadius: 14,
-    borderBottomRightRadius: 14,
-  },
   dropdownItem: {
     // unified style (avoid duplicates)
     paddingVertical: 10,
@@ -403,4 +425,48 @@ const stylesControls = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '500',
   },
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1000,
+    backgroundColor: 'transparent',
+  },
+  overlay: {
+    // Purpose: full-screen layer for backdrop + menu
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 999,  // above page content
+    elevation: 9, // Android stacking
+  },
+  overlayBackdrop: {
+    // Purpose: catch outside taps to close the menu
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'transparent',
+  },
+  dropdownMenuGlobal: {
+    position: 'absolute',
+    paddingVertical: 4,
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+    borderBottomLeftRadius: 14,
+    borderBottomRightRadius: 14,
+    zIndex: 1000,   // keep menu above the backdrop
+    elevation: 10,  // Android: ensure menu floats above
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+  },
+
+
 });
