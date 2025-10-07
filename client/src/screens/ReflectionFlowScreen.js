@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Text } from 'react-native';
+import { Text, Platform, Alert, ToastAndroid } from 'react-native';
 import { StackActions, useNavigation } from '@react-navigation/native';
 import ScreenWrapper from '../components/ScreenWrapper';
 import SwipeCard from '../components/SwipeCard';
@@ -138,9 +138,25 @@ export default function ReflectionFlowScreen() {
   };
 
   const handleAnswer = (questionId, answerText, tags = [], scoreImpact = 0) => {
-    const currentCard = questionSet[index];
-    const fallbackTags = currentCard?.showIfTags || [];
-    const finalTags = tags.length > 0 ? tags : fallbackTags;
+  const currentCard = questionSet[index];
+
+  // ✅ Strict rule: options must provide their own tags.
+  // We no longer use any fallback (like currentCard.showIfTags).
+    const finalTags = Array.isArray(tags) ? tags.filter(Boolean) : [];
+
+    if (finalTags.length === 0) {
+      const cardId = currentCard?.id || questionId;
+      const optionPreview = String(answerText || '').slice(0, 80);
+
+      console.warn(`[NO_TAGS] question=${cardId} answer="${optionPreview}" — option has no tags, answer blocked.`);
+
+      if (Platform.OS === 'android') {
+        ToastAndroid.show('This option is not configured yet. Please choose another.', ToastAndroid.SHORT);
+      } else {
+        Alert.alert('Option not configured', 'This option is not configured yet. Please choose another.');
+      }
+      return; // Do not save the answer, do not move to the next card
+    }
 
     const updatedAnswers = [
       ...answers,
