@@ -90,16 +90,36 @@ async function getAIInsight(answers) {
 
 function getFilteredQuestions(layerKey, answers) {
   const raw = ZenData[layerKey] || [];
+
+  // Precompute sets for faster checks
+  const tagsSet = new Set(answers.flatMap(a => a.tags || []));
+
   return raw.filter(q => {
-    if (q.showIf) {
-      return Object.entries(q.showIf).some(([qid, values]) =>
-        answers.find(a => a.questionId === qid && values.includes(a.answerText))
+    const hasShowIf = q.showIf && typeof q.showIf === 'object';
+    const hasShowIfTags = Array.isArray(q.showIfTags) && q.showIfTags.length > 0;
+
+    // Check showIf: { "L2-1": ["Physical illness", ...], "L2-2": ["..."] }
+    // True if ANY of listed questionId -> values pair matches user's answers.
+    let okByShowIf = true;
+    if (hasShowIf) {
+      okByShowIf = Object.entries(q.showIf).some(([qid, values]) =>
+        answers.some(a => a.questionId === qid && Array.isArray(values) && values.includes(a.answerText))
       );
     }
-    if (q.showIfTags) {
-      const tags = answers.flatMap(a => a.tags || []);
-      return q.showIfTags.some(tag => tags.includes(tag));
+
+    // Check showIfTags: True if ANY tag is present in collected tags
+    let okByTags = true;
+    if (hasShowIfTags) {
+      okByTags = q.showIfTags.some(t => tagsSet.has(t));
     }
+
+    // Combine:
+    // - if both are present -> AND
+    // - if only one present  -> that one
+    // - if none present      -> visible
+    if (hasShowIf && hasShowIfTags) return okByShowIf && okByTags;
+    if (hasShowIf) return okByShowIf;
+    if (hasShowIfTags) return okByTags;
     return true;
   });
 }

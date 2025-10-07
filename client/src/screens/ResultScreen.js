@@ -28,53 +28,34 @@ const getScoreColor = (score) => {
 };
 
 const getDominantTagGroupWeighted = (answers = []) => {
-  const tagFrequency = {};
+  // Count tag frequency
+  const tagFreq = {};
+  answers.forEach((ans) => (ans.tags || []).forEach((t) => { tagFreq[t] = (tagFreq[t] || 0) + 1; }));
 
-  // 1. Считаем частоту всех тегов
-  answers.forEach((ans) => {
-    (ans.tags || []).forEach((tag) => {
-      tagFrequency[tag] = (tagFrequency[tag] || 0) + 1;
-    });
-  });
-
-  const tagListSorted = Object.entries(tagFrequency)
-    .sort((a, b) => b[1] - a[1])
-    .map(([tag]) => tag);
-
-  const groupWeights = {};
   const allGroups = { ...tagGroupsData.groups, ungrouped: tagGroupsData.ungrouped };
 
-  // 2. Проходимся по тегам и прибавляем вес группе
-  tagListSorted.forEach((tag, index) => {
-    const weight = index === 0 ? 3 : index === 1 ? 2 : index === 2 ? 1.5 : 1;
-
-    for (const [groupName, groupData] of Object.entries(allGroups)) {
-      if (groupData.tags.includes(tag)) {
-        groupWeights[groupName] = (groupWeights[groupName] || 0) + weight * tagFrequency[tag];
-      }
-    }
+  // Sum weights per group
+  const groupWeights = {};
+  Object.entries(allGroups).forEach(([group, data]) => {
+    const sum = (data.tags || []).reduce((s, t) => s + (tagFreq[t] || 0), 0);
+    groupWeights[group] = sum;
   });
 
-  console.log('🧮 Tag Frequency:', tagFrequency);
-  console.log('📊 Group Weights:', groupWeights);
+  // Laplace smoothing (prevents dominance by small noise)
+  const alpha = 0.5;
+  const groups = Object.keys(groupWeights);
+  const total = groups.reduce((s, g) => s + groupWeights[g] + alpha, 0);
+  const probs = groups
+    .map((g) => ({ group: g, p: (groupWeights[g] + alpha) / total }))
+    .sort((a, b) => b.p - a.p);
 
-  let maxWeight = 0;
-  let dominant = 'Other';
-  for (const [group, weight] of Object.entries(groupWeights)) {
-    if (weight > maxWeight) {
-      maxWeight = weight;
-      dominant = group;
-    }
-  }
-
+  const dominant = probs[0]?.group || 'Other';
+  const tagListSorted = Object.entries(tagFreq).sort((a,b)=>b[1]-a[1]).map(([t])=>t);
   const description = allGroups[dominant]?.description || 'This group reflects mixed or unclassified emotional tags.';
 
-  return {
-    dominant,
-    topTags: tagListSorted.slice(0, 5),
-    description,
-  };
+  return { dominant, topTags: tagListSorted.slice(0, 5), description };
 };
+
 
 const getScoreGradient = (score) => {
   if (score >= 70) return ['#3DDC91', '#1B9C7A'];

@@ -7,14 +7,15 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "analyze:content": "node scripts/analyzeContent.js --data src/data --out analysis --format both"
+    "analyze:content": "node scripts/analyzeContent.js --data src/data --out analysis --format both",
+    "transform:zen": "node scripts/transformZenData.js --in src/data/ZenDataExtend.json --out src/data/ZenDataExtend.balanced.json"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.1.2",
     "@react-navigation/bottom-tabs": "^7.4.8",
     "@react-navigation/native": "^7.1.18",
     "@react-navigation/native-stack": "^7.3.27",
-    "expo": "~53.0.9",
+    "expo": "^54.0.12",
     "expo-clipboard": "~7.1.4",
     "expo-linear-gradient": "~14.1.5",
     "expo-status-bar": "~2.2.3",
