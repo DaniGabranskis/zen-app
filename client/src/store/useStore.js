@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createJSONStorage } from 'zustand/middleware';
+import { canonicalizeTags } from '../utils/tagCanon';
 
 /**
  * Zustand global store for all major app state:
@@ -49,7 +50,19 @@ const useStore = create(
 
       // Add new reflection day (object) to history
       addDay: (day) => {
-        const updated = [...get().history, day];
+        // Canonicalize tags in answers before persisting
+        const safeDay = {
+          ...day,
+          answers: Array.isArray(day?.answers)
+            ? day.answers.map((a) => ({
+                ...a,
+                tags: canonicalizeTags(a?.tags || []),
+                emotionTags: canonicalizeTags(a?.emotionTags || a?.tags || []),
+              }))
+            : day?.answers,
+        };
+
+        const updated = [...get().history, safeDay];
         console.log('💾 Persisted history:', updated);
         set({ history: updated });
       },
@@ -70,10 +83,39 @@ const useStore = create(
         theme: state.theme,
       }),
       // Log hydration event on boot
-      onRehydrateStorage: (persistedState) => (set) => {
-      console.log('✅ Zustand rehydrated!');
-      set({ hasHydrated: true });
+      onRehydrateStorage: (persistedState) => (set, get) => {
+        console.log('✅ Zustand rehydrated!');
+
+        // One-time migration: canonicalize tags in persisted history
+        try {
+          const hist = Array.isArray(get().history) ? get().history : [];
+          const migrated = hist.map((day) => {
+            const answers = Array.isArray(day?.answers)
+              ? day.answers.map((a) => ({
+                  ...a,
+                  // Ensure consistent tag vocabulary
+                  tags: canonicalizeTags(a?.tags || []),
+                  emotionTags: canonicalizeTags(a?.emotionTags || a?.tags || []),
+                }))
+              : day?.answers;
+
+            return { ...day, answers };
+          });
+
+          // Update only if actually changed
+          const strA = JSON.stringify(hist);
+          const strB = JSON.stringify(migrated);
+          if (strA !== strB) {
+            set({ history: migrated });
+            console.log('🧭 Migrated history to canonical tags.');
+          }
+        } catch (e) {
+          console.warn('[MIGRATION] tag canon failed:', e?.message);
+        }
+
+        set({ hasHydrated: true });
       },
+
     }
   )
 );

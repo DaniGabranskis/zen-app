@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Text, Platform, Alert, ToastAndroid } from 'react-native';
+import { canonicalizeTags } from '../utils/tagCanon';
 import { StackActions, useNavigation } from '@react-navigation/native';
 import ScreenWrapper from '../components/ScreenWrapper';
 import SwipeCard from '../components/SwipeCard';
@@ -140,37 +141,45 @@ export default function ReflectionFlowScreen() {
   const handleAnswer = (questionId, answerText, tags = [], scoreImpact = 0) => {
   const currentCard = questionSet[index];
 
-  // ✅ Strict rule: options must provide their own tags.
-  // We no longer use any fallback (like currentCard.showIfTags).
-    const finalTags = Array.isArray(tags) ? tags.filter(Boolean) : [];
+  // Strict rule: options must provide their own tags.
+  // We no longer use any fallback like currentCard.showIfTags.
+  const finalTags = canonicalizeTags(Array.isArray(tags) ? tags : []);
 
-    if (finalTags.length === 0) {
-      const cardId = currentCard?.id || questionId;
-      const optionPreview = String(answerText || '').slice(0, 80);
+  if (finalTags.length === 0) {
+    // Developer log for quick content fixing
+    const cardId = currentCard?.id || questionId;
+    const optionPreview = String(answerText || '').slice(0, 80);
+    console.warn(`[NO_TAGS] question=${cardId} option="${optionPreview}" — option has no tags, answer is blocked.`);
 
-      console.warn(`[NO_TAGS] question=${cardId} answer="${optionPreview}" — option has no tags, answer blocked.`);
-
-      if (Platform.OS === 'android') {
-        ToastAndroid.show('This option is not configured yet. Please choose another.', ToastAndroid.SHORT);
-      } else {
-        Alert.alert('Option not configured', 'This option is not configured yet. Please choose another.');
-      }
-      return; // Do not save the answer, do not move to the next card
-    }
-
-    const updatedAnswers = [
-      ...answers,
-      { questionId, answerText, tags: finalTags, emotionTags: finalTags, scoreImpact }
-    ];
-    console.log('📝 Answer saved:', { questionId, answerText, finalTags });
-
-    if (index + 1 < questionSet.length) {
-      setIndex(index + 1);
-      setAnswers(updatedAnswers);
+    // User-facing message
+    if (Platform.OS === 'android') {
+      ToastAndroid.show('This option is not configured yet. Please choose another.', ToastAndroid.SHORT);
     } else {
-      next(updatedAnswers);
+      Alert.alert('Option not configured', 'This option is not configured yet. Please choose another.');
     }
-  };
+    return; // Do not save the answer, do not advance
+  }
+
+  const updatedAnswers = [
+    ...answers,
+    {
+      questionId,
+      answerText,
+      tags: finalTags,
+      emotionTags: finalTags, // keep current behavior for now
+      scoreImpact,
+    },
+  ];
+
+  console.log('📝 Answer saved:', { questionId, answerText, finalTags });
+
+  if (index + 1 < questionSet.length) {
+    setIndex(index + 1);
+    setAnswers(updatedAnswers);
+  } else {
+    next(updatedAnswers);
+  }
+};
 
   const renderCard = () => {
     const currentCard = questionSet[index];

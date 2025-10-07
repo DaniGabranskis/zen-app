@@ -20,7 +20,7 @@ const path = require('path');
 
 function parseArgs() {
   const args = process.argv.slice(2);
-  const out = { dataDir: 'client/data', outDir: 'analysis', format: 'both' };
+  const out = { dataDir: 'src/data', outDir: 'analysis', format: 'both' };
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (a === '--data' && args[i + 1]) out.dataDir = args[++i];
@@ -32,50 +32,161 @@ function parseArgs() {
 
 function readJsonFilesRecursive(dir) {
   const files = [];
+  const IGNORES = new Set([
+    'node_modules', '.git', '.expo', 'analysis', 'dist', 'build', 'android', 'ios'
+  ]);
+
   (function walk(p) {
     for (const name of fs.readdirSync(p)) {
+      if (IGNORES.has(name)) continue;
       const full = path.join(p, name);
       const stat = fs.statSync(full);
-      if (stat.isDirectory()) walk(full);
-      else if (stat.isFile() && name.toLowerCase().endsWith('.json')) files.push(full);
+      if (stat.isDirectory()) {
+        walk(full);
+      } else if (stat.isFile() && name.toLowerCase().endsWith('.json')) {
+        files.push(full);
+      }
     }
   })(dir);
+
   return files;
 }
 
-// Try to normalize different content shapes into a unified "cards" array
-function extractCardsFromJson(json, file) {
-  // Accept common shapes:
-  // - { cards: [...] }
-  // - [ ...cards ]
-  // - { data: { cards: [...] } }
-  // Each "card" expected fields (best-effort): id, layer, type, question, options[], routing
-  const out = [];
-  const pushIfCard = (c) => {
-    if (c && typeof c === 'object') out.push(c);
-  };
+// Normalize diverse card shapes into a single shape we can analyze:
+// - swipe: leftOption/rightOption OR options: { "text": ["tag1","tag2"] }
+// - choice: options: [{ text, tags }]
+// - input: no options
+// - step-based (L3 confirm/branch): parse branch options with tags
+function normalizeCard(raw, layer) {
+  if (!raw || typeof raw !== 'object') return null;
+  const id = raw.id ? String(raw.id) : null;
+  if (!id) return null;
 
-  const tryArrays = [];
-  if (Array.isArray(json)) tryArrays.push(json);
-  if (json && Array.isArray(json.cards)) tryArrays.push(json.cards);
-  if (json && json.data && Array.isArray(json.data.cards)) tryArrays.push(json.data.cards);
-  if (json && Array.isArray(json.questions)) tryArrays.push(json.questions);
+  const options = [];
 
-  if (tryArrays.length === 0) {
-    // Heuristic: if object keys look like ids -> values are cards
-    const values = json && typeof json === 'object' ? Object.values(json) : [];
-    if (values.every(v => typeof v === 'object')) {
-      values.forEach(pushIfCard);
+  // swipe (ZenDataExtend): left/right option
+  if (raw.leftOption || raw.rightOption) {
+    if (raw.leftOption) {
+      options.push({
+        text: String(raw.leftOption.text || '').trim(),
+        tags: safeArray(raw.leftOption.tags).filter(Boolean),
+        next: raw.leftOption.next || null,
+      });
     }
-  } else {
-    tryArrays.forEach(arr => arr.forEach(pushIfCard));
+    if (raw.rightOption) {
+      options.push({
+        text: String(raw.rightOption.text || '').trim(),
+        tags: safeArray(raw.rightOption.tags).filter(Boolean),
+        next: raw.rightOption.next || null,
+      });
+    }
   }
 
-  if (out.length === 0) {
-    console.warn(`[WARN] No cards found in ${file}`);
+  // swipe (SwipeData): options is an object { "Option text": ["Tag1","Tag2"] }
+  if (!options.length && raw.options && typeof raw.options === 'object' && !Array.isArray(raw.options)) {
+    Object.entries(raw.options).forEach(([text, tags]) => {
+      options.push({ text: String(text || '').trim(), tags: safeArray(tags).filter(Boolean) });
+    });
   }
-  return out;
+
+  // choice: options is an array
+  if (Array.isArray(raw.options)) {
+    raw.options.forEach(o => {
+      if (!o) return;
+      const text = typeof o === 'string' ? o : String(o.text || '').trim();
+      const tags = typeof o === 'string' ? [] : safeArray(o.tags).filter(Boolean);
+      options.push({ text, tags });
+    });
+  }
+
+  // step-based branching (SwipeData L3 / ZenDataExtend L3): only branch carries tag arrays
+  if (Array.isArray(raw.step)) {
+    raw.step.forEach(step => {
+      if (step && step.type === 'branch' && step.options && typeof step.options === 'object') {
+        Object.entries(step.options).forEach(([text, tags]) => {
+          options.push({ text: String(text || '').trim(), tags: safeArray(tags).filter(Boolean) });
+        });
+      }
+      // NOTE: we intentionally skip "confirm" (token-like) and "exit" (no tags) steps
+    });
+  }
+
+  // routing normalization
+  const routing = {};
+  if (raw.showIf && typeof raw.showIf === 'object' && !Array.isArray(raw.showIf)) {
+    // showIf is like: { "QID": ["Acceptable Answer 1", ...] }
+    routing.showIf = raw.showIf;
+  }
+  if (Array.isArray(raw.showIfTags)) {
+    routing.showIfTagsAny = raw.showIfTags;
+  }
+
+  // collect next ids from per-option "next"
+  const nextIds = Array.from(new Set(options.map(o => o.next).filter(Boolean)));
+
+  return {
+    id,
+    layer: Number(layer || 0),
+    type: raw.type || (raw.leftOption || raw.rightOption ? 'swipe'
+          : (Array.isArray(raw.options) ? 'choice'
+          : (raw.question || raw.text) ? 'input' : 'unknown')),
+    question: String(raw.text || raw.question || '').trim(),
+    options,
+    routing,
+    nextIds,
+  };
 }
+
+// Extract structured data depending on known shapes:
+// - ZenDataExtend/SwipeData: { L1: [...], L2: [...], ... }
+// - QuestionBlockData: { id: [strings] }
+// - emotionDetails: [ { group, display, ... } ]
+// - tagGroups: { groups: {...}, ... }
+function extractData(json, file) {
+  const result = { cards: [], qbBlocks: [], meta: {} };
+  const pushCard = (c) => { if (c && c.id) result.cards.push(c); };
+
+  // A) Level-based structures: L1..L5 arrays of cards
+  if (json && typeof json === 'object') {
+    const levelKeys = Object.keys(json).filter(k => /^L\d+$/i.test(k) && Array.isArray(json[k]));
+    if (levelKeys.length > 0) {
+      levelKeys.forEach(levelKey => {
+        const layer = Number(levelKey.slice(1));
+        json[levelKey].forEach(raw => {
+          const c = normalizeCard(raw, layer);
+          if (c) pushCard(c);
+        });
+      });
+      return result;
+    }
+  }
+
+  // B) QuestionBlockData: object of id -> array of strings
+  if (json && typeof json === 'object' && !Array.isArray(json)) {
+    const values = Object.values(json);
+    if (values.length && values.every(v => Array.isArray(v) && v.every(x => typeof x === 'string'))) {
+      result.qbBlocks = Object.keys(json).map(id => ({ id: String(id), options: json[id] }));
+      return result;
+    }
+  }
+
+  // C) emotionDetails: array of objects with "group"/"display"
+  if (Array.isArray(json) && json.length && typeof json[0] === 'object' && 'group' in json[0] && 'display' in json[0]) {
+    result.meta.emotions = json.length;
+    return result;
+  }
+
+  // D) tagGroups: not cards; optionally collect groups count
+  if (json && typeof json === 'object' && (json.groups || json.Groups)) {
+    const g = json.groups || json.Groups;
+    result.meta.tagGroups = g && typeof g === 'object' ? Object.keys(g).length : 0;
+    return result;
+  }
+
+  // Unknown / ignore
+  return result;
+}
+
 
 function toTitle(s) {
   return String(s || '')
@@ -94,59 +205,52 @@ function ensureDir(dir) {
 }
 
 function buildGraph(cards) {
-  // Build a graph of potential flows:
-  // Node: card.id (label: "Layer X: question")
-  // Edge: from card A -> card B if B.layer > A.layer and B.routing "might" be satisfied
-  //
-  // "Might" heuristic:
-  // - If B.routing.showIf references a questionId that is unknown, skip
-  // - If B.routing.showIf exists, we create dependency edges from that questionId to B
-  // - If B.routing.showIfTagsAny exists, we connect from ANY previous-layer card to B (tag availability depends on options)
-  //
-  // Note: This is a static approximation (no runtime answers).
-  const nodes = new Map(); // id -> node
-  const edges = new Set(); // "from->to"
+  // Nodes: card.id, label: "Lx: question"
+  // Edges: 
+  //   - from showIf: QID -> target
+  //   - from showIfTagsAny: connect all previous-layer cards to target (heuristic)
+  //   - from nextIds: source -> listed next ids
+  const nodes = new Map();
+  const edges = new Set();
 
   const byId = new Map();
-  cards.forEach(c => { if (c.id) byId.set(String(c.id), c); });
+  cards.forEach(c => byId.set(c.id, c));
 
   cards.forEach(c => {
-    const id = String(c.id || `card_${Math.random().toString(36).slice(2)}`);
-    const layer = Number(c.layer ?? 0);
-    const question = String(c.question || c.title || c.name || id);
-    nodes.set(id, { id, layer, label: `L${layer}: ${question}` });
+    const q = c.question || c.id;
+    nodes.set(c.id, { id: c.id, layer: c.layer, label: `L${c.layer}: ${q}` });
   });
 
   const prevLayers = (L) => cards.filter(x => Number(x.layer ?? 0) < L);
 
   cards.forEach(target => {
-    const targetId = String(target.id || '');
-    const L = Number(target.layer ?? 0);
+    const targetId = target.id;
+    const L = target.layer;
     const routing = target.routing || {};
-    const showIf = safeArray(routing.showIf);
+    const showIfObj = routing.showIf || {}; // object: { QID: [answers...] }
     const showIfTagsAny = safeArray(routing.showIfTagsAny);
 
-    // 1) showIf: create edges from referenced questionId(s) to target
-    showIf.forEach(rule => {
-      const qid = rule && rule.questionId ? String(rule.questionId) : null;
-      if (!qid) return;
-      if (!byId.has(qid)) return; // unknown question id
-      edges.add(`${qid}->${targetId}`);
+    // 1) showIf -> edges from referenced question ids
+    Object.keys(showIfObj).forEach(qid => {
+      if (byId.has(qid)) edges.add(`${qid}->${targetId}`);
     });
 
-    // 2) showIfTagsAny: connect from all previous-layer cards (tags can come from many places)
+    // 2) showIfTagsAny -> edges from all prior-layer cards (tags can come from many places)
     if (showIfTagsAny.length > 0) {
       prevLayers(L).forEach(src => {
-        const sid = String(src.id || '');
-        if (sid && sid !== targetId) edges.add(`${sid}->${targetId}`);
+        if (src.id !== targetId) edges.add(`${src.id}->${targetId}`);
       });
     }
 
-    // 3) If no routing at all, connect from all previous-layer cards to indicate linear flow
-    if (showIf.length === 0 && showIfTagsAny.length === 0 && L > 0) {
+    // 3) nextIds (explicit next pointers on options)
+    safeArray(target.nextIds).forEach(nid => {
+      if (byId.has(nid)) edges.add(`${targetId}->${nid}`);
+    });
+
+    // 4) If no routing and no next, connect linearly from all prior-layer cards
+    if (Object.keys(showIfObj).length === 0 && showIfTagsAny.length === 0 && (!target.nextIds || target.nextIds.length === 0) && L > 0) {
       prevLayers(L).forEach(src => {
-        const sid = String(src.id || '');
-        if (sid && sid !== targetId) edges.add(`${sid}->${targetId}`);
+        if (src.id !== targetId) edges.add(`${src.id}->${targetId}`);
       });
     }
   });
@@ -195,6 +299,8 @@ function renderDot(nodes, edges) {
 
   if (!fs.existsSync(dataDir)) {
     console.error(`[ERROR] Data directory not found: ${dataDir}`);
+    console.error(`[INFO] CWD: ${process.cwd()}`);
+    console.error(`[TIP] From /client use:  node scripts/analyzeContent.js --data src/data --out analysis --format both`);
     process.exit(1);
   }
   ensureDir(outDir);
@@ -207,43 +313,60 @@ function renderDot(nodes, edges) {
   const allCards = [];
   const problems = { optionsWithoutTags: [], cardsWithoutId: [] };
   const tagFreq = new Map();
-
   let totalCards = 0;
   let totalOptions = 0;
+
+  // Extra stats for QuestionBlockData
+  let qbQuestions = 0;
+  let qbOptionsTotal = 0;
 
   files.forEach(file => {
     try {
       const raw = fs.readFileSync(file, 'utf8');
       const json = JSON.parse(raw);
-      const cards = extractCardsFromJson(json, file);
-      if (!cards.length) return;
 
-      cards.forEach(card => {
-        totalCards += 1;
-        const id = card.id || null;
-        if (!id) problems.cardsWithoutId.push({ file, card });
+      const { cards, qbBlocks } = extractData(json, file);
 
-        const options = safeArray(card.options);
-        totalOptions += options.length;
+      // Count QuestionBlockData (do not treat as cards)
+      if (qbBlocks && qbBlocks.length) {
+        qbQuestions += qbBlocks.length;
+        qbBlocks.forEach(b => { qbOptionsTotal += b.options.length; });
+      }
 
-        options.forEach(opt => {
-          const optText = String(opt?.text || '').trim();
-          const tags = safeArray(opt?.tags).filter(Boolean);
+      // Count cards and options/tags
+      if (cards && cards.length) {
+        cards.forEach(card => {
+          totalCards += 1;
 
-          if (tags.length === 0) {
-            problems.optionsWithoutTags.push({
-              file,
-              cardId: card.id || '(missing id)',
-              question: String(card.question || card.title || card.name || '').slice(0, 120),
-              optionText: optText.slice(0, 120),
-            });
-          } else {
-            tags.forEach(t => tagFreq.set(t, (tagFreq.get(t) || 0) + 1));
+          if (!card.id) {
+            problems.cardsWithoutId.push({ file, card });
+            return;
           }
-        });
 
-        allCards.push(card);
-      });
+          // options
+          const opts = safeArray(card.options);
+          totalOptions += opts.length;
+
+          opts.forEach(opt => {
+            const tags = safeArray(opt.tags).filter(Boolean);
+            if (tags.length === 0) {
+              // Only consider "missing tags" for swipe/choice; skip input/confirm-like options
+              if (card.type === 'swipe' || card.type === 'choice') {
+                problems.optionsWithoutTags.push({
+                  file,
+                  cardId: card.id,
+                  question: card.question.slice(0, 120),
+                  optionText: String(opt.text || '').slice(0, 120),
+                });
+              }
+            } else {
+              tags.forEach(t => tagFreq.set(t, (tagFreq.get(t) || 0) + 1));
+            }
+          });
+
+          allCards.push(card);
+        });
+      }
     } catch (e) {
       console.error(`[ERROR] Failed to parse ${file}: ${e.message}`);
     }
