@@ -1,0 +1,27 @@
+[
+  {
+    "id": "L1_mood",
+    "selectedOption": "Heavy / uneasy",
+    "options": { "Heavy / uneasy": ["mood_negative","body_tension","anxiety?" ] }
+  },
+  {
+    "id": "L1_body",
+    "selectedOption": "Tension / tight",
+    "options": { "Tension / tight": ["body_tension","tension?"] }
+  },
+  {
+    "id": "L1_energy",
+    "selectedOption": "High / wired",
+    "options": { "High / wired": ["energy_high","mind_racing?"] }
+  },
+  {
+    "id": "L2_mind",
+    "selectedOption": "Racing",
+    "options": { "Racing": ["mind_racing","anxiety?"] }
+  },
+  {
+    "id": "L2_work",
+    "selectedOption": "A lot",
+    "options": { "A lot": ["work_high","pressure","overwhelm?"] }
+  }
+]

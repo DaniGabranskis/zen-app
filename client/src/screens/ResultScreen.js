@@ -17,6 +17,8 @@ import ScreenWrapper from '../components/ScreenWrapper';
 import useThemeVars from '../hooks/useThemeVars';
 import tagGroupsData from '../data/tagGroups.json';
 import { generateInsight } from '../utils/aiService';
+import { routeEmotionFromCards, getEmotionMeta } from '../utils/evidenceEngine';
+import tinyActions from '../data/tinyActions.v1.json';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const P = Math.round(SCREEN_WIDTH * 0.05);

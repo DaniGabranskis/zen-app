@@ -1,0 +1,62 @@
+[
+  {
+    "id": "L2_mind",
+    "title": "Mind speed",
+    "type": "swipe",
+    "options": [
+      { "label": "Calm / focused", "tags": ["mind_calm","clarity?"] },
+      { "label": "Racing", "tags": ["mind_racing","anxiety?"] },
+      { "label": "Stuck / looping", "tags": ["mind_stuck","rumination","sadness?"] }
+    ]
+  },
+  {
+    "id": "L2_work",
+    "title": "Workload",
+    "type": "swipe",
+    "options": [
+      { "label": "Ok", "tags": ["work_ok"] },
+      { "label": "A lot", "tags": ["work_high","pressure","overwhelm?"] },
+      { "label": "Too much", "tags": ["work_too_much","low_control","overwhelm?"] }
+    ]
+  },
+  {
+    "id": "L2_uncer",
+    "title": "Uncertainty",
+    "type": "swipe",
+    "options": [
+      { "label": "Clear", "tags": ["uncertainty_low","clarity?"] },
+      { "label": "Some unknowns", "tags": ["uncertainty_mid"] },
+      { "label": "High / outcome fear", "tags": ["uncertainty_high","fear?","anxiety?"] }
+    ]
+  },
+  {
+    "id": "L2_inter",
+    "title": "Interpersonal",
+    "type": "swipe",
+    "options": [
+      { "label": "Supported", "tags": ["support","gratitude?"] },
+      { "label": "Criticized / ignored", "tags": ["criticism","ignored","shame?","guilt?","sadness?"] },
+      { "label": "Conflict", "tags": ["conflict","anger?","frustration?","irritation?"] }
+    ]
+  },
+  {
+    "id": "L2_self",
+    "title": "Self-evaluation",
+    "type": "swipe",
+    "options": [
+      { "label": "Proud / ok", "tags": ["self_ok","contentment?"] },
+      { "label": "Guilt", "tags": ["guilt"] },
+      { "label": "Shame", "tags": ["shame"] }
+    ]
+  },
+  {
+    "id": "L2_threat",
+    "title": "Safety/Threat",
+    "type": "swipe",
+    "options": [
+      { "label": "Safe", "tags": ["safe","calm?"] },
+      { "label": "On guard", "tags": ["vigilant","tension?"] },
+      { "label": "Present threat", "tags": ["threat","fear"] }
+    ]
+  }
+]

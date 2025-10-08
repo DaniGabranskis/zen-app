@@ -1,0 +1,18 @@
+[
+  {
+    "id": "probe_anx_vs_tens",
+    "question": "Feels more like mental worry or physical tightness?",
+    "options": [
+      { "label": "Mental worry", "tags": ["anxiety?","mind_racing"] },
+      { "label": "Physical tightness", "tags": ["tension?","body_tension"] }
+    ]
+  },
+  {
+    "id": "probe_ovw_vs_tired",
+    "question": "More like overload or low energy exhaustion?",
+    "options": [
+      { "label": "Overload", "tags": ["overwhelm?","pressure","low_control"] },
+      { "label": "Exhaustion", "tags": ["tiredness?","body_heavy","energy_low"] }
+    ]
+  }
+]

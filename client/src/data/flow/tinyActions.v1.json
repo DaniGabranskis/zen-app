@@ -1,0 +1,28 @@
+{
+  "anxiety": {
+    "base": "Do 2 minutes of box-breathing, then pick one tiny task you can do in 3 minutes.",
+    "modifiers": { "low_control": "Write down 1 controllable action only." }
+  },
+  "tension": { "base": "Unclench routine: jaw–shoulders–hands for 60 seconds; slow exhale x6." },
+  "fear": { "base": "Name the feared outcome in 1 sentence. List one safety step." },
+  "anger": { "base": "90-second pause; write the request you want to make instead of blame." },
+  "frustration": { "base": "Reframe: what is within your control today? Choose a 5-minute step." },
+  "irritation": { "base": "Micro-reset: 10 slow breaths; step away from the trigger for 2 minutes." },
+  "sadness": { "base": "Gentle care: warm drink, quiet place, 10-minute walk if possible." },
+  "disappointment": { "base": "Adjust expectations: write what changed and one realistic next step." },
+  "loneliness": { "base": "Send a 1-line message to someone you trust: 'Thinking of you'." },
+  "disconnection": { "base": "Do one sensory anchor: feel feet, notice 3 colors around you." },
+  "confusion": { "base": "Clarify: write your situation in 2 lines + define the smallest question to answer." },
+  "overwhelm": {
+    "base": "Cut to one tiny task ≤ 5 minutes; defer the rest with a time box.",
+    "modifiers": { "low_control": "Use a timer for 5 minutes; stop after." }
+  },
+  "tiredness": { "base": "Micro-rest: 3 minutes eyes closed; drink water; light stretch." },
+  "guilt": { "base": "Fact check: write 3 facts (no judgments), then define one repair step." },
+  "shame": { "base": "Self-kindness: write one kind sentence to yourself + a factual strength you showed." },
+  "calm": { "base": "Protect it: 10-minute quiet block without phone today." },
+  "clarity": { "base": "Capture it: write 3 bullet points you’re clear about now." },
+  "gratitude": { "base": "Lock-in: list 3 small things you appreciate today." },
+  "joy": { "base": "Share it: tell someone or write down the moment in 1–2 lines." },
+  "contentment": { "base": "Savor: slow breath in–out x5 and notice how your body feels now." }
+}

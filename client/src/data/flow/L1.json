@@ -1,0 +1,52 @@
+[
+  {
+    "id": "L1_mood",
+    "title": "Mood now",
+    "type": "swipe",
+    "options": [
+      { "label": "Heavy / uneasy", "tags": ["mood_negative","body_tension","anxiety?"] },
+      { "label": "Neutral / flat", "tags": ["mood_neutral","low_arousal"] },
+      { "label": "Light / positive", "tags": ["mood_positive","ease","gratitude?"] }
+    ]
+  },
+  {
+    "id": "L1_body",
+    "title": "Body state",
+    "type": "swipe",
+    "options": [
+      { "label": "Tension / tight", "tags": ["body_tension","tension?"] },
+      { "label": "Heavy / low", "tags": ["body_heavy","tiredness?"] },
+      { "label": "Light / relaxed", "tags": ["body_light","calm?"] }
+    ]
+  },
+  {
+    "id": "L1_energy",
+    "title": "Energy level",
+    "type": "swipe",
+    "options": [
+      { "label": "Low", "tags": ["energy_low","tiredness?"] },
+      { "label": "Steady", "tags": ["energy_steady"] },
+      { "label": "High / wired", "tags": ["energy_high","mind_racing?"] }
+    ]
+  },
+  {
+    "id": "L1_social",
+    "title": "Social connection",
+    "type": "swipe",
+    "options": [
+      { "label": "Avoiding people", "tags": ["social_avoid","disconnection?"] },
+      { "label": "Neutral", "tags": ["social_neutral"] },
+      { "label": "Drawn to people", "tags": ["social_seek","support?","gratitude?"] }
+    ]
+  },
+  {
+    "id": "L1_control",
+    "title": "Sense of control",
+    "type": "swipe",
+    "options": [
+      { "label": "Losing control", "tags": ["low_control","overwhelm?","anxiety?"] },
+      { "label": "Shaky", "tags": ["control_shaky"] },
+      { "label": "In control", "tags": ["in_control","clarity?","calm?"] }
+    ]
+  }
+]

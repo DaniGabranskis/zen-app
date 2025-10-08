@@ -1,0 +1,22 @@
+[
+  { "key": "anxiety", "name": "Anxiety", "emoji": "😟", "color": ["#6D83F2","#A5B4FC"] },
+  { "key": "tension", "name": "Tension", "emoji": "😬", "color": ["#6F6CF1","#B5B3FF"] },
+  { "key": "fear", "name": "Fear", "emoji": "😨", "color": ["#5C6BC0","#9FA8DA"] },
+  { "key": "anger", "name": "Anger", "emoji": "😤", "color": ["#EF4444","#FCA5A5"] },
+  { "key": "frustration", "name": "Frustration", "emoji": "😣", "color": ["#F59E0B","#FCD34D"] },
+  { "key": "irritation", "name": "Irritation", "emoji": "😑", "color": ["#FB923C","#FED7AA"] },
+  { "key": "sadness", "name": "Sadness", "emoji": "😢", "color": ["#3B82F6","#93C5FD"] },
+  { "key": "disappointment", "name": "Disappointment", "emoji": "😔", "color": ["#60A5FA","#BFDBFE"] },
+  { "key": "loneliness", "name": "Loneliness", "emoji": "😞", "color": ["#64748B","#CBD5E1"] },
+  { "key": "disconnection", "name": "Disconnection", "emoji": "🥱", "color": ["#475569","#94A3B8"] },
+  { "key": "confusion", "name": "Confusion", "emoji": "😕", "color": ["#22D3EE","#99F6E4"] },
+  { "key": "overwhelm", "name": "Overwhelm", "emoji": "🌀", "color": ["#10B981","#6EE7B7"] },
+  { "key": "tiredness", "name": "Tiredness", "emoji": "🥱", "color": ["#94A3B8","#E2E8F0"] },
+  { "key": "guilt", "name": "Guilt", "emoji": "😟", "color": ["#C084FC","#E9D5FF"] },
+  { "key": "shame", "name": "Shame", "emoji": "🙇‍♂️", "color": ["#EC4899","#FBCFE8"] },
+  { "key": "calm", "name": "Calm", "emoji": "😌", "color": ["#34D399","#A7F3D0"] },
+  { "key": "clarity", "name": "Clarity", "emoji": "🧠", "color": ["#2DD4BF","#99F6E4"] },
+  { "key": "gratitude", "name": "Gratitude", "emoji": "🫶", "color": ["#22C55E","#86EFAC"] },
+  { "key": "joy", "name": "Joy", "emoji": "😄", "color": ["#F59E0B","#FDE68A"] },
+  { "key": "contentment", "name": "Contentment", "emoji": "🙂", "color": ["#84CC16","#D9F99D"] }
+]
