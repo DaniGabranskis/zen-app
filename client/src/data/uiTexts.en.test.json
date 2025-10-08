@@ -1,0 +1,86 @@
+{
+  "anxiety": {
+    "triggers": ["Upcoming deadline", "Unclear expectations", "Too many unknowns"],
+    "bodyMind": ["Shallow breathing", "Scanning for threats", "Catastrophizing thoughts"]
+  },
+  "tension": {
+    "triggers": ["Conflict tone", "Crowded places", "Noise / overstimulation"],
+    "bodyMind": ["Tight shoulders", "Clenched jaw", "Rigid posture"]
+  },
+  "fear": {
+    "triggers": ["Possible loss", "Health worries", "Financial risk"],
+    "bodyMind": ["Cold hands", "Startle response", "Avoidant planning"]
+  },
+  "anger": {
+    "triggers": ["Blocked goals", "Unfair treatment", "Repeated interruptions"],
+    "bodyMind": ["Heat in face", "Urge to confront", "Harsh inner tone"]
+  },
+  "frustration": {
+    "triggers": ["Slow progress", "Tooling issues", "Dependence on others"],
+    "bodyMind": ["Sighing often", "Impatient focus", "Inner eye-roll"]
+  },
+  "irritation": {
+    "triggers": ["Minor noises", "Micro-delays", "Messy environment"],
+    "bodyMind": ["Jaw tension", "Short fuse", "Restless hands"]
+  },
+  "sadness": {
+    "triggers": ["Loss or setback", "Lonely evening", "Plans cancelled"],
+    "bodyMind": ["Heavy chest", "Low initiation", "Downward gaze"]
+  },
+  "disappointment": {
+    "triggers": ["Missed expectation", "Underwhelming result", "Broken promise"],
+    "bodyMind": ["Deflated feeling", "Second-guessing", "What-if loops"]
+  },
+  "loneliness": {
+    "triggers": ["No reply", "Weekend alone", "Feeling unseen"],
+    "bodyMind": ["Hollow chest", "Yearning for contact", "Scrolling for connection"]
+  },
+  "disconnection": {
+    "triggers": ["Emotional numbness", "Over-isolation", "Auto-pilot day"],
+    "bodyMind": ["Flat affect", "Detached thoughts", "Low sensation in body"]
+  },
+  "confusion": {
+    "triggers": ["Conflicting info", "Vague goals", "Too many choices"],
+    "bodyMind": ["Foggy head", "Stop-start attention", "Asking same Q again"]
+  },
+  "overwhelm": {
+    "triggers": ["Too many tasks", "Time pressure", "Low control"],
+    "bodyMind": ["Chest pressure", "Urgency without action", "List avoidance"]
+  },
+  "tiredness": {
+    "triggers": ["Short sleep", "Long screen time", "Late meals"],
+    "bodyMind": ["Heavy limbs", "Yawning often", "Slow reaction"]
+  },
+  "guilt": {
+    "triggers": ["Missed promise", "Harsh words said", "Ignored duty"],
+    "bodyMind": ["Tight gut", "Replay scenes", "Repair impulse"]
+  },
+  "shame": {
+    "triggers": ["Public mistake", "Critical feedback", "Comparisons"],
+    "bodyMind": ["Sunken posture", "Avoid eye contact", "Self-attack thoughts"]
+  },
+  "calm": {
+    "triggers": ["Quiet morning", "Finished task", "Time outdoors"],
+    "bodyMind": ["Even breath", "Relaxed shoulders", "Soft focus"]
+  },
+  "clarity": {
+    "triggers": ["Clean plan", "Good notes", "Recent insight"],
+    "bodyMind": ["Crisp attention", "Decisive micro-steps", "Steady pacing"]
+  },
+  "gratidude": {
+    "triggers": ["Kind message", "Small help received", "Nice weather"],
+    "bodyMind": ["Warm chest", "Inclination to thank", "Softer self-talk"]
+  },
+  "gratitude": {
+    "triggers": ["Kind message", "Small help received", "Nice weather"],
+    "bodyMind": ["Warm chest", "Inclination to thank", "Softer self-talk"]
+  },
+  "joy": {
+    "triggers": ["Good news", "Fun chat", "Creative flow"],
+    "bodyMind": ["Open chest", "Light steps", "Smiling face"]
+  },
+  "contentment": {
+    "triggers": ["Tasks ‘good enough’", "Comfortable routine", "No rush evening"],
+    "bodyMind": ["Deep sigh of relief", "Loose shoulders", "Savoring small things"]
+  }
+}

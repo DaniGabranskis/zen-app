@@ -15,7 +15,6 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import useStore from '../store/useStore';
 import ScreenWrapper from '../components/ScreenWrapper';
 import useThemeVars from '../hooks/useThemeVars';
-import tagGroupsData from '../data/tagGroups.json';
 import { generateInsight } from '../utils/aiService';
 import { routeEmotionFromCards, getEmotionMeta } from '../utils/evidenceEngine';
 import tinyActions from '../data/tinyActions.v1.json';
@@ -99,7 +98,18 @@ export default function ResultScreen() {
   const storedAnswers = useStore((state) => state.answers);
   const answers = routeAnswers.length > 0 ? routeAnswers : storedAnswers || [];
   console.log('🧾 Loaded answers:', answers);
-  const dominantGroup = getDominantTagGroupWeighted(answers);
+  const routed = routeEmotionFromCards(answers); // calculate emotion routing
+  const primary = getEmotionMeta(routed.dominant);
+  const secondary = routed.secondary ? getEmotionMeta(routed.secondary) : null;
+
+  // pick tiny action
+  let action = tinyActions[primary.key]?.base || 'Take one small supportive action today.';
+  if (tinyActions[primary.key]?.modifiers) {
+    for (const tag of Object.keys(routed.tagFreq || {})) {
+      const add = tinyActions[primary.key].modifiers[tag];
+      if (add) { action = `${action} ${add}`; break; }
+    }
+  }
 
   const history = useStore((state) => state.history);
   const addHistory = useStore((state) => state.addDay);
@@ -156,7 +166,11 @@ useEffect(() => {
         score,
         keyEmotions,
         keyTopics,
-        dominantGroup: dominantGroup.dominant,
+        dominantEmotion: primary.key,
+        secondaryEmotion: secondary ? secondary.key : null,
+        mode: routed.mode,
+        confidence: routed.confidence,
+        tinyAction: action,
         reflection,
         insight: parsed.insight,
         tips: parsed.tips,
@@ -189,19 +203,22 @@ useEffect(() => {
             </Text>
 
               <LinearGradient
-                colors={getGroupGradient(dominantGroup.dominant)}
+                colors={primary.color}
                 style={styles.groupCircle}
                 start={{ x: 0.1, y: 0.1 }}
                 end={{ x: 0.9, y: 0.9 }}
               >
                 <Text style={styles.groupCircleTitle}>
-                  {dominantGroup.dominant}
+                  {primary.emoji} {primary.name}
                 </Text>
-
+                {secondary && (
+                  <Text style={styles.groupCircleDescription}>
+                    + {secondary.emoji} {secondary.name}
+                  </Text>
+                )}
                 <Text style={styles.groupCircleDescription}>
-                  {dominantGroup.description}
+                  {routed.mode === 'mix' ? 'Mixed emotional tone detected' : 'Dominant emotion'}
                 </Text>
-
               </LinearGradient>
 
               <Text style={styles.scoreInsideCircle}>
@@ -211,6 +228,11 @@ useEffect(() => {
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>AI Insight of the Day</Text>
                 <Text style={styles.box}>{insight || 'No insight found.'}</Text>
+              </View>
+
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Tiny Action</Text>
+                <Text style={styles.box}>{action}</Text>
               </View>
 
               <View style={styles.section}>
