@@ -1,20 +1,6 @@
 {
-  "name": "zen-app",
-  "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web",
-    "analyze:content": "node scripts/analyzeContent.js --data src/data --out analysis --format both",
-    "transform:zen": "node scripts/transformZenData.js --in src/data/ZenDataExtend.json --out src/data/ZenDataExtend.balanced.json",
-    "deps:audit": "node ./scripts/audit-deps.mjs",
-    "deps:prune": "node ./scripts/prune-deps.mjs",
-    "deps:snapshot": "node scripts/deps-snapshot.mjs",
-    "deps:pin": "node scripts/deps-pin.mjs",
-    "deps:check": "node scripts/deps-check.mjs"
-  },
+  "timestamp": "2025-10-09T17:52:29.689Z",
+  "expo": "54.0.12",
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-navigation/bottom-tabs": "7.4.8",
@@ -48,10 +34,5 @@
     "depcheck": "1.4.7",
     "metro-react-native-babel-transformer": "0.77.0",
     "react-native-svg-transformer": "1.5.1"
-  },
-  "private": true,
-  "overrides": {
-    "react-native-worklets-core": "0.5.1",
-    "react-native-worklets": "0.5.1"
   }
 }
