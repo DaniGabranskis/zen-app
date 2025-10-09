@@ -1,237 +1,192 @@
-import React, { useState, useRef } from 'react';
-import { Text, Platform, Alert, ToastAndroid } from 'react-native';
-import { canonicalizeTags } from '../utils/tagCanon';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Alert, Platform, ToastAndroid } from 'react-native';
 import { StackActions, useNavigation } from '@react-navigation/native';
+
 import ScreenWrapper from '../components/ScreenWrapper';
 import SwipeCard from '../components/SwipeCard';
 import QuestionBlock from '../components/QuestionBlock';
-import ZenData from '../data/ZenDataExtend.json';
-import QuestionBlockData from '../data/QuestionBlockData.json';
-import emotionDetails from '../data/emotionDetails.json';
-import useStore from '../store/useStore';
-import openai from '../utils/openaiClient';
-import buildPrompt from '../utils/promptBuilder';
 
-const emotionWeights = {
-  confusion: 6, disconnected: 5, anxious: 5, anger: 4, frustration: 4,
-  sadness: 3, overload: 3, joy: 2, gratitude: 2, tension: 2, clarity: 1, calm: 1,
-};
+import { canonicalizeTags } from '../utils/tagCanon';
+import { routeEmotionFromCards } from '../utils/evidenceEngine';
 
-function calculateScore(answers) {
-  const tags = answers.flatMap(a => a.emotionTags || []);
-  if (tags.length === 0) return 50;
-  const sum = tags.reduce((acc, tag) => acc + (emotionWeights[tag.toLowerCase()] || 3), 0);
-  const maxSum = tags.length * 6;
-  return Math.max(0, Math.min(100, Math.round(100 - (sum / maxSum) * 100)));
-}
+import L1 from '../data/flow/L1.json';
+import L2 from '../data/flow/L2.json';
+import PROBES from '../data/probes.v1.json';
 
-function getKeyEmotions(answers) {
-  const count = {};
-  answers.flatMap(a => a.tags || []).forEach(tag => {
-    if (emotionDetails[tag]) count[tag] = (count[tag] || 0) + 1;
-  });
-  const total = Object.values(count).reduce((sum, val) => sum + val, 1);
-  return Object.entries(count)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3)
-    .map(([label, cnt]) => ({
-      label: emotionDetails[label]?.label || label,
-      emoji: emotionDetails[label]?.emoji || '',
-      percent: Math.round((cnt / total) * 100),
-    }));
-}
-
-function getKeyTopics(answers) {
-  const emotionTags = Object.keys(emotionDetails);
-  const count = {};
-  answers.flatMap(a => a.tags || []).forEach(tag => {
-    if (!emotionTags.includes(tag)) count[tag] = (count[tag] || 0) + 1;
-  });
-  return Object.entries(count)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3)
-    .map(([tag]) => tag.charAt(0).toUpperCase() + tag.slice(1));
-}
-
-function getAdvice(answers) {
-  const tags = answers.flatMap(a => a.tags || []);
-  if (tags.includes('burnout')) return 'Try to rest or ask for support.';
-  if (tags.includes('anxiety')) return 'Take a break and breathe deeply.';
-  if (tags.includes('tension')) return 'Consider a short walk or a stretch break.';
-  return 'Take a small positive step tomorrow!';
-}
-
-async function getAIInsight(answers) {
-  try {
-    const prompt = buildPrompt({ answers });
-
-    const completion = await openai.chat.completions.create({
-      messages: [
-        { role: 'system', content: 'You are a mindful assistant helping users reflect.' },
-        { role: 'user', content: prompt },
-      ],
-      model: 'gpt-3.5-turbo',
-    });
-
-    const raw = completion.choices[0].message.content.trim();
-    console.log('🤖 Raw AI response:', raw);
-
-    const parsed = JSON.parse(raw);  // 💥 должно быть JSON
-    return parsed;
-  } catch (err) {
-    console.error('❌ AI insight generation failed:', err);
-    return {
-      insight: '',
-      tips: [],
-      encouragement: '',
-    };
-  }
-}
-
-function getFilteredQuestions(layerKey, answers) {
-  const raw = ZenData[layerKey] || [];
-
-  // Precompute sets for faster checks
-  const tagsSet = new Set(answers.flatMap(a => a.tags || []));
-
-  return raw.filter(q => {
-    const hasShowIf = q.showIf && typeof q.showIf === 'object';
-    const hasShowIfTags = Array.isArray(q.showIfTags) && q.showIfTags.length > 0;
-
-    // Check showIf: { "L2-1": ["Physical illness", ...], "L2-2": ["..."] }
-    // True if ANY of listed questionId -> values pair matches user's answers.
-    let okByShowIf = true;
-    if (hasShowIf) {
-      okByShowIf = Object.entries(q.showIf).some(([qid, values]) =>
-        answers.some(a => a.questionId === qid && Array.isArray(values) && values.includes(a.answerText))
-      );
-    }
-
-    // Check showIfTags: True if ANY tag is present in collected tags
-    let okByTags = true;
-    if (hasShowIfTags) {
-      okByTags = q.showIfTags.some(t => tagsSet.has(t));
-    }
-
-    // Combine:
-    // - if both are present -> AND
-    // - if only one present  -> that one
-    // - if none present      -> visible
-    if (hasShowIf && hasShowIfTags) return okByShowIf && okByTags;
-    if (hasShowIf) return okByShowIf;
-    if (hasShowIfTags) return okByTags;
-    return true;
-  });
-}
+/**
+ * ReflectionFlowScreen
+ *
+ * New pipeline:
+ *   L1 (5 swipes) -> L2 (6 swipes) -> Evidence -> (optional Probe) -> Result
+ *
+ * We collect user's choices into `accepted` in the exact format
+ * that evidenceEngine.routeEmotionFromCards() expects:
+ *
+ *   {
+ *     id: string,                      // e.g. "L1_mood"
+ *     selectedOption: string,          // option label
+ *     options: { [label: string]: string[] } // label -> tags[]
+ *   }
+ *
+ * If engine returns mode === 'probe', we show a single targeted question,
+ * push its answer as a PR_* card with higher weight (handled in the engine),
+ * then route again and navigate to Result.
+ */
 
 export default function ReflectionFlowScreen() {
   const navigation = useNavigation();
-  const [layer, setLayer] = useState(1);
-  const [index, setIndex] = useState(0);
-  const [answers, setAnswers] = useState([]);
-  const [questionSet, setQuestionSet] = useState(getFilteredQuestions('L1', []));
-  const resultTriggered = useRef(false);
 
-  const next = async (updatedAnswers) => {
-    const nextLayer = layer + 1;
-    const filtered = getFilteredQuestions(`L${nextLayer}`, updatedAnswers);
+  // L1 + L2 sequence (5 + 6 cards)
+  const flow = useMemo(() => [...L1, ...L2], []);
+  const [step, setStep] = useState(0);           // index inside flow
+  const [accepted, setAccepted] = useState([]);  // collected answers
+  const [probe, setProbe] = useState(null);      // { id, question, options[] } | null
 
-    if (filtered.length === 0) {
-      if (resultTriggered.current) return;
-      resultTriggered.current = true;
-      console.log('✅ No more questions. Navigating to ResultScreen.');
-      
-      navigation.dispatch(StackActions.replace('Result', {
-        score: calculateScore(updatedAnswers),
-        keyEmotions: getKeyEmotions(updatedAnswers),
-        keyTopics: getKeyTopics(updatedAnswers),
-        answers: updatedAnswers,
-        isGenerating: true,
-      }));
-      
-    } else {
-      console.log(`➡️ Moving to Layer ${nextLayer} with ${filtered.length} questions.`);
-      setLayer(nextLayer);
-      setIndex(0);
-      setQuestionSet(filtered);
-      setAnswers(updatedAnswers);
+  const currentCard = probe ? null : flow[step];
+
+  // -- Helpers ---------------------------------------------------------------
+
+  /** Save one answer into `accepted` in the canonical format. */
+  const pushAccepted = (card, chosenLabel, chosenTags = []) => {
+    if (!card) return;
+
+    // Build options map: label -> tags[]
+    const optionsObj = {};
+    (card.options || []).forEach(o => {
+      optionsObj[o.label] = Array.isArray(o.tags) ? o.tags : [];
+    });
+
+    const tags = canonicalizeTags(chosenTags);
+    if (tags.length === 0) {
+      // Strict content rule: options must provide tags.
+      // If not — block the answer and notify developer/user.
+      console.warn(`[NO_TAGS] card=${card.id} option="${chosenLabel}" — option has no tags, answer blocked.`);
+      if (Platform.OS === 'android') {
+        ToastAndroid.show('This option is not configured yet. Please choose another.', ToastAndroid.SHORT);
+      } else {
+        Alert.alert('Option not configured', 'This option is not configured yet. Please choose another.');
+      }
+      return false;
     }
+
+    setAccepted(prev => [
+      ...prev,
+      { id: card.id, selectedOption: chosenLabel, options: optionsObj }
+    ]);
+    return true;
   };
 
-  const handleAnswer = (questionId, answerText, tags = [], scoreImpact = 0) => {
-  const currentCard = questionSet[index];
-
-  // Strict rule: options must provide their own tags.
-  // We no longer use any fallback like currentCard.showIfTags.
-  const finalTags = canonicalizeTags(Array.isArray(tags) ? tags : []);
-
-  if (finalTags.length === 0) {
-    // Developer log for quick content fixing
-    const cardId = currentCard?.id || questionId;
-    const optionPreview = String(answerText || '').slice(0, 80);
-    console.warn(`[NO_TAGS] question=${cardId} option="${optionPreview}" — option has no tags, answer is blocked.`);
-
-    // User-facing message
-    if (Platform.OS === 'android') {
-      ToastAndroid.show('This option is not configured yet. Please choose another.', ToastAndroid.SHORT);
-    } else {
-      Alert.alert('Option not configured', 'This option is not configured yet. Please choose another.');
-    }
-    return; // Do not save the answer, do not advance
-  }
-
-  const updatedAnswers = [
-    ...answers,
-    {
-      questionId,
-      answerText,
-      tags: finalTags,
-      emotionTags: finalTags, // keep current behavior for now
-      scoreImpact,
-    },
-  ];
-
-  console.log('📝 Answer saved:', { questionId, answerText, finalTags });
-
-  if (index + 1 < questionSet.length) {
-    setIndex(index + 1);
-    setAnswers(updatedAnswers);
-  } else {
-    next(updatedAnswers);
-  }
-};
-
-  const renderCard = () => {
-    const currentCard = questionSet[index];
-    if (!currentCard) return <Text>No questions left.</Text>;
-
-    const rawOptions = QuestionBlockData[currentCard.id] || [];
-    const optionsArray = Array.isArray(rawOptions)
-      ? rawOptions.map(text => ({ text }))
-      : [];
-
-    return currentCard.type === 'swipe' ? (
-      <SwipeCard
-        key={currentCard.id}
-        card={currentCard}
-        onSwipeLeft={() =>
-          handleAnswer(currentCard.id, currentCard.leftOption.text, currentCard.leftOption.tags, currentCard.leftOption.scoreImpact)
-        }
-        onSwipeRight={() =>
-          handleAnswer(currentCard.id, currentCard.rightOption.text, currentCard.rightOption.tags, currentCard.rightOption.scoreImpact)
-        }
-      />
-    ) : (
-      <QuestionBlock
-        key={currentCard.id}
-        data={currentCard}
-        options={optionsArray}
-        onSubmit={(answerText, tags = [], scoreImpact = 0) =>
-          handleAnswer(currentCard.id, answerText, tags, scoreImpact)
-        }
-      />
+  /** Navigate to Result with aggregated data. */
+  const navToResult = (cards, routed) => {
+    navigation.dispatch(
+      StackActions.replace('Result', {
+        acceptedCards: cards,
+        routed, // optional, Result can recompute if needed
+      })
     );
   };
 
-  return <ScreenWrapper useFlexHeight>{renderCard()}</ScreenWrapper>;
+  // -- Flow control after finishing L1+L2 -----------------------------------
+
+  useEffect(() => {
+    if (probe) return;                 // when probe is shown, we wait for its answer
+    if (step < flow.length) return;    // still inside L1+L2
+
+    // All L1+L2 answered — run evidence engine
+    const routed = routeEmotionFromCards(accepted);
+
+    if (routed?.mode === 'probe') {
+      // Minimal MVP: pick the first available probe.
+      // Later: choose probe by conflict pair from routed.details.
+      setProbe(PROBES?.[0] || null);
+    } else {
+      navToResult(accepted, routed);
+    }
+  }, [step, probe, accepted, flow.length]);
+
+  // -- Handlers --------------------------------------------------------------
+
+  /** Handle choice for L1/L2 card. */
+  const onChooseForCurrent = (label, tags) => {
+    if (!currentCard) return;
+    const ok = pushAccepted(currentCard, label, tags);
+    if (!ok) return;
+    setStep(prev => prev + 1);
+  };
+
+  /** Handle answer for Probe. */
+  const onChooseProbe = (label, tags) => {
+    if (!probe) return;
+
+    // Compose PR_* pseudo-card.
+    const prOptions = {};
+    (probe.options || []).forEach(o => { prOptions[o.label] = o.tags || []; });
+
+    const prCard = {
+      id: `PR_${probe.id}`,
+      selectedOption: label,
+      options: prOptions,
+    };
+
+    const all = [...accepted, prCard];
+    const routed = routeEmotionFromCards(all);
+    navToResult(all, routed);
+  };
+
+  // -- Rendering -------------------------------------------------------------
+
+  // 1) If probe requested — show it via QuestionBlock
+  if (probe) {
+    return (
+      <ScreenWrapper useFlexHeight>
+        <QuestionBlock
+          data={{
+            id: `PR_${probe.id}`,
+            title: probe.question,
+            options: probe.options?.map(o => ({ label: o.label, tags: o.tags })) || []
+          }}
+          onSubmit={(answerText, tags = []) => onChooseProbe(answerText, tags)}
+        />
+      </ScreenWrapper>
+    );
+  }
+
+  // 2) If no more cards — blank (useEffect above will route)
+  if (!currentCard) {
+    return <ScreenWrapper useFlexHeight />;
+  }
+
+  // Normalize options interface
+  const opts = currentCard.options || [];
+  const asTwo = opts.length === 2;
+
+  // 2a) Two options => use SwipeCard (left/right)
+  if (asTwo) {
+    const left  = { text: opts[0].label, tags: opts[0].tags || [] };
+    const right = { text: opts[1].label, tags: opts[1].tags || [] };
+
+    return (
+      <ScreenWrapper useFlexHeight>
+        <SwipeCard
+          card={{ text: currentCard.title, leftOption: left, rightOption: right }}
+          onSwipeLeft={() => onChooseForCurrent(left.text, left.tags)}
+          onSwipeRight={() => onChooseForCurrent(right.text, right.tags)}
+        />
+      </ScreenWrapper>
+    );
+  }
+
+  // 2b) >=3 options => use QuestionBlock (buttons)
+  return (
+    <ScreenWrapper useFlexHeight>
+      <QuestionBlock
+        data={{
+          id: currentCard.id,
+          text: currentCard.title,
+          options: opts.map(o => ({ text: o.label, tags: o.tags }))
+        }}
+        onSubmit={(answerText, tags = []) => onChooseForCurrent(answerText, tags)}
+      />
+    </ScreenWrapper>
+  );
 }

@@ -22,91 +22,57 @@ import tinyActions from '../data/tinyActions.v1.json';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const P = Math.round(SCREEN_WIDTH * 0.05);
 
-const getScoreColor = (score) => {
-  if (score >= 70) return '#3DDC91';
-  if (score >= 30) return '#FFC107';
-  return '#FF6B6B';
-};
-
-const getDominantTagGroupWeighted = (answers = []) => {
-  // Count tag frequency
-  const tagFreq = {};
-  answers.forEach((ans) => (ans.tags || []).forEach((t) => { tagFreq[t] = (tagFreq[t] || 0) + 1; }));
-
-  const allGroups = { ...tagGroupsData.groups, ungrouped: tagGroupsData.ungrouped };
-
-  // Sum weights per group
-  const groupWeights = {};
-  Object.entries(allGroups).forEach(([group, data]) => {
-    const sum = (data.tags || []).reduce((s, t) => s + (tagFreq[t] || 0), 0);
-    groupWeights[group] = sum;
-  });
-
-  // Laplace smoothing (prevents dominance by small noise)
-  const alpha = 0.5;
-  const groups = Object.keys(groupWeights);
-  const total = groups.reduce((s, g) => s + groupWeights[g] + alpha, 0);
-  const probs = groups
-    .map((g) => ({ group: g, p: (groupWeights[g] + alpha) / total }))
-    .sort((a, b) => b.p - a.p);
-
-  const dominant = probs[0]?.group || 'Other';
-  const tagListSorted = Object.entries(tagFreq).sort((a,b)=>b[1]-a[1]).map(([t])=>t);
-  const description = allGroups[dominant]?.description || 'This group reflects mixed or unclassified emotional tags.';
-
-  return { dominant, topTags: tagListSorted.slice(0, 5), description };
-};
-
-
-const getScoreGradient = (score) => {
-  if (score >= 70) return ['#3DDC91', '#1B9C7A'];
-  if (score >= 30) return ['#FFD700', '#FFA500'];
-  return ['#FF6B6B', '#C73838'];
-};
-
-const getGroupGradient = (group) => {
-  const palette = {
-    Overload: ['#f7d794', '#f8a5c2'],
-    Disconnection: ['#778beb', '#e77f67'],
-    Sadness: ['#63cdda', '#786fa6'],
-    Hope: ['#55efc4', '#81ecec'],
-    Clarity: ['#dff9fb', '#c7ecee'],
-    Anxiety: ['#f6e58d', '#ffbe76'],
-    Fatigue: ['#d1ccc0', '#ff7979'],
-    Motivation: ['#badc58', '#6ab04c'],
-    Neutrality: ['#95afc0', '#dff9fb'],
-    Emergency: ['#e17055', '#ff7675'],
-    Other: ['#ccc', '#999']
-  };
-  return palette[group] || ['#ddd', '#bbb'];
-};
-
 export default function ResultScreen() {
   const { bgcolor, textMain, textSub, cardBg, button } = useThemeVars();
   const route = useRoute();
+  const acceptedCards = route.params?.acceptedCards ?? null; // new pipeline payload
   const navigation = useNavigation();
   const {
     isGenerating = false,
-    score = 0,
     keyEmotions = [],
     keyTopics = [],
     aiInsight = "",
     advice = "",
-    answers: routeAnswers = [],
+    // legacy props may still arrive:
+    answers: legacyAnswers = [],
   } = route.params || {};
 
-  const storedAnswers = useStore((state) => state.answers);
-  const answers = routeAnswers.length > 0 ? routeAnswers : storedAnswers || [];
-  console.log('🧾 Loaded answers:', answers);
-  const routed = routeEmotionFromCards(answers); // calculate emotion routing
+  // Backward-compatible input:
+  // 1) preferred: acceptedCards from new flow
+  // 2) legacy: route.params.answers (old format)
+  // 3) legacy store: state.answers (as last resort)
+  const storedLegacy = useStore((state) => state.answers) || [];
+  const cards = acceptedCards ?? (legacyAnswers.length ? legacyAnswers : storedLegacy);
+
+  console.log('🧾 Loaded cards:', cards);
+
+  // Route emotions using the new evidence engine.
+  // NOTE: engine expects "acceptedCards" format. If legacy arrays are passed,
+  // engine should still handle or you can convert them before routing.
+  const routed = routeEmotionFromCards(cards || []);
+  if (!routed?.dominant) {
+    // Fallback UI if routing failed for some reason
+    return (
+      <ScreenWrapper>
+        <View style={{ padding: 16 }}>
+          <Text>We couldn't determine your dominant emotion this time.</Text>
+          <Text>Please try reflecting again.</Text>
+        </View>
+      </ScreenWrapper>
+    );
+  }
   const primary = getEmotionMeta(routed.dominant);
   const secondary = routed.secondary ? getEmotionMeta(routed.secondary) : null;
 
+  // Derive a UI score from confidence if "score" wasn't explicitly provided.
+  const computedScore = Math.round((routed?.confidence ?? 0) * 100);
+
   // pick tiny action
-  let action = tinyActions[primary.key]?.base || 'Take one small supportive action today.';
-  if (tinyActions[primary.key]?.modifiers) {
-    for (const tag of Object.keys(routed.tagFreq || {})) {
-      const add = tinyActions[primary.key].modifiers[tag];
+  const ta = tinyActions?.[primary.key];
+  let action = ta?.base || 'Take one small supportive action today.';
+  if (ta?.modifiers) {
+  for (const tag of Object.keys(routed.tagFreq || {})) {
+    const add = ta.modifiers[tag];
       if (add) { action = `${action} ${add}`; break; }
     }
   }
@@ -118,9 +84,6 @@ export default function ResultScreen() {
   const emotionInfo = route.params?.emotionInfo || fallback.emotionInfo || null;
   const reflection = route.params?.reflection || fallback.reflection || useStore((state) => state.generatedText) || '';
   const fromHistory = route.params?.fromHistory;
-
-  const [expanded, setExpanded] = useState(false);
-  const preview = reflection?.slice(0, 200) + (reflection?.length > 200 ? '...' : '');
 
   const handleEndOrFinish = () => {
     if (fromHistory) {
@@ -145,7 +108,7 @@ useEffect(() => {
     setLoading(true);
     let parsed = { insight: '', tips: [], encouragement: '' };
     try {
-      const { result, source } = await generateInsight(answers);
+      const { result, source } = await generateInsight(cards); // pass the same payload used for routing
       if (cancelled) return;
       parsed = result;
       setInsight(parsed.insight);
@@ -163,7 +126,7 @@ useEffect(() => {
       // NOTE: save to history regardless of source for consistency
       addHistory({
         date: new Date().toISOString(),
-        score,
+        score: computedScore,                 // derive from routed.confidence
         keyEmotions,
         keyTopics,
         dominantEmotion: primary.key,
@@ -175,8 +138,9 @@ useEffect(() => {
         insight: parsed.insight,
         tips: parsed.tips,
         encouragement: parsed.encouragement,
-        answers,
-      });
+        answers: cards,                 // legacy field for older views
+        acceptedCards: cards,           // new canonical payload
+        });
     }
   };
 
@@ -222,9 +186,8 @@ useEffect(() => {
               </LinearGradient>
 
               <Text style={styles.scoreInsideCircle}>
-                {score}/100
+                {computedScore}/100
               </Text>
-
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>AI Insight of the Day</Text>
                 <Text style={styles.box}>{insight || 'No insight found.'}</Text>
