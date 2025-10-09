@@ -1,5 +1,6 @@
 import React from 'react';
 import { View } from 'react-native';
+import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import AppNavigator from './src/navigation';
