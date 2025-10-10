@@ -50,6 +50,13 @@ export default function ResultScreen() {
   // NOTE: engine expects "acceptedCards" format. If legacy arrays are passed,
   // engine should still handle or you can convert them before routing.
   const routed = routeEmotionFromCards(cards || []);
+  console.log('[ROUTE:RESULT]', JSON.stringify({
+    mode: routed.mode,
+    dominant: routed.dominant,
+    secondary: routed.secondary,
+    confidence: routed.confidence,
+    top3: Object.entries(routed.probs || {}).sort((a,b)=>b[1]-a[1]).slice(0,3),
+  }, null, 2));
   if (!routed?.dominant) {
     // Fallback UI if routing failed for some reason
     return (

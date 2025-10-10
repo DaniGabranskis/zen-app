@@ -3,26 +3,28 @@
 
 import weights from '../data/weights.tag2emotion.v1.json';
 import emotions from '../data/emotions20.json';
+import { canonicalizeTags } from './tagCanon';
 
 const T_MIX = 0.55;   // show at least something (dominant or mix)
 const T_DOM = 0.68;   // confident dominant
 const DELTA_PROBE = 0.08; // if p1-p2 below -> consider probe
 const DELTA_MIX = 0.06;   // if close -> allow mix
 
-function normalize(scores) {
-  // min-max to [0..1]; robust for sparse weights
-  const vals = Object.values(scores);
-  if (!vals.length) return {};
-  const min = Math.min(...vals);
+// Softmax to get a proper probability distribution (sums to 1).
+// Temperature < 1 sharpens; > 1 smooths. Small eps prevents p=1.0 locks.
+function softmax(scoresObj, temperature = 0.9, eps = 1e-6) {
+  const keys = Object.keys(scoresObj || {});
+  if (keys.length === 0) return {};
+  const vals = keys.map(k => scoresObj[k]);
   const max = Math.max(...vals);
-  if (max === min) {
-    const out = {};
-    for (const k of Object.keys(scores)) out[k] = 1 / Object.keys(scores).length;
-    return out;
-    }
-  const out = {};
-  for (const [k, v] of Object.entries(scores)) out[k] = (v - min) / (max - min);
-  return out;
+  const scaled = vals.map(v => (v - max) / Math.max(temperature, 0.1));
+  const exps = scaled.map(v => Math.exp(v));
+  const denom = exps.reduce((a, b) => a + b, 0) + eps * exps.length;
+  const probs = {};
+  keys.forEach((k, i) => {
+    probs[k] = (exps[i] + eps) / denom;
+  });
+  return probs;
 }
 
 function accumulateFromCards(acceptedCards, { wL1 = 1.0, wL2 = 1.7, wProbe = 2.2 } = {}) {
@@ -30,6 +32,12 @@ function accumulateFromCards(acceptedCards, { wL1 = 1.0, wL2 = 1.7, wProbe = 2.2
   // Each card: { selectedOption, options: { [label]: [tags...] } }
   const emotionScores = {};
   const tagFreq = {};
+
+  // prefill zeros
+    for (const e of (emotions || [])) {
+    const key = e.key || e.id || e.name;
+    if (key) emotionScores[key] = 0;
+  }
 
   const bump = (tag, gain) => {
     const row = weights[tag];
@@ -41,7 +49,8 @@ function accumulateFromCards(acceptedCards, { wL1 = 1.0, wL2 = 1.7, wProbe = 2.2
   };
 
   for (const card of acceptedCards || []) {
-    const selected = card.options?.[card.selectedOption] || [];
+    const selectedRaw = card.options?.[card.selectedOption] || [];
+    const selected = canonicalizeTags(selectedRaw); // <- canonicalize here
     const isL2 = String(card.id || '').startsWith('L2_');
     const isProbe = String(card.id || '').startsWith('PR_');
     const gain = isProbe ? wProbe : (isL2 ? wL2 : wL1);
@@ -53,13 +62,13 @@ function accumulateFromCards(acceptedCards, { wL1 = 1.0, wL2 = 1.7, wProbe = 2.2
 
 export function routeEmotionFromCards(acceptedCards) {
   const { emotionScores, tagFreq } = accumulateFromCards(acceptedCards);
-  const probs = normalize(emotionScores);
+  const probs = softmax(emotionScores, 0.9, 1e-6);
 
   // pick top-2
   const sorted = Object.entries(probs).sort((a, b) => b[1] - a[1]);
   const [e1, p1] = sorted[0] || [null, 0];
   const [e2, p2] = sorted[1] || [null, 0];
-  const delta = (p1 || 0) - (p2 || 0);
+  const delta = p1 - p2;
 
   const result = {
     dominant: e1 || 'unknown',
