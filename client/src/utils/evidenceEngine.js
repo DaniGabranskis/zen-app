@@ -101,3 +101,34 @@ export function routeEmotionFromCards(acceptedCards) {
 export function getEmotionMeta(key) {
   return emotions.find(e => e.key === key) || { key, name: key, color: ['#ccc','#eee'], emoji: '' };
 }
+
+export function accumulateTagsFromCards(cards = []) {
+  // Extract option tags only for selected options
+  const raw = [];
+  for (const c of cards) {
+    const opt = c.options?.[c.selectedOption];
+    const tags = Array.isArray(opt) ? opt : (opt?.tags || []);
+    for (const t of tags) raw.push(t);
+  }
+  return canonicalizeTags(raw);
+}
+
+/**
+ * Classify canonical tags into emotions and decide routing.
+ * @returns { decision, probsSorted }
+ */
+export function classifyTags(tags = []) {
+  // Build raw scores
+  const scores = {};
+  for (const tag of tags) {
+    const row = weights[tag];
+    if (!row) continue;
+    for (const emo in row) {
+      scores[emo] = (scores[emo] || 0) + row[emo];
+    }
+  }
+  const probs = softmax(scores);
+  const pairs = Object.entries(probs).sort((a,b) => b[1]-a[1]);
+  const top = pairs.slice(0, 2).map(([k]) => k);
+  return decideMixOrSingle(pairs);
+}

@@ -8,6 +8,7 @@ import QuestionBlock from '../components/QuestionBlock';
 
 import { canonicalizeTags } from '../utils/tagCanon';
 import { routeEmotionFromCards } from '../utils/evidenceEngine';
+import useStore from '../store/useStore';
 
 import L1 from '../data/flow/L1.json';
 import L2 from '../data/flow/L2.json';
@@ -159,6 +160,11 @@ export default function ReflectionFlowScreen() {
       ...prev,
       { id: card.id, selectedOption: chosenLabel, options: optionsObj }
     ]);
+    useStore.getState().appendAccepted({
+      id: card.id,
+      selectedOption: chosenLabel,
+      options: optionsObj,
+    });
     return true;
   };
 
@@ -202,7 +208,14 @@ export default function ReflectionFlowScreen() {
       // Later: choose probe by conflict pair from routed.details.
       setProbe(PROBES?.[0] || null);
     } else {
-      navToResult(accepted, routed);
+      const { rebuildEvidence, setDecision } = useStore.getState();
+      rebuildEvidence();
+      setDecision({
+        mode: routed.mode,
+        top: [routed.dominant, routed.secondary].filter(Boolean),
+        probs: routed.probs
+      });
+      navigation.navigate('L3Emotion');
     }
   }, [step, probe, accepted, flow.length]);
 
@@ -244,7 +257,14 @@ export default function ReflectionFlowScreen() {
       top3: Object.entries(routed.probs || {}).sort((a,b)=>b[1]-a[1]).slice(0,3),
     }, null, 2));
 
-    navToResult(all, routed);
+    const { rebuildEvidence, setDecision } = useStore.getState();
+    rebuildEvidence();
+    setDecision({
+      mode: routed.mode,
+      top: [routed.dominant, routed.secondary].filter(Boolean),
+      probs: routed.probs
+    });
+    navigation.replace('L3Emotion');
   };
 
   // -- Rendering -------------------------------------------------------------

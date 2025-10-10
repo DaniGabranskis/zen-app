@@ -42,7 +42,7 @@ export async function generateInsight(answers) {
       if (!parsed) throw new Error('AI returned non-JSON');
       return normalizeAiResult(parsed);
     };
-    return withTimeout(withBackoff(req, { retries: 2, baseMs: 700 }), 14000);
+    return withTimeout(withBackoff(req, { retries: 2, baseMs: 700 }), 22000);
   };
 
   try {
