@@ -1,6 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, Platform, ToastAndroid } from 'react-native';
+import React, { useEffect, useMemo, useState, useRef  } from 'react';
+import { Alert, Platform, ToastAndroid, View, Text } from 'react-native';
 import { StackActions, useNavigation } from '@react-navigation/native';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+
+import useThemeVars from '../hooks/useThemeVars';
 
 import ScreenWrapper from '../components/ScreenWrapper';
 import SwipeCard from '../components/SwipeCard';
@@ -8,6 +11,7 @@ import QuestionBlock from '../components/QuestionBlock';
 
 import { canonicalizeTags } from '../utils/tagCanon';
 import { routeEmotionFromCards } from '../utils/evidenceEngine';
+import { logEvent } from '../utils/telemetry';
 import useStore from '../store/useStore';
 
 import L1 from '../data/flow/L1.json';
@@ -24,6 +28,7 @@ import PROBES from '../data/probes.v1.json';
  * 3) If options.length >= 3 => pick the pair with the LOWEST tag-overlap (Jaccard distance).
  *    This maximizes contrast and helps the evidence engine.
  */
+
 function coerceToSwipeCard(card) {
   // Case 1: already a swipe card
   if (card?.leftOption && card?.rightOption) {
@@ -93,6 +98,70 @@ function isForcedSwipeCard(cardId, probeActive) {
   return /^L1_/.test(cardId) || /^L2_/.test(cardId);
 }
 
+  // Overlay "← Swipe →" hint that does not affect layout
+  function SwipeHint({ color = '#8A8A8A', top = 8 }) {
+    return (
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          top: 40,
+          left: 0,
+          right: 0,
+          alignItems: 'center',
+          zIndex: 10,
+        }}
+      >
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        <Icon name="chevron-left" size={20} color={color} />
+        <Text
+          style={{
+            fontSize: 20,
+            fontWeight: '600',
+            letterSpacing: 1,
+            opacity: 0.85,
+            lineHeight: 20,
+            color,
+          }}
+        >
+          Swipe
+        </Text>
+         <Icon name="chevron-right" size={20} color={color} />
+      </View>
+       </View>
+    );
+  }
+
+  // Bottom overlay hint that does not affect layout
+function BottomAffirm({ text = 'Every swipe is a step toward clarity.', color = '#8A8A8A', bottom = 12 }) {
+  return (
+    <View
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        bottom: 40,
+        alignItems: 'center',
+        zIndex: 10,
+      }}
+    >
+      <Text
+        style={{
+          fontSize: 18,
+          fontWeight: '600',
+          letterSpacing: 0.3,
+          opacity: 0.9,
+          textAlign: 'center',
+          color,
+        }}
+      >
+        Notice. Choose. Breathe.
+      </Text>
+    </View>
+  );
+}
+
 /**
  * ReflectionFlowScreen
  *
@@ -114,7 +183,9 @@ function isForcedSwipeCard(cardId, probeActive) {
  */
 
 export default function ReflectionFlowScreen() {
+  const didRouteRef = useRef(false);
   const navigation = useNavigation();
+   const { textSub } = useThemeVars(); // subtle color for the "← Swipe →" hint
 
   // L1 + L2 sequence (5 + 6 cards)
   const flow = useMemo(() => [...L1, ...L2], []);
@@ -144,6 +215,12 @@ export default function ReflectionFlowScreen() {
       rawTags: chosenTags,
       canonicalTags: tags,
     });
+    logEvent('card_choice', {
+      step: card.id,
+      label: chosenLabel,
+      canonicalTags: tags,
+    }, `User chose "${chosenLabel}" on ${card.id}`);
+    
     if (tags.length === 0) {
       // Strict content rule: options must provide tags.
       // If not — block the answer and notify developer/user.
@@ -160,11 +237,18 @@ export default function ReflectionFlowScreen() {
       ...prev,
       { id: card.id, selectedOption: chosenLabel, options: optionsObj }
     ]);
+
+    // IMPORTANT: pass canonicalized tags from this selection to the store
+    const selectedKey = chosenLabel;      // we use label as a key for L1/L2
+    const selectedTags = tags;            // <-- this is the canonical list we computed above
+
     useStore.getState().appendAccepted({
       id: card.id,
-      selectedOption: chosenLabel,
-      options: optionsObj,
+      selectedKey,
+      selectedLabel: chosenLabel,
+      selectedTags,
     });
+
     return true;
   };
 
@@ -203,19 +287,42 @@ export default function ReflectionFlowScreen() {
       tagFreq: routed.tagFreq
     }, null, 2));
 
+    logEvent('route_decision', {
+      mode: routed.mode,
+      dominant: routed.dominant,
+      secondary: routed.secondary,
+      confidence: routed.confidence,
+      p1: p1v,
+      p2: p2v,
+      delta: deltaTrue,
+    }, `Route=${routed.mode} → dom=${routed.dominant} sec=${routed.secondary || '-'}`);
+
+
     if (routed?.mode === 'probe') {
       // Minimal MVP: pick the first available probe.
       // Later: choose probe by conflict pair from routed.details.
       setProbe(PROBES?.[0] || null);
     } else {
-      const { rebuildEvidence, setDecision } = useStore.getState();
+      const { rebuildEvidence, setDecision, pickEmotion } = useStore.getState();
       rebuildEvidence();
       setDecision({
         mode: routed.mode,
         top: [routed.dominant, routed.secondary].filter(Boolean),
-        probs: routed.probs
+        probs: routed.probs,
       });
-      navigation.navigate('L3Emotion');
+
+      // guard: run navigation/log only once
+      if (!didRouteRef.current) {
+        didRouteRef.current = true;
+        if (routed?.dominant) pickEmotion(routed.dominant);
+        navigation.navigate('L4Deepen');
+
+        // log using store snapshot (no routed out-of-scope)
+        const st = useStore.getState();
+        const dom = st.sessionDraft?.decision?.top?.[0] || st.sessionDraft?.l3?.emotionKey || null;
+        const mode = st.sessionDraft?.decision?.mode || null;
+        logEvent('nav_to_l4', { dominant: dom, mode }, `Navigate to L4 with emotion=${dom || '-'}`);
+      }
     }
   }, [step, probe, accepted, flow.length]);
 
@@ -257,15 +364,35 @@ export default function ReflectionFlowScreen() {
       top3: Object.entries(routed.probs || {}).sort((a,b)=>b[1]-a[1]).slice(0,3),
     }, null, 2));
 
-    const { rebuildEvidence, setDecision } = useStore.getState();
-    rebuildEvidence();
-    setDecision({
+    logEvent('route_after_probe', {
       mode: routed.mode,
-      top: [routed.dominant, routed.secondary].filter(Boolean),
-      probs: routed.probs
-    });
-    navigation.replace('L3Emotion');
-  };
+      dominant: routed.dominant,
+      secondary: routed.secondary,
+      p1: routed?.probs?.[routed.dominant],
+      p2: routed?.secondary ? routed?.probs?.[routed.secondary] : null,
+      delta: routed.delta,
+      top3: Object.entries(routed.probs || {}).sort((a,b)=>b[1]-a[1]).slice(0,3),
+    }, `After probe → dom=${routed.dominant} (p1=${(routed?.probs?.[routed.dominant] ?? 0).toFixed(2)})`);
+
+    const { rebuildEvidence, setDecision, pickEmotion } = useStore.getState();
+      rebuildEvidence();
+      setDecision({
+        mode: routed.mode,
+        top: [routed.dominant, routed.secondary].filter(Boolean),
+        probs: routed.probs,
+      });
+
+      if (routed?.dominant) pickEmotion(routed.dominant);
+      navigation.replace('L4Deepen');
+
+      // log using store snapshot (no routed out-of-scope)
+      {
+        const st = useStore.getState();
+        const dom = st.sessionDraft?.decision?.top?.[0] || st.sessionDraft?.l3?.emotionKey || null;
+        const mode = st.sessionDraft?.decision?.mode || null;
+        logEvent('nav_to_l4_after_probe', { dominant: dom, mode }, `Navigate to L4 after probe with emotion=${dom || '-'}`);
+      }
+    };
 
   // -- Rendering -------------------------------------------------------------
 
@@ -293,11 +420,15 @@ if (probe) {
 
     return (
       <ScreenWrapper useFlexHeight>
-        <SwipeCard
-          card={swipeCard}
-          onSwipeLeft={() => onChooseProbe(swipeCard.leftOption.text,  swipeCard.leftOption.tags)}
-          onSwipeRight={() => onChooseProbe(swipeCard.rightOption.text, swipeCard.rightOption.tags)}
-        />
+        <View style={{ flex: 1, position: 'relative' }}>
+          <SwipeHint color={textSub} top={8} />
+          <BottomAffirm color={textSub} bottom={12} />
+            <SwipeCard
+              card={swipeCard}
+              onSwipeLeft={() => onChooseProbe(swipeCard.leftOption.text,  swipeCard.leftOption.tags)}
+              onSwipeRight={() => onChooseProbe(swipeCard.rightOption.text, swipeCard.rightOption.tags)}
+            />
+          </View>
       </ScreenWrapper>
     );
   }
@@ -317,11 +448,15 @@ const swipeCard = forceSwipe ? coerceToSwipeCard(currentCard) : null;
 if (forceSwipe && swipeCard) {
   return (
     <ScreenWrapper useFlexHeight>
-      <SwipeCard
-        card={swipeCard}
-        onSwipeLeft={() => onChooseForCurrent(swipeCard.leftOption.text,  swipeCard.leftOption.tags)}
-        onSwipeRight={() => onChooseForCurrent(swipeCard.rightOption.text, swipeCard.rightOption.tags)}
-      />
+      <View style={{ flex: 1, position: 'relative' }}>
+        <SwipeHint color={textSub} top={8} />
+        <BottomAffirm color={textSub} bottom={12} />
+          <SwipeCard
+          card={swipeCard}
+            onSwipeLeft={() => onChooseForCurrent(swipeCard.leftOption.text,  swipeCard.leftOption.tags)}
+            onSwipeRight={() => onChooseForCurrent(swipeCard.rightOption.text, swipeCard.rightOption.tags)}
+          />
+      </View>
     </ScreenWrapper>
   );
 }
@@ -334,11 +469,15 @@ if (forceSwipe && swipeCard) {
     const right = { text: opts[1].label, tags: opts[1].tags || [] };
     return (
       <ScreenWrapper useFlexHeight>
-        <SwipeCard
-          card={{ text: currentCard.title, leftOption: left, rightOption: right }}
-          onSwipeLeft={() => onChooseForCurrent(left.text, left.tags)}
-          onSwipeRight={() => onChooseForCurrent(right.text, right.tags)}
-        />
+        <View style={{ flex: 1, position: 'relative' }}>
+          <SwipeHint color={textSub} top={8} />
+          <BottomAffirm color={textSub} bottom={12} />
+            <SwipeCard
+              card={{ text: currentCard.title, leftOption: left, rightOption: right }}
+              onSwipeLeft={() => onChooseForCurrent(left.text, left.tags)}
+              onSwipeRight={() => onChooseForCurrent(right.text, right.tags)}
+            />
+          </View>
       </ScreenWrapper>
     );
   }

@@ -16,6 +16,7 @@ export const themes = {
     navActive: '#6C63FF',
     data: '#555555',
     divider: '#828282',
+    card_choice_text: '#919191ff',
   },
   dark: {
     bgcolor: '#222224', //#18181a //#242426
@@ -30,5 +31,6 @@ export const themes = {
     navActive: '#7C62FF',
     data: '#474747',
     divider: '#d6d4d4',
+    card_choice_text: '#d1cfcfff',
   },
 };

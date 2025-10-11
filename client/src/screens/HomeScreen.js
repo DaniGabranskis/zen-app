@@ -57,7 +57,17 @@ export default function HomeScreen({ navigation }) {
       {/* Main action button — starts the reflection flow */}
       <TouchableOpacity
         style={[styles.mainButton, { backgroundColor: button }]}
-        onPress={() => navigation.navigate('ReflectionFlow')}
+        onPress={() => {
+        // reset session before every new run
+        try {
+          const { resetSession } = useStore.getState();
+          resetSession();
+          console.log('[HOME] resetSession done');
+        } catch (e) {
+          console.warn('[HOME] resetSession failed:', e?.message || e);
+        }
+        navigation.navigate('ReflectionFlow');
+      }}
       >
         <Text style={styles.mainButtonText}>Reflect Now</Text>
       </TouchableOpacity>

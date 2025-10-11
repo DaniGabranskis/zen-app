@@ -10,6 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import useThemeVars from '../hooks/useThemeVars';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.8;
@@ -27,7 +28,7 @@ const SWIPE_THRESHOLD = 0.25 * width;
  */
 
 export default function SwipeCard({ card, onSwipeLeft, onSwipeRight, onSwipeProgressChange }) {
-  const { cardBg, textMain, textSubtle } = useThemeVars();
+  const { cardBg, textMain, card_choice_text } = useThemeVars();
 
   // X and Y translation values (for animation)
   const translateX = useSharedValue(0);
@@ -91,13 +92,38 @@ return (
             animatedStyle,
           ]}>
             {/* Main question text */}
-          <Text style={styles.event}>{card.text}</Text>
+          {/* Top label = LEFT swipe option */}
+          <View style={styles.edgeTop}>
+          <View style={styles.edgeRow}>
+            <Icon name="chevron-left" size={20} color={card_choice_text} />
+            <Text
+              allowFontScaling={false}
+              style={[styles.edgeText, { color: card_choice_text }]}
+              numberOfLines={2}
+            >
+              {card?.leftOption?.text}
+            </Text>
+          </View>
+        </View>
 
-           <View style={styles.optionStack}>
-              <Text style={[styles.optionLeft, { color: textSubtle }]}>{`← ${card.leftOption.text}`}</Text>
-              <Text style={[styles.optionRight, { color: textSubtle }]}>{`${card.rightOption.text} →`}</Text>
-            </View>
+          {/* Centered question */}
+          <Text style={styles.event} numberOfLines={2}>
+            {card?.text}
+          </Text>
 
+          {/* Bottom label = RIGHT swipe option */}
+          <View style={styles.edgeBottom}>
+          <View style={styles.edgeRow}>
+            <Text
+              allowFontScaling={false}
+              style={[styles.edgeText, { color: card_choice_text }]}
+              numberOfLines={2}
+            >
+              {card?.rightOption?.text}
+            </Text>
+            <Icon name="chevron-right" size={20} color={card_choice_text} />
+          </View>
+        </View>
         </Animated.View>
       </GestureDetector>
     </View>
@@ -133,10 +159,9 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   event: {
-    fontSize: 22,
-    fontWeight: '700',
+    fontSize: 36,
+    fontWeight: '900',
     color: '#1A1A1A',
-    marginBottom: width * 0.02,
     textAlign: 'center',
   },
   description: {
@@ -168,5 +193,35 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     paddingRight: Math.round(width * 0.03),
     flexWrap: 'wrap',
+  },
+    edgeTop: {
+    position: 'absolute',
+    top: Math.round(width * 0.1),
+    left: Math.round(width * 0.0),
+    right: Math.round(width * 0.04),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  edgeBottom: {
+    position: 'absolute',
+    bottom: Math.round(width * 0.1),
+    left: Math.round(width * 0.04),
+    right: Math.round(width * 0.0),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  edgeText: {
+    fontSize: Math.round(width * 0.048),
+    fontWeight: '500',
+    textAlign: 'center',
+    opacity: 0.9,
+  },
+
+  edgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6, // небольшой отступ между стрелкой и текстом
   },
 });
