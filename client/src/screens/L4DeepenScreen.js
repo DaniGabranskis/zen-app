@@ -1,11 +1,27 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Slider from '@react-native-community/slider';
 import useStore from '../store/useStore';
 import rawProbes from '../data/probes.v1.json';
 import ScreenWrapper from '../components/ScreenWrapper';
 import useThemeVars from '../hooks/useThemeVars';
 import { logEvent } from '../utils/telemetry';
+
+function computePillsMaxHeight({
+  windowHeight,
+  insetsBottom = 0,
+  titleBlock = 120,      // approximate height of headings/subheadings
+  buttonBlock = 72,      // actual button height + padding
+  topBottomPadding = 32, // internal screen paddings
+  fraction = 0.48,       // percentage of available height
+  minH = 200,            // lower limit (not too low)
+  maxH = 560,            // upper limit (do not inflate on tablets)
+}) {
+  const available = windowHeight - insetsBottom - titleBlock - buttonBlock - topBottomPadding;
+  const target = available * fraction;
+  return clamp(target, minH, maxH);
+}
 
 export default function L4DeepenScreen({ navigation }) {
   const setTriggers = useStore(s => s.setL4Triggers);
@@ -31,7 +47,22 @@ export default function L4DeepenScreen({ navigation }) {
   const [localInt, setLocalInt] = useState(0);
 
   const theme = useThemeVars();
-  const s = makeStyles(theme);
+  const { height: WIN_H } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+
+  const pillsMaxHeight = computePillsMaxHeight({
+    windowHeight: WIN_H,
+    insetsBottom: insets.bottom,
+    // If desired, you can adjust the ratings for a specific screen stage 0/1
+    titleBlock: 120,
+    buttonBlock: 84,
+    fraction: 0.85,        
+    minH: 220,
+    maxH: 520,
+  });
+  console.log('[L4] pillsMaxHeight=', pillsMaxHeight, 'WIN_H=', WIN_H, 'insets.bottom=', insets.bottom);
+
+  const s = makeStyles(theme, insets);
 
   const next = () => {
     setStage(v => {
@@ -57,23 +88,43 @@ export default function L4DeepenScreen({ navigation }) {
       <View style={s.wrap}>
         {stage === 0 && (
           <>
-            <Text style={s.title}>Triggers (pick a few)</Text>
+            <Text style={s.title}>Triggers</Text>
+            <Text style={s.subtitle}>Select the triggers that, in your opinion, have influenced your well-being and condition</Text>
             {probes.triggers.length === 0 && (
               <Text style={s.hint}>No triggers configured yet</Text>
             )}
-            <Pills theme={theme} data={probes.triggers} selected={localTriggers} onChange={setLocalTriggers} />
-            <Primary theme={theme} onPress={next} label="Next" />
+            {/* Push the pills block down a bit without affecting other elements */}
+            <View style={{ marginTop: 24 }}>
+              <Pills
+                theme={theme}
+                data={probes.triggers}
+                selected={localTriggers}
+                onChange={setLocalTriggers}
+                maxHeight={pillsMaxHeight}
+              />
+            </View>
+            <Primary theme={theme} insets={insets} onPress={next} label="Next" />
           </>
         )}
 
         {stage === 1 && (
           <>
-            <Text style={s.title}>Body & Mind patterns</Text>
+            <Text style={s.title}>Body & Mind</Text>
+            <Text style={s.subtitle}>Select the body and mind patterns that, in your opinion, reflect how you’re feeling right now.</Text>
             {probes.bodyMind.length === 0 && (
               <Text style={s.hint}>No body/mind options configured yet</Text>
             )}
-            <Pills theme={theme} data={probes.bodyMind} selected={localBM} onChange={setLocalBM} />
-            <Primary theme={theme} onPress={next} label="Next" />
+            {/* Push the pills block down a bit without affecting other elements */}
+            <View style={{ marginTop: 24 }}>
+              <Pills
+                theme={theme}
+                data={probes.bodyMind}
+                selected={localBM}
+                onChange={setLocalBM}
+                maxHeight={pillsMaxHeight}
+              />
+            </View>
+            <Primary theme={theme} insets={insets} onPress={next} label="Next" />
           </>
         )}
 
@@ -103,7 +154,7 @@ export default function L4DeepenScreen({ navigation }) {
               <Text style={[s.intVal, { textAlign: 'center' }]}>{localInt}</Text>
             </View>
 
-            <Primary theme={theme} onPress={finish} label="Continue" />
+            <Primary theme={theme} insets={insets} onPress={finish} label="Continue" />
           </>
         )}
       </View>
@@ -111,36 +162,76 @@ export default function L4DeepenScreen({ navigation }) {
   );
 }
 
-function Pills({ theme, data = [], selected = [], onChange }) {
+function Pills({ theme, data = [], selected = [], onChange, maxHeight = 470 }) {
   const s = pillStyles(theme);
+  const [containerH, setContainerH] = React.useState(0);
+  const [contentH, setContentH] = React.useState(0);
+  const [hasScrolled, setHasScrolled] = React.useState(false);
+
+  const overflow = contentH > containerH;
+
   return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-      {data.map((t) => {
-        const active = selected.includes(t);
-        return (
-          <TouchableOpacity
-            key={t}
-            onPress={() => {
-              const next = active ? selected.filter(x => x !== t) : [...selected, t];
-              // diagnostic log
-              logEvent('l4_pill_toggle', {
-                value: t,
-                active: !active,
-                count: next.length,
-              }, `L4 ${active ? 'remove' : 'add'} "${t}" (${next.length})`);
-              onChange(next);
-            }}
-            style={[s.pill, active && s.pillActive]}>
-            <Text style={s.pillText}>{t}</Text>
-          </TouchableOpacity>
-        );
-      })}
+    <View
+      style={{ maxHeight, position: 'relative' }}
+      onLayout={(e) => setContainerH(e.nativeEvent.layout.height)}
+    >
+      <ScrollView
+        contentContainerStyle={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          paddingBottom: 80, // adequate gap so pills are not hidden by the button
+        }}
+        showsVerticalScrollIndicator
+        onContentSizeChange={(_, h) => setContentH(h)}
+        onScrollBeginDrag={() => setHasScrolled(true)}
+      >
+        {data.map((t) => {
+          const active = selected.includes(t);
+          return (
+            <TouchableOpacity
+              key={t}
+              onPress={() => {
+                const next = active ? selected.filter((x) => x !== t) : [...selected, t];
+                logEvent(
+                  'l4_pill_toggle',
+                  { value: t, active: !active, count: next.length },
+                  `L4 ${active ? 'remove' : 'add'} "${t}" (${next.length})`,
+                );
+                onChange(next);
+              }}
+              style={[s.pill, active && s.pillActive]}
+            >
+              <Text style={s.pillText}>{t}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+
+      {/* Мягкий намёк на скролл — исчезает после первого скролла */}
+      {overflow && !hasScrolled && (
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            alignItems: 'center',
+            paddingVertical: 8,
+            backgroundColor: 'rgba(0,0,0,0.04)',
+          }}
+        >
+          <Text style={{ color: theme.textSub, fontSize: 12 }}>Scroll to see more</Text>
+        </View>
+      )}
     </View>
   );
 }
 
-function Primary({ theme, onPress, label }) {
-  const s = btnStyles(theme);
+
+function Primary({ theme, insets, onPress, label }) {
+  const s = btnStyles(theme, insets);
   return (
     <TouchableOpacity style={s.btn} onPress={onPress}>
       <Text style={s.btnText}>{label}</Text>
@@ -148,11 +239,21 @@ function Primary({ theme, onPress, label }) {
   );
 }
 
+const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+
+
+
 // styles
-const makeStyles = (t) =>
+const makeStyles = (t, insets) =>
   StyleSheet.create({
-    wrap: { flex: 1, padding: 16, backgroundColor: t.bgcolor },
-    title: { fontSize: 18, fontWeight: '700', marginBottom: 12, color: t.textMain },
+    wrap: { 
+      flex: 1, 
+      padding: 16, 
+      paddingBottom:  (insets?.bottom ?? 0) + 72, 
+      backgroundColor: t.bgcolor 
+    },
+    title: { fontSize: 30, fontWeight: '900', marginBottom: 12, textAlign: 'center', color: t.textMain },
+    subtitle: { fontSize: 15, fontWeight: '300', marginBottom: 12, textAlign: 'center', color: t.card_choice_text },
     hint: { color: t.textSub, marginBottom: 8 },
     intVal: { marginTop: 8, marginBottom: 8, color: t.textSub, fontWeight: '600' },
     centerPage: {
@@ -185,10 +286,13 @@ const pillStyles = (t) =>
     pillText: { color: t.textMain },
   });
 
-const btnStyles = (t) =>
+const btnStyles = (t, insets) =>
   StyleSheet.create({
     btn: {
-      marginTop: 16,
+      position: 'absolute',
+      bottom: 24,
+      left: 16,
+      right: 16,
       padding: 14,
       backgroundColor: t.button,
       borderRadius: 12,

@@ -1,18 +1,104 @@
-[
-  {
-    "id": "probe_anx_vs_tens",
-    "question": "Feels more like mental worry or physical tightness?",
-    "options": [
-      { "label": "Mental worry", "tags": ["anxiety?","mind_racing"] },
-      { "label": "Physical tightness", "tags": ["tension?","body_tension"] }
-    ]
-  },
-  {
-    "id": "probe_ovw_vs_tired",
-    "question": "More like overload or low energy exhaustion?",
-    "options": [
-      { "label": "Overload", "tags": ["overwhelm?","pressure","low_control"] },
-      { "label": "Exhaustion", "tags": ["tiredness?","body_heavy","energy_low"] }
-    ]
-  }
-]
+{
+  "triggers": [
+    "Work",
+    "Conflict",
+    "Uncertainty",
+    "Deadlines",
+    "Fatigue",
+    "Sleep deprivation",
+    "Family issues",
+    "Health concerns",
+    "Relationship stress",
+    "Financial worries",
+    "Social pressure",
+    "Overcommitment",
+    "Information overload",
+    "Lack of control",
+    "Self-criticism",
+    "Isolation",
+    "Unmet expectations",
+    "Environmental noise",
+    "Physical pain",
+    "Changes in routine",
+    "Negative news",
+    "Perfectionism",
+    "Too many responsibilities",
+    "Time pressure",
+    "Feeling misunderstood"
+  ],
+
+  "L4_triggers": [
+    "Work",
+    "Conflict",
+    "Uncertainty",
+    "Deadlines",
+    "Fatigue",
+    "Sleep deprivation",
+    "Family issues",
+    "Health concerns",
+    "Relationship stress",
+    "Financial worries",
+    "Social pressure",
+    "Overcommitment",
+    "Information overload",
+    "Lack of control",
+    "Self-criticism",
+    "Isolation",
+    "Unmet expectations",
+    "Environmental noise",
+    "Physical pain",
+    "Changes in routine",
+    "Negative news",
+    "Perfectionism",
+    "Too many responsibilities",
+    "Time pressure",
+    "Feeling misunderstood"
+  ],
+
+  "bodyMind": [
+    "Tight chest",
+    "Racing thoughts",
+    "Shallow breathing",
+    "Low energy",
+    "Irritable",
+    "Headache/pressure",
+    "Jaw clenching",
+    "Neck/shoulder tightness",
+    "Stomach knots",
+    "Nausea",
+    "Butterflies in stomach",
+    "Heart racing",
+    "Cold hands/feet",
+    "Sweaty palms",
+    "Dry mouth",
+    "Restless",
+    "Hard to concentrate",
+    "Spaced out",
+    "Brain fog",
+    "Hypervigilant",
+    "Heavy limbs",
+    "Slumped posture",
+    "Sighing often",
+    "Holding breath",
+    "Shaky/trembling"
+  ],
+
+  "probes": [
+    {
+      "id": "probe_anx_vs_tens",
+      "question": "Feels more like mental worry or physical tightness?",
+      "options": [
+        { "label": "Mental worry", "tags": ["anxiety?","mind_racing"] },
+        { "label": "Physical tightness", "tags": ["tension?","body_tension"] }
+      ]
+    },
+    {
+      "id": "probe_ovw_vs_tired",
+      "question": "More like overload or low energy exhaustion?",
+      "options": [
+        { "label": "Overload", "tags": ["overwhelm?","pressure","low_control"] },
+        { "label": "Exhaustion", "tags": ["tiredness?","body_heavy","energy_low"] }
+      ]
+    }
+  ]
+}
