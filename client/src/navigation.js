@@ -10,6 +10,7 @@ import L3EmotionScreen from './screens/L3EmotionScreen';
 import L4DeepenScreen from './screens/L4DeepenScreen';
 import L5SummaryScreen from './screens/L5SummaryScreen';
 import L6ActionsScreen from './screens/L6ActionsScreen';
+import NavigationLogger from '../scripts/NavigationLogger';
 
 const Stack = createNativeStackNavigator();
 
@@ -33,6 +34,7 @@ export default function AppNavigator() {
       };
 
   return (
+    <NavigationLogger>
     <NavigationContainer theme={navigationTheme}>
       <Stack.Navigator screenOptions={{ headerShown: false, animation: 'none', }}>
         <Stack.Screen name="MainTabs" component={MainTabNavigator} />
@@ -52,5 +54,6 @@ export default function AppNavigator() {
         <Stack.Screen name="L6Actions" component={L6ActionsScreen} options={{ headerShown: false }} />
         </Stack.Navigator>
     </NavigationContainer>
+    </NavigationLogger>
   );
 }

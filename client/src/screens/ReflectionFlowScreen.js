@@ -12,11 +12,13 @@ import QuestionBlock from '../components/QuestionBlock';
 import { canonicalizeTags } from '../utils/tagCanon';
 import { routeEmotionFromCards } from '../utils/evidenceEngine';
 import { logEvent } from '../utils/telemetry';
+import BreathProbe from '../components/probe/BreathProbe';
+import VisualProbe from '../components/probe/VisualProbe';
+import { pickProbeType, buildProbeEvidence, getVisualScenesFor } from '../utils/emotionProbe';
 import useStore from '../store/useStore';
 
 import L1 from '../data/flow/L1.json';
 import L2 from '../data/flow/L2.json';
-import PROBES from '../data/probes.v1.json';
 
 // --- Swipe helpers ----------------------------------------------------------
 
@@ -182,16 +184,18 @@ function BottomAffirm({ text = 'Every swipe is a step toward clarity.', color = 
  * then route again and navigate to Result.
  */
 
-export default function ReflectionFlowScreen() {
+export default function ReflectionFlowScreen({ route }) {
   const didRouteRef = useRef(false);
   const navigation = useNavigation();
-   const { textSub } = useThemeVars(); // subtle color for the "← Swipe →" hint
+  const t = useThemeVars(); // use full theme object
 
   // L1 + L2 sequence (5 + 6 cards)
   const flow = useMemo(() => [...L1, ...L2], []);
   const [step, setStep] = useState(0);           // index inside flow
   const [accepted, setAccepted] = useState([]);  // collected answers
   const [probe, setProbe] = useState(null);      // { id, question, options[] } | null
+  const [probeStyle, setProbeStyle] = useState(null);   // 'breath' | 'visual' | null
+  const [probeDominant, setProbeDominant] = useState(null); // keep dominant for visual scenes
 
   const currentCard = probe ? null : flow[step];
 
@@ -299,32 +303,32 @@ export default function ReflectionFlowScreen() {
 
 
     if (routed?.mode === 'probe') {
-      // Minimal MVP: pick the first available probe.
-      // Later: choose probe by conflict pair from routed.details.
-      setProbe(PROBES?.[0] || null);
+      // Decide probe style from dominant emotion and random/fallback rules.
+      const style = pickProbeType(routed?.dominant);
+      setProbeStyle(style);
+      setProbeDominant(routed?.dominant || null);
+
+      // We no longer depend on external PROBES array. We render our own probe UI.
+      // Set a non-null sentinel to trigger probe rendering branch.
+      setProbe({ id: 'synthetic_probe' });
+       // Log when probe is shown
+      logEvent(
+        'probe_shown',
+        { type: style, dominant: routed?.dominant },
+        `Probe shown: type=${style}, dominant=${routed?.dominant || '-'}`
+      );
     } else {
-      const { rebuildEvidence, setDecision, pickEmotion } = useStore.getState();
-      rebuildEvidence();
-      setDecision({
-        mode: routed.mode,
-        top: [routed.dominant, routed.secondary].filter(Boolean),
-        probs: routed.probs,
-      });
-
-      // guard: run navigation/log only once
-      if (!didRouteRef.current) {
-        didRouteRef.current = true;
-        if (routed?.dominant) pickEmotion(routed.dominant);
-        navigation.navigate('L4Deepen');
-
-        // log using store snapshot (no routed out-of-scope)
-        const st = useStore.getState();
-        const dom = st.sessionDraft?.decision?.top?.[0] || st.sessionDraft?.l3?.emotionKey || null;
-        const mode = st.sessionDraft?.decision?.mode || null;
-        logEvent('nav_to_l4', { dominant: dom, mode }, `Navigate to L4 with emotion=${dom || '-'}`);
-      }
+      setProbe(null);
+      setProbeStyle(null);
+      setProbeDominant(null);
+      // if it's single/emotion, we immediately go to L4
+      if (routed?.mode === 'single' || routed?.mode === 'emotion' || routed?.dominant) {
+      console.log('[FLOW] routed single/emotion -> L4Deepen', routed?.dominant);
+      console.log('[NAV] replace -> L4Deepen after route single/emotion');
+      navigation.replace('L4Deepen');
+}
     }
-  }, [step, probe, accepted, flow.length]);
+      }, [step, probe, accepted, flow.length]);
 
   // -- Handlers --------------------------------------------------------------
 
@@ -336,107 +340,96 @@ export default function ReflectionFlowScreen() {
     setStep(prev => prev + 1);
   };
 
-  /** Handle answer for Probe. */
-  const onChooseProbe = (label, tags) => {
-    if (!probe) return;
-
-    // Compose PR_* pseudo-card.
-    const prOptions = {};
-    (probe.options || []).forEach(o => { prOptions[o.label] = o.tags || []; });
-
-    const prCard = {
-      id: `PR_${probe.id}`,
-      selectedOption: label,
-      options: prOptions,
-    };
-
-    const all = [...accepted, prCard];
-    const routed = routeEmotionFromCards(all);
-    // DIAG: route after probe answer
-    console.log('[ROUTE:AFTER_PROBE]', JSON.stringify({
-      mode: routed.mode,
-      dominant: routed.dominant,
-      secondary: routed.secondary,
-      confidence: routed.confidence,
-      p1: routed?.probs?.[routed.dominant],
-      p2: routed?.secondary ? routed?.probs?.[routed.secondary] : null,
-      delta: routed.delta,
-      top3: Object.entries(routed.probs || {}).sort((a,b)=>b[1]-a[1]).slice(0,3),
-    }, null, 2));
-
-    logEvent('route_after_probe', {
-      mode: routed.mode,
-      dominant: routed.dominant,
-      secondary: routed.secondary,
-      p1: routed?.probs?.[routed.dominant],
-      p2: routed?.secondary ? routed?.probs?.[routed.secondary] : null,
-      delta: routed.delta,
-      top3: Object.entries(routed.probs || {}).sort((a,b)=>b[1]-a[1]).slice(0,3),
-    }, `After probe → dom=${routed.dominant} (p1=${(routed?.probs?.[routed.dominant] ?? 0).toFixed(2)})`);
-
-    const { rebuildEvidence, setDecision, pickEmotion } = useStore.getState();
-      rebuildEvidence();
-      setDecision({
-        mode: routed.mode,
-        top: [routed.dominant, routed.secondary].filter(Boolean),
-        probs: routed.probs,
-      });
-
-      if (routed?.dominant) pickEmotion(routed.dominant);
-      navigation.replace('L4Deepen');
-
-      // log using store snapshot (no routed out-of-scope)
-      {
-        const st = useStore.getState();
-        const dom = st.sessionDraft?.decision?.top?.[0] || st.sessionDraft?.l3?.emotionKey || null;
-        const mode = st.sessionDraft?.decision?.mode || null;
-        logEvent('nav_to_l4_after_probe', { dominant: dom, mode }, `Navigate to L4 after probe with emotion=${dom || '-'}`);
-      }
-    };
-
   // -- Rendering -------------------------------------------------------------
 
   // 1) If probe requested — show it via QuestionBlock
-if (probe) {
-  // Build a fake card to reuse swipe renderer
-  const probeCard = {
-    id: `PR_${probe.id}`,
-    title: probe.question,
-    options: (probe.options || []).map(o => ({ label: o.label, tags: o.tags || [] })),
-  };
-  const swipeCard = coerceToSwipeCard(probeCard);
+    // === PROBE RENDER BRANCH ===
+    if (probe && probeStyle) {
+      // Prepare lightweight theme from useThemeVars
+      const theme = t; // use full theme from useThemeVars()
 
-  // If we couldn't build a good binary pair (unlikely) fallback to QuestionBlock
-  if (!swipeCard) {
-    return (
-      <ScreenWrapper useFlexHeight>
-        <QuestionBlock
-          data={{ text: probe.question, options: probe.options.map(o => ({text:o.label, tags:o.tags})) }}
-          onSubmit={(answerText, tags=[]) => onChooseProbe(answerText, tags)}
-        />
-      </ScreenWrapper>
-    );
-  }
+      // Apply probe evidence and re-route
+      const onApplyProbe = (tags, label = 'Probe choice') => {
+        // Log probe choice
+        logEvent(
+          'probe_choice',
+          { type: probeStyle, label, tags },
+          `Probe choice: ${label} (${probeStyle})`
+        );
+        // Build minimal PR evidence
+        const pr = {
+          id: `PR_${probeStyle}`,
+          selectedOption: label,
+          options: { [label]: Array.isArray(tags) ? tags : [] },
+        };
 
-    return (
-      <ScreenWrapper useFlexHeight>
-        <View style={{ flex: 1, position: 'relative' }}>
-          <SwipeHint color={textSub} top={8} />
-          <BottomAffirm color={textSub} bottom={12} />
-            <SwipeCard
-              card={swipeCard}
-              onSwipeLeft={() => onChooseProbe(swipeCard.leftOption.text,  swipeCard.leftOption.tags)}
-              onSwipeRight={() => onChooseProbe(swipeCard.rightOption.text, swipeCard.rightOption.tags)}
+        const all = [...accepted, pr];
+        const routed2 = routeEmotionFromCards(all);
+
+          logEvent(
+          'route_after_probe',
+          {
+            mode: routed2.mode,
+            dominant: routed2.dominant,
+            secondary: routed2.secondary,
+            confidence: routed2.confidence,
+            delta: routed2.delta,
+          },
+          `After probe → dom=${routed2.dominant || '-'}`
+        );
+
+
+        // Persist into store if у тебя есть такие экшены
+        try {
+          const { rebuildEvidence, setDecision, pickEmotion } = useStore.getState();
+          rebuildEvidence();
+          setDecision({
+            mode: routed2.mode,
+            top: [routed2.dominant, routed2.secondary].filter(Boolean),
+            probs: routed2.probs,
+          });
+          if (routed2?.dominant) pickEmotion(routed2.dominant);
+        } catch (e) {
+          // ignore if store API differs
+        }
+
+        // Go forward
+        if (routed2?.mode === 'emotion' || routed2?.dominant) {
+          navigation.replace('L4Deepen');
+        } else {
+          navigation.replace('L3Emotion');
+        }
+      };
+
+      const onSkip = () => {
+        // If user skips, keep current best guess and continue
+        navigation.replace('L4Deepen');
+      };
+
+      return (
+        <ScreenWrapper useFlexHeight route={route}>
+          {probeStyle === 'breath' ? (
+            <BreathProbe
+              onChoose={(tags) => onApplyProbe(tags, 'Breath probe')}
+              onSkip={onSkip}
+              theme={theme}
             />
-          </View>
-      </ScreenWrapper>
-    );
-  }
-
+          ) : (
+            <VisualProbe
+              dominant={probeDominant}
+              onChoose={(tags, label) => onApplyProbe(tags, label)}
+              onSkip={onSkip}
+              theme={theme}
+            />
+          )}
+        </ScreenWrapper>
+      );
+    }
+    // === END PROBE RENDER BRANCH ===
 
   // 2) If no more cards — blank (useEffect above will route)
   if (!currentCard) {
-    return <ScreenWrapper useFlexHeight />;
+    return <ScreenWrapper useFlexHeight route={route} />;
   }
 
   // Normalize options interface
@@ -447,10 +440,10 @@ const swipeCard = forceSwipe ? coerceToSwipeCard(currentCard) : null;
 // If forced swipe and we managed to coerce a binary choice -> render SwipeCard
 if (forceSwipe && swipeCard) {
   return (
-    <ScreenWrapper useFlexHeight>
+    <ScreenWrapper useFlexHeight route={route}>
       <View style={{ flex: 1, position: 'relative' }}>
-        <SwipeHint color={textSub} top={8} />
-        <BottomAffirm color={textSub} bottom={12} />
+        <SwipeHint color={t.textSub} top={8} />
+        <BottomAffirm color={t.textSub} bottom={12} />
           <SwipeCard
           card={swipeCard}
             onSwipeLeft={() => onChooseForCurrent(swipeCard.leftOption.text,  swipeCard.leftOption.tags)}
@@ -468,10 +461,10 @@ if (forceSwipe && swipeCard) {
     const left  = { text: opts[0].label, tags: opts[0].tags || [] };
     const right = { text: opts[1].label, tags: opts[1].tags || [] };
     return (
-      <ScreenWrapper useFlexHeight>
+      <ScreenWrapper useFlexHeight route={route}>
         <View style={{ flex: 1, position: 'relative' }}>
-          <SwipeHint color={textSub} top={8} />
-          <BottomAffirm color={textSub} bottom={12} />
+          <SwipeHint color={t.textSub} top={8} />
+          <BottomAffirm color={t.textSub} bottom={12} />
             <SwipeCard
               card={{ text: currentCard.title, leftOption: left, rightOption: right }}
               onSwipeLeft={() => onChooseForCurrent(left.text, left.tags)}
@@ -484,7 +477,7 @@ if (forceSwipe && swipeCard) {
 
   // 3+ -> QuestionBlock
   return (
-    <ScreenWrapper useFlexHeight>
+    <ScreenWrapper useFlexHeight route={route}>
       <QuestionBlock
         data={{
           id: currentCard.id,
