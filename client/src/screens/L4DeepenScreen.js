@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Slider from '@react-native-community/slider';
 import useStore from '../store/useStore';
 import rawProbes from '../data/probes.v1.json';
+import { estimateIntensity } from '../utils/intensity';
 import ScreenWrapper from '../components/ScreenWrapper';
 import useThemeVars from '../hooks/useThemeVars';
 import { logEvent } from '../utils/telemetry';
@@ -44,7 +44,6 @@ export default function L4DeepenScreen({ navigation }) {
   const [stage, setStage] = useState(0);
   const [localTriggers, setLocalTriggers] = useState([]);
   const [localBM, setLocalBM] = useState([]);
-  const [localInt, setLocalInt] = useState(0);
 
   const theme = useThemeVars();
   const { height: WIN_H } = useWindowDimensions();
@@ -65,23 +64,38 @@ export default function L4DeepenScreen({ navigation }) {
   const s = makeStyles(theme, insets);
 
   const next = () => {
+    console.log('[L4] next from stage', stage);
     setStage(v => {
       const to = v + 1;
       logEvent('l4_next', { from: v, to }, `L4 stage ${v} → ${to}`);
       return to;
     });
   };
+
   const finish = () => {
-    logEvent('l4_finish', {
-      triggers: localTriggers,
-      bodyMind: localBM,
-      intensity: localInt,
-    }, `L4 done. Intensity=${localInt}, triggers=${localTriggers.join(', ') || '-'}`);
+    // persist L4 selections
     setTriggers(localTriggers);
     setBodyMind(localBM);
-    setIntensity(localInt);
-    navigation.navigate('L5TinyAction');
+    console.log('[L4] finish with', { localTriggers, localBM });
+
+    // estimate intensity from evidence + selections
+    const EMPTY_ARR = Object.freeze([]);
+    const evidenceTags = useStore.getState().sessionDraft?.evidenceTags ?? EMPTY_ARR;
+
+    const { intensity, confidence, breakdown } = estimateIntensity({
+      tags: evidenceTags,
+      bodyMind: localBM,
+      triggers: localTriggers,
+    });
+
+    // --- SMOKE TEST LOG (you asked for it here) ---
+    console.log('[INTENSITY_SMOKE]', { intensity, confidence, breakdown, evidenceTags, localBM, localTriggers });
+
+    // store & navigate
+    setIntensity(intensity);
+    navigation.navigate('L5Summary');
   };
+
 
   return (
     <ScreenWrapper useFlexHeight style={{ backgroundColor: theme.bgcolor }}>
@@ -124,39 +138,10 @@ export default function L4DeepenScreen({ navigation }) {
                 maxHeight={pillsMaxHeight}
               />
             </View>
-            <Primary theme={theme} insets={insets} onPress={next} label="Next" />
-          </>
-        )}
-
-        {stage === 2 && (
-          <>
-            <Text style={[s.title, { textAlign: 'center' }]}>Intensity of current feeling (0–10)</Text>
-            {/* Center whole block vertically */}
-            <View style={s.centerPage}>
-              {/* Slider needs explicit width to render the track */}
-              <View style={s.sliderWrap}>
-                <Slider
-                  minimumValue={0}
-                  maximumValue={10}
-                  step={1}
-                  value={localInt}
-                  onValueChange={(v) => {
-                    console.log('[L4] intensity change:', v);
-                    setLocalInt(v);
-                  }}
-                  minimumTrackTintColor={theme.button}
-                  maximumTrackTintColor={theme.textSub}
-                  thumbTintColor={theme.button}
-                  style={{ width: '100%', height: 40 }}
-                />
-              </View>
-
-              <Text style={[s.intVal, { textAlign: 'center' }]}>{localInt}</Text>
-            </View>
-
             <Primary theme={theme} insets={insets} onPress={finish} label="Continue" />
           </>
         )}
+
       </View>
     </ScreenWrapper>
   );

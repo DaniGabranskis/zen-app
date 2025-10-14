@@ -8,8 +8,8 @@ import ReflectionFlowScreen from './screens/ReflectionFlowScreen';
 import useStore from './store/useStore';
 import L3EmotionScreen from './screens/L3EmotionScreen';
 import L4DeepenScreen from './screens/L4DeepenScreen';
-import L5TinyActionScreen from './screens/L5TinyActionScreen';
-import L6SummaryScreen from './screens/L6SummaryScreen';
+import L5SummaryScreen from './screens/L5SummaryScreen';
+import L6ActionsScreen from './screens/L6ActionsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -48,8 +48,8 @@ export default function AppNavigator() {
         <Stack.Screen name="EmotionSummary" component={EmotionSummaryScreen} />
         <Stack.Screen name="L3Emotion" component={L3EmotionScreen} options={{ headerShown: false }} />
         <Stack.Screen name="L4Deepen" component={L4DeepenScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="L5TinyAction" component={L5TinyActionScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="L6Summary" component={L6SummaryScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="L5Summary" component={L5SummaryScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="L6Actions" component={L6ActionsScreen} options={{ headerShown: false }} />
         </Stack.Navigator>
     </NavigationContainer>
   );
