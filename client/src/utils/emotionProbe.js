@@ -5,29 +5,35 @@
  * Map each emotion to a broader category for probe-type selection.
  * Categories: 'tension' | 'social' | 'cognitive' | 'positive'
  */
+
 export const emotionCategoryMap = {
-  anxiety: 'tension',
-  tension: 'tension',
-  fear: 'tension',
-  overwhelm: 'tension',
-  tiredness: 'tension',
+  // A - tension/cognitive high arousal
+  anxiety: "tension",
+  fear: "tension",
+  tension: "tension",
+  overwhelm: "tension",
+  confusion: "cognitive",
 
-  guilt: 'social',
-  shame: 'social',
-  disconnection: 'social',
-  loneliness: 'social',
-  sadness: 'social',
+  // B - social / blame / aggression
+  anger: "social",
+  irritation: "social",
+  frustration: "social",
+  guilt: "social",   // maps to self-blame patterns
+  shame: "social",
 
-  confusion: 'cognitive',
-  frustration: 'cognitive',
-  anger: 'cognitive',
-  disappointment: 'cognitive',
+  // C - low arousal / isolation
+  sadness: "cognitive",      // could be "low" but keep cognitive for routing simplicity
+  disappointment: "cognitive",
+  loneliness: "cognitive",
+  disconnection: "cognitive",
+  tiredness: "cognitive",
 
-  calm: 'positive',
-  clarity: 'positive',
-  gratitude: 'positive',
-  joy: 'positive',
-  contentment: 'positive',
+  // D - positive
+  calm: "positive",
+  clarity: "positive",
+  gratitude: "positive",
+  joy: "positive",
+  contentment: "positive",
 };
 
 /**

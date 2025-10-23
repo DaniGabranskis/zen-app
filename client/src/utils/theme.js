@@ -10,6 +10,7 @@ export const themes = {
     textCommon: '#1A1A1A',
     button: '#A78BFA',
     cardBg: '#fff',
+    presscardBg: '#dbd9d9',
     navBar: '#fff',
     navBorder: '#eee',
     navText: '#999',
@@ -25,6 +26,7 @@ export const themes = {
     textCommon: '#fff',
     button: '#5e44b7',
     cardBg: '#d9d4d4', //#2b2b2b
+    presscardBg: '#e6e6e6',
     navBar: '#202024',
     navBorder: '#39394e',
     navText: '#bbb',

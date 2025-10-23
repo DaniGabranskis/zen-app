@@ -2,7 +2,6 @@ import React from 'react';
 import { NavigationContainer, DefaultTheme, DarkTheme  } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import MainTabNavigator from './MainTabNavigator';
-import ResultScreen from './screens/ResultScreen';
 import EmotionSummaryScreen from './screens/EmotionSummaryScreen';
 import ReflectionFlowScreen from './screens/ReflectionFlowScreen';
 import useStore from './store/useStore';
@@ -41,12 +40,6 @@ export default function AppNavigator() {
 
         {/* Экран вне табов */}
         <Stack.Screen name="ReflectionFlow" component={ReflectionFlowScreen} />
-        <Stack.Screen name="Result" component={ResultScreen} />
-        <Stack.Screen
-          name="ResultModal"
-          component={ResultScreen}
-          options={{ presentation: 'modal' }}
-        />
         <Stack.Screen name="EmotionSummary" component={EmotionSummaryScreen} />
         <Stack.Screen name="L3Emotion" component={L3EmotionScreen} options={{ headerShown: false }} />
         <Stack.Screen name="L4Deepen" component={L4DeepenScreen} options={{ headerShown: false }} />
