@@ -12,16 +12,19 @@ import useThemeVars from '../../hooks/useThemeVars';
 import { THOUGHT_ITEMS } from '../../utils/probeContent';
 import { zeroVector, accumulate } from '../../utils/emotionSpace';
 import { buildProbeCopy } from '../../utils/probeText';
+import { makeHeaderStyles, makeBarStyles, computeBar, BAR_BTN_H } from '../../ui/screenChrome';
+
 
 export default function ThoughtProbe({ onChoose, onSkip, context, probeType = 'thought' }) {
   const t = useThemeVars();
   const insets = useSafeAreaInsets();
 
-  const BAR_BTN_H  = 44;
-  const BAR_VPAD   = 10;
-  const BAR_BASE_H = BAR_BTN_H + BAR_VPAD * 2;
-  const BAR_SAFE   = Platform.OS === 'ios' ? (insets?.bottom ?? 0) : 0;
-  const BAR_TOTAL  = BAR_BASE_H + BAR_SAFE;
+  const { BAR_BASE_H, BAR_SAFE } = computeBar(insets);
+  const sHead = makeHeaderStyles(t);
+  const sBar  = makeBarStyles(t, BAR_BASE_H);
+
+  // оставим локальный s, но пересчитаем паддинги без BAR_TOTAL:
+  const s = makeStyles(t, BAR_BASE_H, BAR_BTN_H);
 
   const [selected, setSelected] = useState({}); // {key: true/false}
 
@@ -42,13 +45,12 @@ export default function ThoughtProbe({ onChoose, onSkip, context, probeType = 't
     onChoose(delta, 'thought_items');
   };
 
-  const s = makeStyles(t, BAR_TOTAL, BAR_BTN_H, BAR_VPAD);
   const copy = buildProbeCopy(probeType, context);
 
   return (
     <View style={[s.wrap, { backgroundColor: t.bg }]}>
-      <Text style={[s.title, { color: t.textMain }]}>{copy.title}</Text>
-      <Text style={[s.subtitle, { color: t.card_choice_text }]}>{copy.subtitle}</Text>
+      <Text style={sHead.title}>{copy.title}</Text>
+      <Text style={sHead.subtitle}>{copy.subtitle}</Text>
 
       <ScrollView
         contentContainerStyle={s.scrollContent}
@@ -82,27 +84,20 @@ export default function ThoughtProbe({ onChoose, onSkip, context, probeType = 't
       </ScrollView>
 
       {/* Нижний бар: Skip + Confirm */}
-      <View style={[s.bottomBar, { paddingBottom: BAR_SAFE }]}>
-        <View style={[s.bottomInner, { height: BAR_BASE_H }]}>
-          <TouchableOpacity
-            style={[s.btn, s.btnSecondary, { height: BAR_BTN_H }]}
-            onPress={onSkip}
-          >
-            <Text style={[s.btnSecText, { color: t.textMain }]}>Skip</Text>
+      <View style={[sBar.bottomBar, { paddingBottom: BAR_SAFE }]}>
+        <View style={[sBar.bottomInner, { height: BAR_BASE_H }]}>
+          <TouchableOpacity style={[sBar.btn, sBar.btnSecondary, { height: BAR_BTN_H }]} onPress={onSkip}>
+            <Text style={sBar.btnSecondaryText}>Skip</Text>
           </TouchableOpacity>
 
           <View style={{ width: 12 }} />
 
           <TouchableOpacity
-            style={[
-              s.btn,
-              s.btnPrimary,
-              { height: BAR_BTN_H, opacity: canConfirm ? 1 : 0.5 },
-            ]}
+            style={[ sBar.btn, sBar.btnPrimary, { height: BAR_BTN_H, opacity: canConfirm ? 1 : 0.5 } ]}
             onPress={onConfirm}
             disabled={!canConfirm}
           >
-            <Text style={s.btnPriText}>Confirm</Text>
+            <Text style={sBar.btnPrimaryText}>Confirm</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -110,87 +105,31 @@ export default function ThoughtProbe({ onChoose, onSkip, context, probeType = 't
   );
 }
 
-const makeStyles = (t, BAR_TOTAL, BAR_BTN_H, BAR_VPAD) =>
-  StyleSheet.create({
-    wrap: {
-      flex: 1,
-      paddingHorizontal: 16,
-      paddingTop: 8,
-      paddingBottom: BAR_TOTAL + 8,
-    },
-    title: {
-      fontSize: 22,
-      fontWeight: '900',
-      textAlign: 'center',
-      marginTop: 4,
-    },
-    subtitle: {
-      fontSize: 14,
-      fontWeight: '400',
-      textAlign: 'center',
-      marginTop: 6,
-      marginBottom: 10,
-    },
-    scrollContent: { paddingBottom: 12 },
-    grid: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      justifyContent: 'center',
-    },
-    card: {
-      width: '46%',
-      margin: 6,
-      borderRadius: 12,
-      paddingVertical: 14,
-      paddingHorizontal: 10,
-      alignItems: 'center',
-      // «объём» без бордера
-      shadowColor: '#000',
-      shadowOpacity: 0.08,
-      shadowRadius: 12,
-      shadowOffset: { width: 0, height: 6 },
-      elevation: 3,
-    },
-    cardText: { fontSize: 14, fontWeight: '800', textAlign: 'center' },
-    cardHint: { fontSize: 12, marginTop: 4, textAlign: 'center' },
-
-    // Нижний бар как в L5
-    bottomBar: {
-      position: 'absolute',
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: t.navBar,
-      borderTopWidth: StyleSheet.hairlineWidth,
-      borderTopColor: '#00000016',
-    },
-    bottomInner: {
-      paddingHorizontal: 16,
-      paddingVertical: BAR_VPAD,
-      backgroundColor: t.navBar,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    },
-    btn: {
-      flex: 1,
-      borderRadius: 12,
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexDirection: 'row',
-    },
-    btnPrimary: { backgroundColor: t.button },
-    btnPriText: {
-      color: '#fff',
-      fontWeight: '800',
-      fontSize: 17,
-      textAlign: 'center',
-      letterSpacing: 0.2,
-    },
-    btnSecondary: {
-      backgroundColor: t.cardBg,
-      borderWidth: 1,
-      borderColor: '#00000022',
-    },
-    btnSecText: { fontWeight: '800', fontSize: 17, textAlign: 'center' },
-  });
+const makeStyles = (t, BAR_BASE_H, BAR_BTN_H) => StyleSheet.create({
+  wrap: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: BAR_BASE_H + 8, // резерв без безопасной зоны (как в L5)
+  },
+  scrollContent: { paddingBottom: 12 },
+  grid: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'flex-end'
+  },
+  card: {
+    margin: 6,
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 10,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
+  },
+  cardText: { fontSize: 14, fontWeight: '800', textAlign: 'center' },
+  cardHint: { fontSize: 12, marginTop: 4, textAlign: 'center' },
+});

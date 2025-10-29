@@ -3,7 +3,7 @@
 
 import weights from '../data/weights.tag2emotion.v1.json';
 import emotions from '../data/emotions20.json';
-import { canonicalizeTags } from './tagCanon';
+import { canonicalizeTags } from './canonicalizeTags';
 
 const T_MIX = 0.55;   // show at least something (dominant or mix)
 const T_DOM = 0.68;   // confident dominant

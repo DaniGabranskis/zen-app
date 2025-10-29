@@ -2,14 +2,14 @@ import React from 'react';
 import { NavigationContainer, DefaultTheme, DarkTheme  } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import MainTabNavigator from './MainTabNavigator';
-import EmotionSummaryScreen from './screens/EmotionSummaryScreen';
 import ReflectionFlowScreen from './screens/ReflectionFlowScreen';
 import useStore from './store/useStore';
-import L3EmotionScreen from './screens/L3EmotionScreen';
 import L4DeepenScreen from './screens/L4DeepenScreen';
 import L5SummaryScreen from './screens/L5SummaryScreen';
 import L6ActionsScreen from './screens/L6ActionsScreen';
+import ExercisePlaceholder from './screens/ExercisePlaceholder';
 import NavigationLogger from '../scripts/NavigationLogger';
+import HistoryResultModal from './screens/HistoryResultModal';
 
 const Stack = createNativeStackNavigator();
 
@@ -40,11 +40,11 @@ export default function AppNavigator() {
 
         {/* Экран вне табов */}
         <Stack.Screen name="ReflectionFlow" component={ReflectionFlowScreen} />
-        <Stack.Screen name="EmotionSummary" component={EmotionSummaryScreen} />
-        <Stack.Screen name="L3Emotion" component={L3EmotionScreen} options={{ headerShown: false }} />
         <Stack.Screen name="L4Deepen" component={L4DeepenScreen} options={{ headerShown: false }} />
         <Stack.Screen name="L5Summary" component={L5SummaryScreen} options={{ headerShown: false }} />
         <Stack.Screen name="L6Actions" component={L6ActionsScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="ExercisePlaceholder" component={ExercisePlaceholder} options={{ headerShown: false }} />
+        <Stack.Screen name="ResultModal" component={L5SummaryScreen} options={{ presentation: 'modal', headerShown: true, title: 'Session details' }} />
         </Stack.Navigator>
     </NavigationContainer>
     </NavigationLogger>

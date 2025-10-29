@@ -5,7 +5,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { canonicalizeTags } from '../utils/tagCanon';
+import { canonicalizeTags } from '../utils/canonicalizeTags';
 import { logEvent } from '../utils/telemetry';
 
 const initialDraft = () => ({
@@ -165,6 +165,70 @@ const useStore = create(
         logEvent('store_l6_accuracy', { accuracy: acc }, `Store: L6 accuracy=${acc}`);
         const draft = get().sessionDraft;
         set({ sessionDraft: { ...draft, l6: { ...draft.l6, accuracy: acc } } });
+      },
+      
+       // -------- Finalize current run (normalized for legacy Stats/History)
+      finishSession: async ({ skip = false, recommendation = null } = {}) => {
+        const { sessionDraft, history } = get();
+
+        // 1) Определяем доминирующую группу для легаси-экранов
+        const dominantGroup =
+          sessionDraft?.decision?.top?.[0] ||
+          sessionDraft?.l3?.emotionKey ||
+          'unknown';
+
+        // 2) Простейшая метрика score (0..100)
+        //    Берём интенсивность (0..10) и accuracy (1..5),
+        //    чем выше интенсивность — тем ниже итоговый score,
+        //    чем выше accuracy — тем выше итоговый score.
+        const intensity = Number(sessionDraft?.l4?.intensity ?? 0); // 0..10
+        const acc = Number(sessionDraft?.l6?.accuracy ?? 3);        // 1..5
+        // базовая формула: понижает за интенсивность и поднимает за accuracy:
+        let score = Math.round(
+          Math.max(0, Math.min(100, 80 - intensity * 6 + (acc - 3) * 8))
+        );
+
+        // 3) Подготовим «краткое резюме» для History (reflection)
+        const reflection =
+          String(sessionDraft?.l6?.insight || '').trim() ||
+          '—';
+
+        // 4) Дата в том поле, которое читают History/Stats
+        const nowIso = new Date().toISOString();
+
+        // 5) Собираем запись (добавляем также «сырые» данные драфта для будущего)
+        const entry = {
+          id: Date.now(),
+          date: nowIso,             // <-- поле, на которое смотрят History/Stats
+          createdAt: nowIso,
+          score,
+          dominantGroup,
+          reflection,
+          recommendation: {
+            title: recommendation?.title ?? null,
+            detail: recommendation?.detail ?? null,
+            skipped: !!skip,
+          },
+          // сохраняем полный снимок для будущей эволюции
+          session: { ...sessionDraft },
+        };
+
+        const next = [entry, ...(Array.isArray(history) ? history : [])].slice(0, 500);
+
+        logEvent(
+          'store_finish_session',
+          {
+            id: entry.id,
+            date: entry.date,
+            dominantGroup: entry.dominantGroup,
+            score: entry.score,
+            skipped: !!skip,
+          },
+          'Store: finish session → history +1'
+        );
+
+        set({ history: next });
+        get().resetSession();
       },
 
       // -------- Persist & reset

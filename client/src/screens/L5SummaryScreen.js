@@ -9,35 +9,136 @@ import useStore from '../store/useStore';
 import useThemeVars from '../hooks/useThemeVars';
 import rawProbes from '../data/probes.v1.json';
 import { estimateIntensity } from '../utils/intensity';
-import { getEmotionMeta } from '../utils/evidenceEngine'; // same util, как в ResultScreen
+import { getEmotionMeta } from '../utils/evidenceEngine';
+import { makeHeaderStyles, makeBarStyles, computeBar, BAR_BTN_H } from '../ui/screenChrome';
 
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 const EMPTY_ARR = Object.freeze([]);
 const EMPTY_STR = '';
 
-export default function L5SummaryScreen({ navigation }) {
+// --- AI summary (hoisted helper) ---
+function aiSummaryFromState(dominant) {
+  if (!dominant) return 'We analyzed your answers. Here is a short actionable suggestion.';
+  return `Current state leans toward “${dominant}”. Try a short, concrete action below to consolidate progress.`;
+}
+
+// --- Mini Insight (placeholder; later will be AI-driven)
+function getMiniInsight(emotionKey) {
+  const bank = {
+    tiredness: [
+      'Notice how your body asks for stillness before the mind does.',
+      'Rest is not a reward — it is a need.',
+      'Even a short pause can reset your energy curve.'
+    ],
+    anxiety: [
+      'Breathing brings the body back where the mind can follow.',
+      'Name what you fear — clarity shrinks uncertainty.',
+      'A slower exhale is a faster way to calm.'
+    ],
+    anger: [
+      'Intensity is energy — let it move without harm.',
+      'Space before words can protect what matters.',
+      'Notice where the heat lives in your body.'
+    ],
+    sadness: [
+      'Gentleness is not weakness — it helps you move again.',
+      'Let your feelings sit beside you, not on you.',
+      'Small warmths add up: light, tea, soft music.'
+    ],
+    overwhelm: [
+      'Do one tiny thing — completion is a powerful signal.',
+      'Reduce inputs before you increase effort.',
+      'Boundaries create oxygen for focus.'
+    ],
+    frustration: [
+      'Expectations are heavy; reality is lighter to carry.',
+      'Channel the stuck energy into a 60-second reset.',
+      'Name one thing you can influence right now.'
+    ],
+    disconnection: [
+      'Text one person: “thinking of you”. Connection starts small.',
+      'Step outside for 60 seconds — let the world touch you.',
+      'Humans regulate humans — ask for a micro-moment.'
+    ],
+    tension: [
+      'Drop your shoulders; unclench your jaw — it counts.',
+      'Exhale longer than you inhale; tension follows the breath out.',
+      'Scan for tight points; soften by 5%.'
+    ],
+    clarity: [
+      'Write three bullet points. Clarity grows when seen.',
+      'If it’s obvious — act. If not — observe.',
+      'Keep it small, keep it true.'
+    ],
+    calm: [
+      'Protect this state: short, often, simple.',
+      'Let quiet be productive by itself.',
+      'Anchor calm with one breath you can recall later.'
+    ],
+    joy: [
+      'Savor: name three pleasant details right now.',
+      'Share the moment — joy multiplies when voiced.',
+      'Store a micro-memory for later.'
+    ],
+    gratitude: [
+      'Turn gratitude into action: one thank-you today.',
+      'Name what supported you, not just what happened.',
+      'Gratitude stabilizes — let it land in the body.'
+    ],
+    default: [
+      'Notice the smallest helpful signal — amplify that.',
+      'Name it to tame it. Clarity reduces spin.',
+      'One tiny step beats perfect timing.'
+    ],
+  };
+
+  const list = bank[emotionKey] || bank.default;
+  // стабильный выбор: по длине ключа (чтобы не “прыгало” на каждом рендере)
+  const idx = Math.abs(String(emotionKey || '').length) % list.length;
+  return list[idx];
+}
+
+
+export default function L5SummaryScreen({ navigation, route }) {
+  const params = route?.params || {};
+  const fromHistory = params?.fromHistory === true;
+  const item = params?.item || (fromHistory ? params : null);
+  const histSess = (fromHistory && item) ? (item.session || {}) : null;
   const t = useThemeVars();
   const insets = useSafeAreaInsets();
   const { width: WIN_W } = useWindowDimensions();
-   // Bottom bar sizing: fixed height safe-area on iOS only.
-    const BAR_BTN_H = 44;                    // fixed button height
+    // Bottom bar sizing: fixed height safe-area on iOS only.
     const BAR_VPAD = 8;                      // vertical padding inside the bar
-    const BAR_BASE_H = BAR_BTN_H + BAR_VPAD * 2; // visual bar height (without inset)
-    const BAR_SAFE = Platform.OS === 'ios' ? (insets?.bottom ?? 0) : 0;
-    const BAR_TOTAL_H = BAR_BASE_H + BAR_SAFE;   // total bar height that overlaps content
+    const { BAR_BASE_H, BAR_SAFE } = computeBar(insets);
+    const sHead = makeHeaderStyles(t);
+    const sBar  = makeBarStyles(t, BAR_BASE_H);
 
   // ---- store (стабильные селекторы + фолбэки вне селектора)
   const _evidenceTags     = useStore(s => s.sessionDraft?.evidenceTags);
-  const evidenceTags      = _evidenceTags ?? EMPTY_ARR;
+  const evidenceTags      = (histSess?.evidenceTags) ?? (_evidenceTags ?? EMPTY_ARR);
 
-  const _pickedEmotionTop = useStore(s => s.decision?.top?.[0]);
-  const _pickedEmotion    = useStore(s => s.sessionDraft?.l3?.emotionKey) || useStore(s => s.emotion);
-  const emotionKey        = _pickedEmotionTop ?? _pickedEmotion ?? EMPTY_STR;
+  // 1) main source - router solution
+  const _dominant   = useStore(s => s.decision?.dominant);
+  const _l3Emotion  = useStore(s => s.sessionDraft?.l3?.emotionKey);
+  const _picked     = useStore(s => s.emotion);
 
-  const _storeTriggers    = useStore(s => s.sessionDraft?.l4?.triggers);
-  const _storeBM          = useStore(s => s.sessionDraft?.l4?.bodyMind);
-  const storeTriggers     = _storeTriggers ?? EMPTY_ARR;
-  const storeBM           = _storeBM ?? EMPTY_ARR;
+  const emotionKey  = fromHistory
+    ? (item?.dominantGroup || histSess?.l3?.emotionKey || EMPTY_STR)
+    : (_dominant ?? _l3Emotion ?? _picked ?? EMPTY_STR);
+
+  const aiDesc      = aiSummaryFromState(emotionKey);
+  const miniInsight = useMemo(() => getMiniInsight(emotionKey), [emotionKey]);
+
+  const _storeTriggers = useStore(s => s.sessionDraft?.l4?.triggers);
+  const _storeBM       = useStore(s => s.sessionDraft?.l4?.bodyMind);
+
+  const storeTriggers  = fromHistory
+    ? (histSess?.l4?.triggers ?? EMPTY_ARR)
+    : (_storeTriggers ?? EMPTY_ARR);
+
+  const storeBM        = fromHistory
+    ? (histSess?.l4?.bodyMind ?? EMPTY_ARR)
+    : (_storeBM ?? EMPTY_ARR);
 
   const setL4Triggers     = useStore(s => s.setL4Triggers);
   const setL4BodyMind     = useStore(s => s.setL4BodyMind);
@@ -62,13 +163,28 @@ export default function L5SummaryScreen({ navigation }) {
         : ['Tight chest', 'Racing thoughts', 'Shallow breathing', 'Low energy', 'Irritable'],
   }), []);
 
-  // ---- авто-интенсивность (live)
   const { intensity: autoIntensity, confidence } = estimateIntensity({
     tags: evidenceTags,
     bodyMind: editBM,
     triggers: editTrig,
   });
-  const previewIntensity = clamp(autoIntensity + intAdj, 0, 10);
+
+  // из истории: intensity и confidence (accuracy 1..5 → 0..1)
+  const histIntensity   = fromHistory ? Number(histSess?.l4?.intensity ?? 0) : null;
+  const histAccuracy    = fromHistory ? Number(histSess?.l6?.accuracy ?? 3) : null;
+  const histConfidence  = fromHistory && Number.isFinite(histAccuracy)
+    ? Math.max(0, Math.min(1, (histAccuracy - 1) / 4)) // 1→0, 5→1
+    : null;
+
+  // что показывать на экране
+  const previewIntensity = fromHistory
+    ? clamp(histIntensity ?? 0, 0, 10)
+    : clamp(autoIntensity + intAdj, 0, 10);
+
+  const showConfidence = fromHistory
+    ? (histConfidence ?? 0.7) // разумный дефолт
+    : confidence;
+
   const intensityBucket  = previewIntensity <= 3 ? 'Low' : previewIntensity <= 6 ? 'Medium' : 'High';
 
   // ---- визуал круга эмоции
@@ -83,14 +199,6 @@ export default function L5SummaryScreen({ navigation }) {
   const CIRC         = 2 * Math.PI * Rpath;
   const fillRatio    = previewIntensity / 10;      // 0..1
   const arcLen       = CIRC * fillRatio;
-   const TICK_SEGMENTS = 10;               // divide the circle into 10 parts
-    const TICK_MARKS    = TICK_SEGMENTS + 1;// marks 11: 0..10 (top is both 0 and 10)
-    const TICK_R        = 2.6;              // normal dot radius (px)
-    const TICK_R_CARD   = 3.4;              // cardinal (top/bottom) dot radius (px)
-    const R_DOT         = Rpath;            // place dots on the same radius as the ring (center of stroke)
-    const isCardinal    = (i) => (i === 0 || i === 5 || i === 10);
-    const deg2rad       = (deg) => (deg * Math.PI) / 180;
-
   const s = makeStyles(t, insets, CIRCLE, BAR_BASE_H, BAR_VPAD);
 
   const onContinue = () => {
@@ -105,10 +213,10 @@ export default function L5SummaryScreen({ navigation }) {
  };
 
   return (
-    <ScreenWrapper useFlexHeight style={{ backgroundColor: t.bgcolor }}>
+    <ScreenWrapper useFlexHeight style={{ backgroundColor: t.bg }}>
       <ScrollView style={{ flex: 1 }} contentContainerStyle={s.scroll} showsVerticalScrollIndicator>
-        <Text style={s.title}>Summary</Text>
-        <Text style={s.subtitle}>
+        <Text style={sHead.title}>Summary</Text>
+        <Text style={sHead.subtitle}>
           Here’s a quick recap. Your recommendations will use this.
         </Text>
 
@@ -156,32 +264,25 @@ export default function L5SummaryScreen({ navigation }) {
                 originX={CIRCLE / 2}
                 originY={CIRCLE / 2}
               />
-               {/* hour-like ticks (0..10) — top is both 0 and 10, bottom is 5 */}
-                {Array.from({ length: TICK_MARKS }).map((_, i) => {
-                const angleDeg = -90 + i * (360 / TICK_SEGMENTS); // start from the top, clockwise
-                const angleRad = deg2rad(angleDeg);
-                const cx = (CIRCLE / 2) + R_DOT * Math.cos(angleRad);
-                const cy = (CIRCLE / 2) + R_DOT * Math.sin(angleRad);
-                const r  = isCardinal(i) ? TICK_R_CARD : TICK_R; // <-- small point radius
-                return (
-                <Circle
-                   key={`tick-${i}`}
-                   cx={cx}
-                   cy={cy}
-                   r={r}
-                   fill="#ffffffff"     // AA RR GG BB => opaque gray #585858
-                   stroke="#00000022"
-                   strokeWidth={0.5}
-                 />
-                );
-                })}
             </Svg>
           </View>
         </View>
 
         {/* подпись под кругом */}
         <Text style={s.intensityBadge}>Intensity • {intensityBucket}</Text>
-        <Text style={s.confNote}>{confidence >= 0.7 ? 'Auto • accurate' : 'Auto • check'}</Text>
+        <Text style={s.confNote}>{showConfidence >= 0.7 ? 'Auto • accurate' : 'Auto • check'}</Text>
+
+        {/* Mini Insight (placeholder) */}
+        <View style={[s.aiCard, { backgroundColor: t.cardBg }]}>
+          <Text style={s.aiCardTitle}>Mini insight</Text>
+          <Text style={[s.aiCardText, { color: t.textSub }]}>{miniInsight}</Text>
+        </View>
+
+        {/* AI Description */}
+        <View style={[s.aiCard, { backgroundColor: t.cardBg }]}>
+          <Text style={s.aiCardTitle}>Short description</Text>
+          <Text style={[s.aiCardText, { color: t.textSub }]}>{aiDesc}</Text>
+        </View>
 
         {/* выбранные Triggers */}
         <View style={s.card}>
@@ -200,18 +301,20 @@ export default function L5SummaryScreen({ navigation }) {
 
       {/* CTA is pushed to the bottom */}
       {/* Bottom action bar: fixed, two buttons */}
-    <View style={[s.bottomBar, { paddingBottom: BAR_SAFE }]} pointerEvents="box-none">
-      <View style={s.bottomBarShadow} />
-      <View style={[s.bottomInner, { height: BAR_BASE_H }]}>
-        <TouchableOpacity style={[s.btn, s.btnSecondary, { height: BAR_BTN_H }]} onPress={onEdit}>
-          <Text style={s.btnSecondaryText}>Edit</Text>
-        </TouchableOpacity>
-        <View style={{ width: 12 }} />
-        <TouchableOpacity style={[s.btn, s.btnPrimary, { height: BAR_BTN_H }]} onPress={onContinue}>
-          <Text style={s.btnPrimaryText}>Next</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+      {!fromHistory && (
+        <View style={[sBar.bottomBar, { paddingBottom: BAR_SAFE }]} pointerEvents="box-none">
+          <View style={sBar.bottomBarShadow} />
+          <View style={[sBar.bottomInner, { height: BAR_BASE_H }]}>
+            <TouchableOpacity style={[sBar.btn, sBar.btnSecondary, { height: BAR_BTN_H }]} onPress={onEdit}>
+              <Text style={sBar.btnSecondaryText}>Edit</Text>
+            </TouchableOpacity>
+            <View style={{ width: 12 }} />
+            <TouchableOpacity style={[sBar.btn, sBar.btnPrimary, { height: BAR_BTN_H }]} onPress={onContinue}>
+              <Text style={sBar.btnPrimaryText}>Next</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
     </ScreenWrapper>
   );
 }
@@ -248,15 +351,6 @@ const makeStyles = (t, insets, CIRCLE, BAR_BASE_H, BAR_VPAD) => StyleSheet.creat
         // NOTE: we don't add safe-area here to avoid double inset.
         paddingBottom: BAR_BASE_H + 8,
     },
-  title: { fontSize: 28, fontWeight: '900', textAlign: 'center', color: t.textMain },
-  subtitle: {
-    fontSize: 14,
-    fontWeight: '400',
-    textAlign: 'center',
-    color: t.card_choice_text,
-    marginTop: 6,
-    marginBottom: 16,
-  },
 
   circleWrap: { alignItems: 'center', marginTop: 8, marginBottom: 8 },
   circle: {
@@ -285,54 +379,14 @@ const makeStyles = (t, insets, CIRCLE, BAR_BASE_H, BAR_VPAD) => StyleSheet.creat
     borderWidth: 1,
     borderColor: '#00000012',
   },
-  bottomBar: {
-   position: 'absolute',
-   left: 0,
-   right: 0,
-   bottom: 0,
-   backgroundColor: t.navBar,
- },
- bottomBarShadow: {
-   height: 6, // feel free to set 0 if you don't want the divider fade
-   backgroundColor: 'transparent',
-   // a soft "haze" on top of the bar so that the content underneath is not visible
-   // can be replaced with LinearGradient if desired
-   borderTopWidth: StyleSheet.hairlineWidth,
-   borderTopColor: '#00000016',
- },
- bottomInner: {
-   paddingHorizontal: 16,
-   paddingVertical: BAR_VPAD,
-   backgroundColor: t.navBar,
-   flexDirection: 'row',
-   alignItems: 'center',
-   justifyContent: 'space-between',
- },
- btn: {
-   flex: 1,
-   borderRadius: 12,
-    // Ensure perfect centering for the label/content
-   alignItems: 'center',
-   justifyContent: 'center',
-   flexDirection: 'row',
- },
- btnPrimary: {
-   backgroundColor: t.button,
- },
- btnPrimaryText: {
-   color: '#fff',
-   fontWeight: '800',
-   fontSize: 17,          // larger label
-   textAlign: 'center',
-   letterSpacing: 0.2,
- },
- btnSecondary: {
-   backgroundColor: t.cardBg,
-   borderWidth: 1,
-   borderColor: '#00000022',
- },
- btnSecondaryText: {
-   color: t.textMain,
-   fontWeight: '800',
- },
+
+  aiCard: {
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: '#00000012',
+  },
+  aiCardTitle: { fontSize: 16, fontWeight: '800', marginBottom: 6 },
+  aiCardText: { fontSize: 14, lineHeight: 20 },
 });

@@ -4,6 +4,8 @@ import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useThemeVars from '../../hooks/useThemeVars';
 import { buildProbeCopy } from '../../utils/probeText';
+import { makeHeaderStyles, makeBarStyles, computeBar, BAR_BTN_H } from '../../ui/screenChrome';
+
 
 /**
  * VisualProbe
@@ -23,7 +25,7 @@ export default function VisualProbe(props) {
     secondOption,
     onChooseFirst,
     onChooseSecond,
-    onChoose,
+    onChoose,        // unified optional callback
     onSkip,
     context,
     probeType = 'visual',
@@ -33,8 +35,15 @@ export default function VisualProbe(props) {
     chooseB,
   } = props;
 
-  // Map legacy props to new names if new ones are not provided
+  // Build copy based on probeType + context (fallback to legacy a/b if needed)
   const copy = buildProbeCopy(probeType, context ?? { first: a, second: b });
+
+  // IMPORTANT: define options BEFORE using them in handlers or JSX
+  const optionFirst =
+    firstOption ?? a ?? { label: copy.firstLabel ?? 'Option A' };
+  const optionSecond =
+    secondOption ?? b ?? { label: copy.secondLabel ?? 'Option B' };
+
   // Handlers resolution priority:
   // 1) explicit onChooseFirst/onChooseSecond
   // 2) legacy chooseA/chooseB
@@ -54,21 +63,16 @@ export default function VisualProbe(props) {
   const insets = useSafeAreaInsets();
 
   // Bottom bar sizing (same approach as L5)
-  const BAR_BTN_H = 44;
-  const BAR_VPAD = 10;
-  const BAR_BASE_H = BAR_BTN_H + BAR_VPAD * 2;
-  const BAR_SAFE = Platform.OS === 'ios' ? (insets?.bottom ?? 0) : 0;
+  const { BAR_BASE_H, BAR_SAFE } = computeBar(insets);
+  const sHead = makeHeaderStyles(colors);
+  const sBar  = makeBarStyles(colors, BAR_BASE_H);
 
   const styles = makeStyles(colors, BAR_BASE_H);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.bg }]}>
-      <Text style={[styles.title,   { color: colors.textMain, textAlign: 'center' }]}>
-        {copy.title}
-      </Text>
-      <Text style={[styles.subtitle,{ color: colors.textSub,  textAlign: 'center' }]}>
-        {copy.subtitle}
-      </Text>
+      <Text style={sHead.title}>{copy.title}</Text>
+      <Text style={sHead.subtitle}>{copy.subtitle}</Text>
 
       <View style={styles.cards}>
         <Pressable
@@ -107,13 +111,10 @@ export default function VisualProbe(props) {
       </View>
 
       {/* Bottom bar with a single Skip button */}
-      <View style={[styles.bottomBar, { paddingBottom: BAR_SAFE }]}>
-        <View style={[styles.bottomInner, { height: BAR_BASE_H }]}>
-          <Pressable
-            style={[styles.btn, styles.btnSecondary, { height: BAR_BTN_H }]}
-            onPress={onSkip}
-          >
-            <Text style={styles.btnSecondaryText}>Skip</Text>
+      <View style={[sBar.bottomBar, { paddingBottom: BAR_SAFE }]}>
+        <View style={[sBar.bottomInner, { height: BAR_BASE_H }]}>
+          <Pressable style={[sBar.btn, sBar.btnSecondary, { height: BAR_BTN_H }]} onPress={onSkip}>
+            <Text style={sBar.btnSecondaryText}>Skip</Text>
           </Pressable>
         </View>
       </View>
@@ -131,15 +132,11 @@ const makeStyles = (t, BAR_BASE_H) =>
       paddingBottom: BAR_BASE_H + 8, // keep content above the bottom bar
       justifyContent: 'flex-start',
     },
-    title: { fontSize: 22, fontWeight: '700', marginBottom: 6, textAlign: 'center' },
-    subtitle: { fontSize: 14, opacity: 0.9, marginBottom: 28, textAlign: 'center' },
-
     // Cards row
     cards: {
       width: '100%',
       gap: 14,
     },
-
     // Card visual (no border, soft shadow)
     card: {
       borderRadius: 14,
@@ -156,38 +153,4 @@ const makeStyles = (t, BAR_BASE_H) =>
       elevation: 3,
     },
     cardText: { fontSize: 16, fontWeight: '600', textAlign: 'center' },
-
-    // Bottom bar (consistent with L5)
-    bottomBar: {
-      position: 'absolute',
-      left: 0, right: 0, bottom: 0,
-      backgroundColor: t.navBar,
-    },
-    bottomInner: {
-      backgroundColor: t.navBar,
-      paddingHorizontal: 16,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderTopWidth: StyleSheet.hairlineWidth,
-      borderTopColor: '#00000016',
-    },
-    btn: {
-      borderRadius: 12,
-      alignItems: 'center',
-      justifyContent: 'center',
-      flex: 1,
-    },
-    btnSecondary: {
-      backgroundColor: t.cardBg,
-      borderWidth: 1,
-      borderColor: '#00000022',
-    },
-    btnSecondaryText: {
-      color: t.textMain,
-      fontWeight: '800',
-      fontSize: 17,
-      textAlign: 'center',
-      letterSpacing: 0.2,
-    },
   });

@@ -11,7 +11,7 @@ import ScreenWrapper from '../components/ScreenWrapper';
 import SwipeCard from '../components/SwipeCard';
 import QuestionBlock from '../components/QuestionBlock';
 
-import { canonicalizeTags } from '../utils/tagCanon';
+import { canonicalizeTags } from '../utils/canonicalizeTags';
 import { routeEmotionFromCards } from '../utils/evidenceEngine';
 import { logEvent } from '../utils/telemetry';
 import ProbeContainer from './ProbeContainer';
@@ -205,7 +205,16 @@ export default function ReflectionFlowScreen({ route }) {
     // While L1+L2 are not finished, do not compute routing
     if (step < flow.length) return null;
     // Compute route outcome from accepted cards
-    return routeEmotionFromCards(accepted);
+    const res = routeEmotionFromCards(accepted);
+      console.log('[DEBUG ROUTE RAW]', {
+        mode: res?.mode,
+        dominant: res?.dominant,
+        secondary: res?.secondary,
+        confidence: res?.confidence,
+        probs: res?.probs,
+        tagFreq: res?.tagFreq,
+      });
+      return res;
   }, [step, accepted, flow.length]);
 
   const currentCard = probe ? null : flow[step];
@@ -440,6 +449,21 @@ export default function ReflectionFlowScreen({ route }) {
         (routed?.mode === 'single' || routed?.mode === 'emotion' || routed?.dominant)
       ) {
         navLockRef.current = true;
+
+        // We synchronize the store in the same way as after Probe:
+       try {
+         const { rebuildEvidence, setDecision, pickEmotion } = useStore.getState();
+         rebuildEvidence();
+         setDecision({
+           mode: routed?.mode || 'single',
+           top: [routed?.dominant, routed?.secondary].filter(Boolean),
+           probs: routed?.probs || {},
+         });
+         if (routed?.dominant) pickEmotion(routed.dominant);
+       } catch (e) {
+         // no-op: if the store's API is different
+       }
+
         console.log('[FLOW] routed single/emotion -> L4Deepen', routed?.dominant);
         console.log('[NAV] replace -> L4Deepen after route single/emotion');
         navigation.replace('L4Deepen');

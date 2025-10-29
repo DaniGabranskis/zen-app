@@ -87,7 +87,7 @@ export default function HistoryScreen({ navigation }) {
     const date = new Date(item.date).toLocaleDateString();
     const label = item.dominantGroup || 'Unknown';
     const barColor = getScoreColor(item.score);
-    const preview = item.reflection?.slice(0, 100) || 'No reflection';
+    const preview = (item.recommendation?.title ? `${item.recommendation.title} — ` : '') + (item.reflection || 'No reflection');
 
     return (
       <TouchableOpacity

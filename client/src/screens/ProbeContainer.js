@@ -2,7 +2,7 @@ import React, { useRef, useState, useMemo } from 'react';
 import VisualProbe from '../components/probe/VisualProbe';
 import ScenarioProbe from '../components/probe/ScenarioProbe';
 import BodyProbe from '../components/probe/BodyProbe';
-import ThoughtProbe from '../components/probe/ThoughtProbe'; // NEW import
+import ThoughtProbe from '../components/probe/ThoughtProbe';
 import { ProbeEngine } from '../utils/probeEngine';
 import { pickStartProbe } from '../utils/probeRouting';
 import { EMOTION_META } from '../data/emotionMeta';
@@ -23,7 +23,6 @@ export default function ProbeContainer({ theme, onDone, onStep, onStart }) {
 
     return { first, second };
   }, [engineRef.current?.snapshot?.ranking]);
-
 
   // Determine the first probe type from top-2 emotions (more intelligent start)
   const initialStart = (() => {
@@ -48,7 +47,8 @@ export default function ProbeContainer({ theme, onDone, onStep, onStart }) {
   };
 
   // Called when user selects an option
-  const onChoose = (tags, label) => {
+  const onChoose = (maybeTags, label) => {
+    const tags = Array.isArray(maybeTags) ? maybeTags : [];
     const snap = engineRef.current.apply(tags, label);
     console.log('[ProbeContainer] after choose', snap);
 

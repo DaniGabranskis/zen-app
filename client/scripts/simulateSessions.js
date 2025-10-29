@@ -1,6 +1,6 @@
 // Dev-only simulator for routing/emotions balance
 import { classifyTags } from '../utils/evidenceEngine';
-import { canonicalizeTags } from '../utils/tagCanon';
+import { canonicalizeTags } from '../utils/canonicalizeTags';
 
 /**
  * Generate random set of tags similar to L1/L2 outputs.

@@ -1,34 +1,58 @@
 {
-  "body_tension": { "tension": 1.0, "anxiety": 0.4 },
+  "body_tension": { "tension": 0.8, "anxiety": 0.3 },
   "body_heavy": { "tiredness": 1.0, "sadness": 0.3 },
-  "body_light": { "calm": 0.6, "contentment": 0.4 },
+  "body_light": { "calm": 0.7, "contentment": 0.5 },
+
   "energy_low": { "tiredness": 0.9, "sadness": 0.2 },
   "energy_high": { "joy": 0.4, "anxiety": 0.4, "irritation": 0.2 },
+  "energy_steady": { "contentment": 0.5, "calm": 0.5 },
+  "low_arousal": { "tiredness": 0.4, "calm": 0.3, "sadness": 0.2 },
+
   "mind_racing": { "anxiety": 1.0, "tension": 0.3 },
-  "mind_calm": { "calm": 0.7, "clarity": 0.6, "contentment": 0.2 },
+  "mind_racing?": { "anxiety": 0.6, "tension": 0.2 },
+  "mind_calm": { "calm": 0.8, "clarity": 0.7, "contentment": 0.4 },
   "mind_stuck": { "sadness": 0.6, "disappointment": 0.5, "frustration": 0.3 },
-  "rumination": { "sadness": 0.5, "guilt": 0.4, "shame": 0.4 },
+  "rumination": { "sadness": 0.3, "guilt": 0.3, "shame": 0.3 },
+
   "social_avoid": { "disconnection": 0.6, "loneliness": 0.5 },
   "social_seek": { "gratitude": 0.4, "joy": 0.4, "contentment": 0.3 },
-  "support": { "gratitude": 0.7, "joy": 0.3, "contentment": 0.2 },
-  "criticism": { "shame": 0.8, "anger": 0.2, "sadness": 0.2 },
-  "ignored": { "loneliness": 0.8, "disconnection": 0.6, "sadness": 0.3 },
-  "conflict": { "anger": 0.7, "frustration": 0.6, "irritation": 0.5 },
-  "work_high": { "overwhelm": 0.7, "tension": 0.4 },
+  "social_neutral": { "contentment": 0.3, "disconnection": 0.2 },
+  "support": { "gratitude": 1.0, "joy": 0.6, "contentment": 0.5 },
+  "support?": { "gratitude": 0.4, "joy": 0.2 },
+
+  "criticism": { "shame": 0.6, "anger": 0.2, "sadness": 0.3 },
+  "ignored": { "loneliness": 0.6, "disconnection": 0.5, "sadness": 0.3 },
+  "conflict": { "anger": 0.5, "frustration": 0.5, "irritation": 0.4 },
+
+  "work_ok": { "contentment": 0.6, "calm": 0.5 },
+  "work_high": { "overwhelm": 0.6, "tension": 0.3 },
   "work_too_much": { "overwhelm": 1.0, "anxiety": 0.3, "tiredness": 0.3 },
-  "pressure": { "overwhelm": 0.7, "anxiety": 0.4, "tension": 0.4 },
+
+  "pressure": { "overwhelm": 0.5, "anxiety": 0.4, "tension": 0.3 },
+
+  "in_control": { "clarity": 0.9, "calm": 0.7, "contentment": 0.5 },
+  "control_high": { "clarity": 0.9, "calm": 0.7, "contentment": 0.5 },
   "low_control": { "overwhelm": 0.8, "anxiety": 0.5 },
-  "in_control": { "clarity": 0.7, "calm": 0.5, "contentment": 0.3 },
   "control_shaky": { "anxiety": 0.5, "tension": 0.5 },
+
+  "uncertainty_low": { "clarity": 0.8, "calm": 0.5 },
+  "uncertainty_mid": { "confusion": 0.5, "anxiety": 0.4 },
   "uncertainty_high": { "anxiety": 0.8, "fear": 0.6 },
-  "uncertainty_low": { "clarity": 0.6, "calm": 0.4 },
-  "vigilant": { "tension": 0.7, "fear": 0.4 },
-  "threat": { "fear": 1.0, "anxiety": 0.5 },
-  "safe": { "calm": 0.6, "contentment": 0.4 },
+
+  "threat": { "fear": 0.8, "anxiety": 0.4 },
+  "safe": { "calm": 0.8, "contentment": 0.5 },
+
   "mood_negative": { "sadness": 0.3, "anxiety": 0.3, "tension": 0.2 },
   "mood_neutral": { "disconnection": 0.3, "contentment": 0.2 },
-  "mood_positive": { "joy": 0.6, "gratitude": 0.5, "contentment": 0.4 },
-  "ease": { "calm": 0.6, "contentment": 0.4 },
+  "mood_positive": { "joy": 0.8, "gratitude": 0.7, "contentment": 0.6 },
+  "ease": { "calm": 0.8, "contentment": 0.5 },
+
+  "fear": { "fear": 1.0 },
+  "guilt": { "guilt": 1.0 },
+  "shame": { "shame": 1.0 },
+
+  "confidence?": { "clarity": 0.6, "calm": 0.4, "contentment": 0.3 },
+
   "gratitude?": { "gratitude": 0.5, "joy": 0.2 },
   "anxiety?": { "anxiety": 0.5, "tension": 0.2 },
   "tension?": { "tension": 0.5, "anxiety": 0.2 },
@@ -37,6 +61,19 @@
   "fear?": { "fear": 0.5 },
   "calm?": { "calm": 0.4, "clarity": 0.2, "contentment": 0.2 },
   "clarity?": { "clarity": 0.5 },
-  "support?": { "gratitude": 0.4, "joy": 0.2 },
-  "contentment?": { "contentment": 0.5 }
+  "contentment?": { "contentment": 0.5 },
+  "joy?": { "joy": 0.5 },
+  "guilt?": { "guilt": 0.5 },
+  "shame?": { "shame": 0.5 },
+  "confusion?": { "confusion": 0.5 },
+  "disappointment?": { "disappointment": 0.5 },
+  "disconnection?": { "disconnection": 0.5 },
+  "tiredness?": { "tiredness": 0.5 },
+  "anger?": { "anger": 0.5 },
+  "frustration?": { "frustration": 0.5 },
+  "irritation?": { "irritation": 0.5 },
+  "loneliness?": { "loneliness": 0.5 },
+
+  "self_ok": { "contentment": 0.8, "clarity": 0.5 },
+  "vigilant": { "tension": 0.5, "fear": 0.3, "anxiety": 0.3 }
 }

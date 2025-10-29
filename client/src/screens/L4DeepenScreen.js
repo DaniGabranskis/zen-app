@@ -16,6 +16,7 @@ import { estimateIntensity } from '../utils/intensity';
 import ScreenWrapper from '../components/ScreenWrapper';
 import useThemeVars from '../hooks/useThemeVars';
 import { logEvent } from '../utils/telemetry';
+import { makeHeaderStyles, makeBarStyles, computeBar, BAR_BTN_H } from '../ui/screenChrome';
 
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
@@ -67,9 +68,10 @@ export default function L4DeepenScreen({ navigation }) {
   // bottom bar sizing (fixed height + platform-safe inset on iOS only)
   const BAR_BTN_H = 44;                    // fixed button height
   const BAR_VPAD = 10;                     // vertical padding inside the bar
-  const BAR_BASE_H = BAR_BTN_H + BAR_VPAD * 2; // visual bar height (no safe-area)
-  const BAR_SAFE = Platform.OS === 'ios' ? (insets?.bottom ?? 0) : 0; // avoid double-inset on Android
   const BAR_TOTAL_H = BAR_BASE_H + BAR_SAFE; // total overlap height
+  const { BAR_BASE_H, BAR_SAFE } = computeBar(insets);
+  const sHead = makeHeaderStyles(theme);
+  const sBar  = makeBarStyles(theme, BAR_BASE_H);
 
   // compute max height for pills container (adaptive by screen)
   const pillsMaxHeight = computePillsMaxHeight({
@@ -134,10 +136,10 @@ export default function L4DeepenScreen({ navigation }) {
       <View style={s.wrap}>
         {stage === 0 && (
           <>
-            <Text style={s.title}>Triggers</Text>
-            <Text style={s.subtitle}>
-              Select the triggers that, in your opinion, have influenced your well-being and condition
-            </Text>
+          <Text style={sHead.title}>Triggers</Text>
+          <Text style={sHead.subtitle}>
+            Select the triggers that, in your opinion, have influenced your well-being and condition
+          </Text>
             {probes.triggers.length === 0 && (
               <Text style={s.hint}>No triggers configured yet</Text>
             )}
@@ -158,8 +160,8 @@ export default function L4DeepenScreen({ navigation }) {
 
         {stage === 1 && (
           <>
-            <Text style={s.title}>Body & Mind</Text>
-            <Text style={s.subtitle}>
+            <Text style={sHead.title}>Body & Mind</Text>
+            <Text style={sHead.subtitle}>
               Select the body and mind patterns that, in your opinion, reflect how you’re feeling right now.
             </Text>
             {probes.bodyMind.length === 0 && (
@@ -181,13 +183,13 @@ export default function L4DeepenScreen({ navigation }) {
         )}
 
         {/* Bottom action bar: fixed, single CTA (Next/Continue) */}
-        <View style={[bar.bottomBar, { paddingBottom: BAR_SAFE }]}>
-          <View style={[bar.bottomInner, { height: BAR_BASE_H }]}>
+        <View style={[sBar.bottomBar, { paddingBottom: BAR_SAFE }]}>
+          <View style={[sBar.bottomInner, { height: BAR_BASE_H }]}>
             <TouchableOpacity
-              style={[bar.btnPrimary, { height: BAR_BTN_H }]}
+              style={[sBar.btn, sBar.btnPrimary, { height: BAR_BTN_H }]}
               onPress={stage === 0 ? next : finish}
             >
-              <Text style={bar.btnPrimaryText}>
+              <Text style={sBar.btnPrimaryText}>
                 {stage === 0 ? 'Next' : 'Next'}
               </Text>
             </TouchableOpacity>
