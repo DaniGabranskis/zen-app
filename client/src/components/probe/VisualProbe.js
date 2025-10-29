@@ -127,10 +127,9 @@ const makeStyles = (t, BAR_BASE_H) =>
     // Layout
     container: {
       flex: 1,
-      paddingHorizontal: 20,
-      paddingTop: 60,
-      paddingBottom: BAR_BASE_H + 8, // keep content above the bottom bar
-      justifyContent: 'flex-start',
+      paddingHorizontal: 16,
+      paddingTop: 16,
+      paddingBottom: BAR_BASE_H + 8,
     },
     // Cards row
     cards: {

@@ -2,19 +2,21 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import ScreenWrapper from '../components/ScreenWrapper';
 import useThemeVars from '../hooks/useThemeVars';
+import { makeHeaderStyles } from '../ui/screenChrome';
+
 
 export default function HistoryResultModal({ route, navigation }) {
   const t = useThemeVars();
   const item = route.params || {};
   const date = new Date(item.date || item.createdAt || Date.now()).toLocaleString();
 
-  const s = makeStyles(t);
+  const sHead = makeHeaderStyles(t);
 
   return (
-    <ScreenWrapper useFlexHeight style={{ backgroundColor: t.bg }}>
+    <ScreenWrapper useFlexHeight noTopInset style={{ backgroundColor: t.bg }}>
       <ScrollView contentContainerStyle={s.wrap}>
-        <Text style={s.title}>Session details</Text>
-        <Text style={[s.meta, { color: t.textSub }]}>{date}</Text>
+        <Text style={sHead.title}>Session details</Text>
+        <Text style={sHead.subtitle}>{date}</Text>
 
         <View style={[s.card, { backgroundColor: t.cardBg }]}>
           <Text style={s.cardLabel}>Dominant emotion</Text>
@@ -69,7 +71,7 @@ export default function HistoryResultModal({ route, navigation }) {
 }
 
 const makeStyles = (t) => StyleSheet.create({
-  wrap: { padding: 16, paddingBottom: 24 },
+  wrap: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 24 },
   title: { fontSize: 22, fontWeight: '900', textAlign: 'center', color: t.textMain, marginTop: 6 },
   meta: { fontSize: 12, textAlign: 'center', marginTop: 4, marginBottom: 10 },
   card: {

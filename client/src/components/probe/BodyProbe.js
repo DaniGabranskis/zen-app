@@ -62,7 +62,8 @@ const makeStyles = (t, BAR_BASE_H) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      padding: 16,
+      paddingHorizontal: 16,
+      paddingTop: 16,
       paddingBottom: BAR_BASE_H + 8,
     },
     cards: {

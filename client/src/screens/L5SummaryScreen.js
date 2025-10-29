@@ -213,13 +213,16 @@ export default function L5SummaryScreen({ navigation, route }) {
  };
 
   return (
-    <ScreenWrapper useFlexHeight style={{ backgroundColor: t.bg }}>
+    <ScreenWrapper useFlexHeight noTopInset={fromHistory} style={{ backgroundColor: t.bg }}>
       <ScrollView style={{ flex: 1 }} contentContainerStyle={s.scroll} showsVerticalScrollIndicator>
+        {!fromHistory && (
+        <>
         <Text style={sHead.title}>Summary</Text>
         <Text style={sHead.subtitle}>
           Here’s a quick recap. Your recommendations will use this.
         </Text>
-
+        </>
+       )}
         {/* Emotion circle with thin progress ring */}
         <View style={s.circleWrap}>
           <View style={{ width: CIRCLE, height: CIRCLE }}>

@@ -20,7 +20,7 @@ import useThemeVars from '../hooks/useThemeVars';
  * Keep logs enabled only in development builds if you prefer (wrap console.log calls).
  */
 
-export default function ScreenWrapper({ children, style, useFlexHeight = false, route }) {
+export default function ScreenWrapper({ children, style, useFlexHeight = false, route, noTopInset = false }) {
   const insets = useSafeAreaInsets();
   const screenHeight = Dimensions.get('window').height;
   const visibleHeight = screenHeight - insets.top - insets.bottom;
@@ -70,7 +70,7 @@ export default function ScreenWrapper({ children, style, useFlexHeight = false, 
   }, []); // run only on mount/unmount
 
   return (
-    <View style={[styles.outer, { backgroundColor: bgcolor, paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+    <View style={[styles.outer, { backgroundColor: bgcolor, paddingTop: noTopInset ? 0 : insets.top, paddingBottom: insets.bottom }]}>
       <View style={[useFlexHeight ? { flex: 1 } : { height: visibleHeight }, style]}>
         {children}
       </View>

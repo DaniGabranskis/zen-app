@@ -109,7 +109,7 @@ const makeStyles = (t, BAR_BASE_H, BAR_BTN_H) => StyleSheet.create({
   wrap: {
     flex: 1,
     paddingHorizontal: 16,
-    paddingTop: 8,
+    paddingTop: 15,
     paddingBottom: BAR_BASE_H + 8, // резерв без безопасной зоны (как в L5)
   },
   scrollContent: { paddingBottom: 12 },
