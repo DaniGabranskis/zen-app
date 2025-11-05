@@ -14,17 +14,14 @@ function truncateToFit(label, maxWidthPx, maxLabelLengthPx) {
   return label.length > maxChars ? label.slice(0, maxChars - 1) + '…' : label;
 }
 
-export default function DonutChart({
- data,
- containerWidth = 320,
- maxLabelFraction = 0.30,   // (unused when showOuterLabels=false)
- baseFont = 12,             // (unused when showOuterLabels=false)
- smallFont = 10,            // (unused when showOuterLabels=false)
- showOuterLabels = false,   // ← NEW: hide labels on the donut by default
+export default function DonutChart({ data, containerWidth = 320,
+ maxLabelFraction = 0.30,   // ← allow more space for labels (30% of screen width)
+ baseFont = 12,             // ← bump default font size
+ smallFont = 10,            // ← small fallback
 }) {
   const SIZE = containerWidth;
-  const RADIUS = containerWidth * 0.46;
-  const INNER_RADIUS = containerWidth * 0.29;
+  const RADIUS = containerWidth * 0.34;
+  const INNER_RADIUS = containerWidth * 0.22;
   const centerX = containerWidth / 2;
   const centerY = containerWidth / 2;
   const total = data.reduce((sum, d) => sum + d.value, 0);
@@ -54,7 +51,6 @@ export default function DonutChart({
           showText={false}
         />
 
-        {showOuterLabels && (
         <Svg width={SIZE} height={SIZE} style={styles.svg}>
           {data.map((item, index) => {
             const valueAngle = total > 0 ? (item.value / total) * 360 : 0;
@@ -144,7 +140,6 @@ export default function DonutChart({
             );
           })}
         </Svg>
-        )}
       </View>
     </View>
   );

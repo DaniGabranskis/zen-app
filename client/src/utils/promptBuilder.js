@@ -1,10 +1,11 @@
-// Purpose: Build an instruction that forces a strict JSON response.
-// Why: Reduce chances of non-JSON output and improve content quality.
-module.exports = function buildPrompt({ answers }) {
+// src/utils/promptBuilder.js
+
+// Default builder (оставляем, если тебе нужен "большой" JSON для других экранов)
+export default function buildPrompt({ answers }) {
   const formatted = (answers || [])
     .map((a) => {
-      const q = String(a.questionId || '').slice(0, 80);        // keep short
-      const ans = String(a.answerText || '').slice(0, 400);      // keep short
+      const q = String(a.questionId || '').slice(0, 80);
+      const ans = String(a.answerText || '').slice(0, 400);
       const tags = Array.isArray(a.tags) ? a.tags.join(', ') : '';
       return `Q: ${q}\nA: ${ans}${tags ? `\nTags: ${tags}` : ''}`;
     })
@@ -31,4 +32,42 @@ Constraints:
 - Be practical, plain language. Do not mention JSON or schema.
 - Output JSON only — no extra text.
 `.trim();
-};
+}
+
+// --- NEW: buildShortDescPrompt ---
+// Strict-JSON prompt for L5 shortDescription (1–3 short sentences).
+export function buildShortDescPrompt({ emotionKey, intensity, triggers, bodyMind, evidenceTags }) {
+  const ek = String(emotionKey || 'unknown');
+  const it = Number.isFinite(intensity) ? Number(intensity) : null;
+
+  const trig = Array.isArray(triggers) && triggers.length ? triggers.slice(0, 8) : [];
+  const bm   = Array.isArray(bodyMind) && bodyMind.length ? bodyMind.slice(0, 8) : [];
+  const tags = Array.isArray(evidenceTags) && evidenceTags.length ? evidenceTags.slice(0, 12) : [];
+
+  return `
+You are a reflection summarizer helping a person understand their current state.
+Return ONLY JSON:
+
+{
+  "shortDescription": "Write 2–3 short sentences directly to the user (you/your). 1) Acknowledge what they’re feeling now based on their selections (${ek}, intensity ${it ?? 'n/a'}). 2) Offer a gentle reflection on what that might mean or how it fits their recent pattern. 3) Close with a kind, realistic note or suggestion that feels supportive, not prescriptive. No lists. No emojis."
+}
+
+Context:
+- dominantEmotion: ${ek}
+- intensity: ${it ?? '(none)'}
+- topTriggers: ${trig.join(', ') || '(none)'}
+- bodyMindSignals: ${bm.join(', ') || '(none)'}
+- evidenceTags: ${tags.join(', ') || '(none)'}
+
+Tone & Style (MANDATORY):
+- Speak in second person (you/your). Never say “the user”.
+- Acknowledge emotions with empathy and realism. Avoid over-positivity.
+- Use verbs like “you’re noticing”, “you seem”, “you’ve been feeling”, “you’re starting to”.
+- Keep it factual but human. Show understanding, not analysis.
+- Do NOT restate inputs word-for-word; summarize the meaning behind them.
+- No speculation about external causes unless obvious in context.
+- End with one calm, non-intrusive suggestion (optional).
+- Max ~300 characters total.
+- Output valid JSON only (no backticks, no extra text).
+`.trim();
+}

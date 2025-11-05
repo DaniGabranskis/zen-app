@@ -1,15 +1,16 @@
-// services/aiService.js
-// Purpose: Centralize AI call with retries, timeout, safe JSON, and fallback.
-// Why: Keep UI simple and robust; avoid duplicating risky logic.
-import openai from '../utils/openaiClient';
-import buildPrompt from '../utils/promptBuilder';
-import { normalizeAiResult } from '../utils/aiSchema';
-import { withBackoff, withTimeout } from '../utils/aiBackoff';
-import { generateLocalAdvice } from '../utils/localAdvice';
+// src/services/aiService.js
+import openai from './openaiClient';
+import { buildShortDescPrompt } from './promptBuilder';
 
-function safeParse(text) {
-  // Purpose: Safely parse JSON possibly wrapped with extra text.
-  // Why: Models sometimes add stray characters; we recover the JSON core.
+// --- tiny helpers ---
+function withTimeout(promise, ms = 16000) {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error('timeout')), ms);
+    promise.then(v => { clearTimeout(t); resolve(v); }, e => { clearTimeout(t); reject(e); });
+  });
+}
+
+function safeParseJson(text) {
   try { return JSON.parse(text); }
   catch {
     const s = text.indexOf('{'), e = text.lastIndexOf('}');
@@ -20,37 +21,59 @@ function safeParse(text) {
   }
 }
 
-export async function generateInsight(answers) {
+// --- NEW: L5 short description ---
+/**
+ * generateShortDescription(payload)
+ * payload = { emotionKey, intensity, triggers:[], bodyMind:[], evidenceTags:[] }
+ * returns: { result: { shortDescription }, source: 'ai' | 'local' }
+ */
+export async function generateShortDescription(payload = {}) {
+  const {
+    emotionKey = '',
+    intensity = null,
+    triggers = [],
+    bodyMind = [],
+    evidenceTags = [],
+  } = payload;
+
+  const prompt = buildShortDescPrompt({ emotionKey, intensity, triggers, bodyMind, evidenceTags });
+
   const online = async () => {
-    const prompt = buildPrompt({ answers });
-    const req = async () => {
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini', // Use a strong, cost-efficient model. Change if needed.
+    const completion = await withTimeout(
+      openai.chat.completions.create({
+        model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: [
-            'You are a concise, kind, trauma-informed reflection coach.',
-            'English, CEFR B2, neutral. No medical claims. Only JSON.',
-            'Total length <= ~900 chars.'
-          ].join(' ') },
+          { role: 'system', content: 'You produce JSON only. Address the user as "you". Use facts they selected; no hedging (no might/may/could). No speculation. Concise (<=220 chars). Neutral, kind, practical.' },
           { role: 'user', content: prompt },
         ],
-        temperature: 0.7,
-        max_tokens: 400,
-      });
-      const raw = completion.choices?.[0]?.message?.content?.trim() || '';
-      const parsed = safeParse(raw);
-      if (!parsed) throw new Error('AI returned non-JSON');
-      return normalizeAiResult(parsed);
-    };
-    return withTimeout(withBackoff(req, { retries: 2, baseMs: 700 }), 22000);
+        temperature: 0.5,
+        max_tokens: 220,
+      }),
+      16000
+    );
+
+    const raw = completion?.choices?.[0]?.message?.content?.trim() || '';
+    const parsed = safeParseJson(raw);
+    if (!parsed || typeof parsed.shortDescription !== 'string') {
+      throw new Error('invalid JSON shortDescription');
+    }
+    return { shortDescription: parsed.shortDescription.trim().slice(0, 400) };
   };
 
   try {
     const result = await online();
     return { result, source: 'ai' };
   } catch (e) {
-    console.warn('[AI fallback]', e?.message || e); // technical log, no PII
-    const local = generateLocalAdvice(answers);
-    return { result: normalizeAiResult(local), source: 'local' };
+    console.warn('[AI shortDescription fallback]', e?.message || e);
+    // offline/local fallback (простая сборка из входа, чтобы не оставить пустым поле)
+    const parts = [];
+    if (emotionKey) parts.push(`State leans toward “${emotionKey}”.`);
+    if (Number.isFinite(intensity)) parts.push(`Intensity about ${intensity}/10.`);
+    const pieces = [];
+    if (triggers?.length) pieces.push(`triggers: ${triggers.slice(0,3).join(', ')}`);
+    if (bodyMind?.length) pieces.push(`signals: ${bodyMind.slice(0,3).join(', ')}`);
+    if (pieces.length) parts.push(`Based on ${pieces.join('; ')}.`);
+    const shortDescription = (parts.join(' ') || 'We summarized your inputs briefly.').slice(0, 400);
+    return { result: { shortDescription }, source: 'local' };
   }
 }

@@ -1,6 +1,6 @@
 // src/screens/L5SummaryScreen.js
-import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensions, Platform } from 'react-native';
+import React, { useMemo, useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensions, Platform, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,6 +11,7 @@ import rawProbes from '../data/probes.v1.json';
 import { estimateIntensity } from '../utils/intensity';
 import { getEmotionMeta } from '../utils/evidenceEngine';
 import { makeHeaderStyles, makeBarStyles, computeBar, BAR_BTN_H } from '../ui/screenChrome';
+import { generateShortDescription } from '../utils/aiService';
 
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 const EMPTY_ARR = Object.freeze([]);
@@ -98,6 +99,67 @@ function getMiniInsight(emotionKey) {
   return list[idx];
 }
 
+// --- Local stats-based mini insight (human style, 1 sentence) ---------------
+function daysBetween(d1, d2) {
+  const MS = 24*60*60*1000;
+  return Math.floor((d2 - d1) / MS);
+}
+
+function titleCase(s) {
+  return (s || '').replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, m => m.toUpperCase())
+    .trim();
+}
+
+function computeMiniInsightFromHistory(history = [], emotionKey = '') {
+  if (!emotionKey) {
+    return 'There is no pattern at the moment, your days are very varied.';
+  }
+
+  const now = Date.now();
+  const ekTitle = titleCase(emotionKey);
+
+  const same = history.filter(it =>
+    (it?.dominantGroup || '').toLowerCase() === String(emotionKey).toLowerCase()
+  );
+
+  if (same.length === 0) {
+    return 'There is no pattern at the moment, your days are very varied.';
+  }
+
+  // last seen
+  const latestTs = same
+    .map(it => new Date(it.date || it.createdAt || 0).getTime() || 0)
+    .sort((a,b) => b-a)[0];
+
+  const lastDays = Number.isFinite(latestTs) ? daysBetween(latestTs, now) : null;
+
+  // windows
+  const last7  = now - 7  * 24*60*60*1000;
+  const last30 = now - 30 * 24*60*60*1000;
+  const count7  = same.filter(it => new Date(it.date || it.createdAt || 0).getTime() >= last7).length;
+  const count30 = same.filter(it => new Date(it.date || it.createdAt || 0).getTime() >= last30).length;
+
+  // humanized message (1 sentence)
+  if (count7 >= 3) {
+    // Пример: "Lately you've been feeling Sadness often — 3 times in the last 7 days."
+    return `Lately you've been feeling ${ekTitle.toLowerCase()} often — ${count7} times in the last 7 days.`;
+  }
+
+  if (lastDays !== null && lastDays <= 3) {
+    // Пример: "You've felt Sadness recently — yesterday."
+    const when = lastDays === 0 ? 'today' : lastDays === 1 ? 'yesterday' : `${lastDays} days ago`;
+    return `You've felt ${ekTitle.toLowerCase()} recently — ${when}.`;
+  }
+
+  if (count30 >= 4) {
+    // Пример: "Sadness showed up 5 times in the last 30 days."
+    return `${ekTitle} showed up ${count30} times in the last 30 days.`;
+  }
+
+  // дефолт: нет выраженного паттерна
+  return 'There is no clear pattern yet — your days look varied.';
+}
 
 export default function L5SummaryScreen({ navigation, route }) {
   const params = route?.params || {};
@@ -122,13 +184,21 @@ export default function L5SummaryScreen({ navigation, route }) {
   const _l3Emotion  = useStore(s => s.sessionDraft?.l3?.emotionKey);
   const _picked     = useStore(s => s.emotion);
 
-  const emotionKey  = fromHistory
+    const emotionKey  = fromHistory
     ? (item?.dominantGroup || histSess?.l3?.emotionKey || EMPTY_STR)
-    : (_dominant ?? _l3Emotion ?? _picked ?? EMPTY_STR);
+    : (_dominant || _l3Emotion || _picked || EMPTY_STR);
 
-  const aiDesc      = aiSummaryFromState(emotionKey);
-  const miniInsight = useMemo(() => getMiniInsight(emotionKey), [emotionKey]);
+  const historyItems = useStore(s => {
+    if (Array.isArray(s.history)) return s.history;
+    if (Array.isArray(s.history?.items)) return s.history.items;
+    return [];
+  });
 
+  const [loading, setLoading] = useState(!fromHistory);
+  const [aiDesc, setAiDesc] = useState('');
+  const [miniInsight, setMiniInsight] = useState('');
+  const [aiSource, setAiSource] = useState(''); // 'ai' | 'local'
+  
   const _storeTriggers = useStore(s => s.sessionDraft?.l4?.triggers);
   const _storeBM       = useStore(s => s.sessionDraft?.l4?.bodyMind);
 
@@ -143,6 +213,7 @@ export default function L5SummaryScreen({ navigation, route }) {
   const setL4Triggers     = useStore(s => s.setL4Triggers);
   const setL4BodyMind     = useStore(s => s.setL4BodyMind);
   const setL4Intensity    = useStore(s => s.setL4Intensity);
+  const setL5Fields = useStore(s => s.setL5Fields);
 
   // ---- локальные копии (сейчас read-only показ)
   const [editTrig] = useState(storeTriggers);
@@ -212,113 +283,202 @@ export default function L5SummaryScreen({ navigation, route }) {
    navigation.navigate('L4Deepen'); 
  };
 
+ // Loading effect: we calculate a local mini-insight and request a short AI description
+useEffect(() => {
+  let isMounted = true;
+
+  if (fromHistory) {
+    // If we open from history, we take the already saved data and turn off the download
+    const histMini  = (histSess?.l5?.miniInsight ?? '');
+    const histShort = (histSess?.l5?.shortDescription ?? '');
+    setMiniInsight(histMini);
+    setAiDesc(histShort || aiSummaryFromState(emotionKey));
+    setLoading(false);
+    return () => { isMounted = false; };
+  }
+
+  // 1) Mini-insight locally, immediately (works offline)
+  const localMini = computeMiniInsightFromHistory(historyItems, emotionKey || 'Emotion');
+  setMiniInsight(localMini);
+
+  // 2) Prepare input for AI
+  const payload = {
+    emotionKey,
+    intensity: previewIntensity,
+    triggers: Array.isArray(storeTriggers) ? storeTriggers : [],
+    bodyMind: Array.isArray(storeBM) ? storeBM : [],
+    evidenceTags: Array.isArray(evidenceTags) ? evidenceTags : [],
+  };
+
+  (async () => {
+    try {
+      const { result, source } = await generateShortDescription(payload);
+      if (!isMounted) return;
+      setAiDesc(result?.shortDescription || aiSummaryFromState(emotionKey));
+      setAiSource(source || '');
+      // Save the draft to L6 so that HistoryResultModal can see these values
+      setL5Fields({
+        miniInsight: localMini,
+        shortDescription: (result?.shortDescription || '').trim(),
+      });
+    } catch (e) {
+      if (!isMounted) return;
+      console.warn('[L5] shortDescription error', e?.message || e);
+      setAiDesc(aiSummaryFromState(emotionKey));
+      setAiSource('local');
+      setL5Fields({
+        miniInsight: localMini,
+        shortDescription: '',
+      });
+    } finally {
+      if (isMounted) setLoading(false);
+    }
+  })();
+
+  return () => { isMounted = false; };
+  // Important: Only monitor key dependencies
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [fromHistory, emotionKey]);
+
+  useEffect(() => {
+    console.log('[L5] loading:', loading);
+    console.time('[AI] shortDescription');
+    console.timeEnd('[AI] shortDescription');
+  }, [loading]);
+
+// LOADING SCREEN
+if (loading) {
   return (
-    <ScreenWrapper useFlexHeight noTopInset={fromHistory} style={{ backgroundColor: t.bg }}>
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={s.scroll} showsVerticalScrollIndicator>
-        {!fromHistory && (
-        <>
-        <Text style={sHead.title}>Summary</Text>
-        <Text style={sHead.subtitle}>
-          Here’s a quick recap. Your recommendations will use this.
+    <ScreenWrapper useFlexHeight noTopInset={fromHistory} style={{ backgroundColor: '#fff' }}>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator size="large" color="#999" />
+        <Text style={{ marginTop: 12, fontSize: 16, fontWeight: '700', color: '#222' }}>
+          Analysing...
         </Text>
-        </>
-       )}
-        {/* Emotion circle with thin progress ring */}
-        <View style={s.circleWrap}>
-          <View style={{ width: CIRCLE, height: CIRCLE }}>
-            {/* градиентное «ядро» круга */}
-            <LinearGradient
-              colors={Array.isArray(meta?.color) ? meta.color : ['#777', '#444']}
-              style={s.circle}
-              start={{ x: 0.1, y: 0.1 }}
-              end={{ x: 0.9, y: 0.9 }}
-            >
-              <Text style={s.circleTitle} numberOfLines={1} adjustsFontSizeToFit>
-                {emotionTitle}
-              </Text>
-              <Text style={s.circleHint}>Dominant emotion</Text>
-              {/* число под подписью тем же стилем */}
-              <Text style={s.circleHint}>{previewIntensity}/10</Text>
-            </LinearGradient>
-
-            {/* тонкое кольцо-прогресс поверх круга */}
-            <Svg width={CIRCLE} height={CIRCLE} style={StyleSheet.absoluteFill}>
-              {/* фон кольца */}
-              <Circle
-                cx={CIRCLE / 2}
-                cy={CIRCLE / 2}
-                r={Rpath}
-                fill="none"
-                stroke="#cacaca"
-                strokeWidth={RING_STROKE}
-              />
-              {/* прогресс */}
-              <Circle
-                cx={CIRCLE / 2}
-                cy={CIRCLE / 2}
-                r={Rpath}
-                fill="none"
-                stroke="#A78BFA"
-                strokeOpacity={0.9}
-                strokeWidth={RING_STROKE}
-                strokeLinecap="round"
-                strokeDasharray={`${arcLen} ${CIRC - arcLen}`}
-                rotation={-90}
-                originX={CIRCLE / 2}
-                originY={CIRCLE / 2}
-              />
-            </Svg>
-          </View>
-        </View>
-
-        {/* подпись под кругом */}
-        <Text style={s.intensityBadge}>Intensity • {intensityBucket}</Text>
-        <Text style={s.confNote}>{showConfidence >= 0.7 ? 'Auto • accurate' : 'Auto • check'}</Text>
-
-        {/* Mini Insight (placeholder) */}
-        <View style={[s.aiCard, { backgroundColor: t.cardBg }]}>
-          <Text style={s.aiCardTitle}>Mini insight</Text>
-          <Text style={[s.aiCardText, { color: t.textSub }]}>{miniInsight}</Text>
-        </View>
-
-        {/* AI Description */}
-        <View style={[s.aiCard, { backgroundColor: t.cardBg }]}>
-          <Text style={s.aiCardTitle}>Short description</Text>
-          <Text style={[s.aiCardText, { color: t.textSub }]}>{aiDesc}</Text>
-        </View>
-
-        {/* выбранные Triggers */}
-        <View style={s.card}>
-          <Text style={s.cardLabel}>Triggers (selected)</Text>
-          <SelectedChips data={editTrig} emptyText="No triggers selected." theme={t} />
-        </View>
-
-        {/* выбранные Body & Mind */}
-        <View style={s.card}>
-          <Text style={s.cardLabel}>Body & Mind (selected)</Text>
-          <SelectedChips data={editBM} emptyText="No body & mind patterns selected." theme={t} />
-        </View>
-
-        {/** spacer no longer needed, bottom bar space is reserved via paddingBottom */}
-      </ScrollView>
-
-      {/* CTA is pushed to the bottom */}
-      {/* Bottom action bar: fixed, two buttons */}
-      {!fromHistory && (
-        <View style={[sBar.bottomBar, { paddingBottom: BAR_SAFE }]} pointerEvents="box-none">
-          <View style={sBar.bottomBarShadow} />
-          <View style={[sBar.bottomInner, { height: BAR_BASE_H }]}>
-            <TouchableOpacity style={[sBar.btn, sBar.btnSecondary, { height: BAR_BTN_H }]} onPress={onEdit}>
-              <Text style={sBar.btnSecondaryText}>Edit</Text>
-            </TouchableOpacity>
-            <View style={{ width: 12 }} />
-            <TouchableOpacity style={[sBar.btn, sBar.btnPrimary, { height: BAR_BTN_H }]} onPress={onContinue}>
-              <Text style={sBar.btnPrimaryText}>Next</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
+      </View>
     </ScreenWrapper>
+  );
+}
+
+// === MAIN SCREEN ===
+return (
+  <ScreenWrapper useFlexHeight noTopInset={fromHistory} style={{ backgroundColor: t.bg }}>
+    <ScrollView style={{ flex: 1 }} contentContainerStyle={s.scroll} showsVerticalScrollIndicator>
+      {!fromHistory && (
+        <>
+          <Text style={sHead.title}>Summary</Text>
+          <Text style={sHead.subtitle}>
+            Here’s a quick recap. Your recommendations will use this.
+          </Text>
+        </>
+      )}
+
+      {/* Emotion circle with thin progress ring */}
+      <View style={s.circleWrap}>
+        <View style={{ width: CIRCLE, height: CIRCLE }}>
+          {/* градиентное «ядро» круга */}
+          <LinearGradient
+            colors={Array.isArray(meta?.color) ? meta.color : ['#777', '#444']}
+            style={s.circle}
+            start={{ x: 0.1, y: 0.1 }}
+            end={{ x: 0.9, y: 0.9 }}
+          >
+            <Text style={s.circleTitle} numberOfLines={1} adjustsFontSizeToFit>
+              {emotionTitle}
+            </Text>
+            <Text style={s.circleHint}>Dominant emotion</Text>
+            <Text style={s.circleHint}>{previewIntensity}/10</Text>
+          </LinearGradient>
+
+          {/* тонкое кольцо-прогресс поверх круга */}
+          <Svg width={CIRCLE} height={CIRCLE} style={StyleSheet.absoluteFill}>
+            <Circle
+              cx={CIRCLE / 2}
+              cy={CIRCLE / 2}
+              r={Rpath}
+              fill="none"
+              stroke="#cacaca"
+              strokeWidth={RING_STROKE}
+            />
+            <Circle
+              cx={CIRCLE / 2}
+              cy={CIRCLE / 2}
+              r={Rpath}
+              fill="none"
+              stroke="#A78BFA"
+              strokeOpacity={0.9}
+              strokeWidth={RING_STROKE}
+              strokeLinecap="round"
+              strokeDasharray={`${arcLen} ${CIRC - arcLen}`}
+              rotation={-90}
+              originX={CIRCLE / 2}
+              originY={CIRCLE / 2}
+            />
+          </Svg>
+        </View>
+      </View>
+
+      {/* подпись под кругом */}
+      <Text style={s.intensityBadge}>Intensity • {intensityBucket}</Text>
+      <Text style={s.confNote}>
+        {showConfidence >= 0.7 ? 'Auto • accurate' : 'Auto • check'}
+      </Text>
+
+      {/* Mini Insight */}
+      <View style={[s.aiCard, { backgroundColor: t.cardBg }]}>
+        <Text style={s.aiCardTitle}>Mini insight</Text>
+        <Text style={[s.aiCardText, { color: t.textSub }]}>{miniInsight}</Text>
+      </View>
+
+      {/* AI Description */}
+      <View style={[s.aiCard, { backgroundColor: t.cardBg }]}>
+        <Text style={s.aiCardTitle}>
+          Short description{' '}
+          {aiSource === 'local' ? (
+            <Text style={{ fontSize: 12, color: t.textSub }}>(offline)</Text>
+          ) : null}
+        </Text>
+        <Text style={[s.aiCardText, { color: t.textSub }]}>{aiDesc}</Text>
+      </View>
+
+      {/* выбранные Triggers */}
+      <View style={s.card}>
+        <Text style={s.cardLabel}>Triggers (selected)</Text>
+        <SelectedChips data={editTrig} emptyText="No triggers selected." theme={t} />
+      </View>
+
+      {/* выбранные Body & Mind */}
+      <View style={s.card}>
+        <Text style={s.cardLabel}>Body & Mind (selected)</Text>
+        <SelectedChips data={editBM} emptyText="No body & mind patterns selected." theme={t} />
+      </View>
+    </ScrollView>
+
+    {/* Bottom action bar */}
+    {!fromHistory && (
+      <View
+        style={[sBar.bottomBar, { paddingBottom: BAR_SAFE }]}
+        pointerEvents="box-none"
+      >
+        <View style={sBar.bottomBarShadow} />
+        <View style={[sBar.bottomInner, { height: BAR_BASE_H }]}>
+          <TouchableOpacity
+            style={[sBar.btn, sBar.btnSecondary, { height: BAR_BTN_H }]}
+            onPress={onEdit}
+          >
+            <Text style={sBar.btnSecondaryText}>Edit</Text>
+          </TouchableOpacity>
+          <View style={{ width: 12 }} />
+          <TouchableOpacity
+            style={[sBar.btn, sBar.btnPrimary, { height: BAR_BTN_H }]}
+            onPress={onContinue}
+          >
+            <Text style={sBar.btnPrimaryText}>Next</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    )}
+  </ScreenWrapper>
   );
 }
 

@@ -4,6 +4,7 @@
 import weights from '../data/weights.tag2emotion.v1.json';
 import emotions from '../data/emotions20.json';
 import { canonicalizeTags } from './canonicalizeTags';
+import { getPolarityFromMeta, POLARITY_FALLBACK } from '../data/emotionMeta';
 
 const T_MIX = 0.55;   // show at least something (dominant or mix)
 const T_DOM = 0.68;   // confident dominant
@@ -99,7 +100,41 @@ export function routeEmotionFromCards(acceptedCards) {
 }
 
 export function getEmotionMeta(key) {
-  return emotions.find(e => e.key === key) || { key, name: key, color: ['#ccc','#eee'], emoji: '' };
+  // Normalize lookup to be robust to key/name usage
+  const k = String(key || '').toLowerCase();
+  const found = emotions.find(
+    e => String(e.key || '').toLowerCase() === k || String(e.name || '').toLowerCase() === k
+  );
+
+  if (!found) {
+    // Unknown emotion: return safe meta with neutral polarity
+    return { key: k, name: key, color: '#ccc', emoji: '', polarity: 'neutral' };
+  }
+
+  // Color can be array or string — take the first if array
+  const color = Array.isArray(found.color)
+  ? found.color
+  : [found.color || '#ccc', found.color || '#ccc'];
+
+  // Resolve polarity:
+  // 1) try meta-driven valence → polarity,
+  // 2) fallback dictionary,
+  // 3) neutral.
+  const fromMeta =
+    getPolarityFromMeta(found.key) ||
+    getPolarityFromMeta(found.name);
+  const fallback =
+    POLARITY_FALLBACK[String(found.key || '').toLowerCase()] ||
+    POLARITY_FALLBACK[String(found.name || '').toLowerCase()];
+  const polarity = fromMeta || fallback || 'neutral';
+
+  return {
+    key: found.key,
+    name: found.name,
+    color,
+    emoji: found.emoji || '',
+    polarity,
+  };
 }
 
 export function accumulateTagsFromCards(cards = []) {

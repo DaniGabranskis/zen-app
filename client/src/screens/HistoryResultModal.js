@@ -12,11 +12,32 @@ export default function HistoryResultModal({ route, navigation }) {
 
   const sHead = makeHeaderStyles(t);
 
+  const miniInsight =
+  item?.session?.l5?.miniInsight ??
+  '—';
+  const aiDesc =
+  item?.session?.l5?.shortDescription ??
+  '—';
+
+  const histL5 = item?.session?.l5 || {};
+  const histMini = histL5.miniInsight || '';
+  const histShort = histL5.shortDescription || '';
+
   return (
     <ScreenWrapper useFlexHeight noTopInset style={{ backgroundColor: t.bg }}>
       <ScrollView contentContainerStyle={s.wrap}>
-        <Text style={sHead.title}>Session details</Text>
-        <Text style={sHead.subtitle}>{date}</Text>
+        
+        {/* Mini Insight (placeholder) */}
+        <View style={[s.aiCard, { backgroundColor: t.cardBg }]}>
+          <Text style={s.aiCardTitle}>Mini insight</Text>
+          <Text style={[s.aiCardText, { color: t.textSub }]}>{miniInsight}</Text>
+        </View>
+
+        {/* AI Description */}
+        <View style={[s.aiCard, { backgroundColor: t.cardBg }]}>
+          <Text style={s.aiCardTitle}>Short description</Text>
+          <Text style={[s.aiCardText, { color: t.textSub }]}>{aiDesc}</Text>
+        </View>
 
         <View style={[s.card, { backgroundColor: t.cardBg }]}>
           <Text style={s.cardLabel}>Dominant emotion</Text>

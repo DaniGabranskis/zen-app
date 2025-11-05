@@ -5,14 +5,18 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions } from 'react-native';
-import { Calendar } from 'react-native-calendars';
+import HistoryCalendar from '../components/HistoryCalendar';
 import useStore from '../store/useStore';
 import useThemeVars from '../hooks/useThemeVars';
 import useResponsive from '../hooks/useResponsive';
 import ScreenWrapper from '../components/ScreenWrapper';
+import { getEmotionMeta } from '../utils/evidenceEngine';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const P_SMALL = Math.round(SCREEN_WIDTH * 0.02);
+const BTN_HEIGHT = Math.round(SCREEN_WIDTH * 0.12); // 10% высоты экрана
+const BTN_RADIUS = Math.round(SCREEN_WIDTH * 0.05);
+const BTN_TEXT = Math.round(SCREEN_WIDTH * 0.04);  // размер шрифта
 
 export default function HistoryScreen({ navigation }) {
   // NOTE: get theme first, then compute keys that depend on theme
@@ -35,8 +39,8 @@ export default function HistoryScreen({ navigation }) {
   const sortOptions = [
     { label: 'Date ↓', value: 'dateDesc' },
     { label: 'Date ↑', value: 'dateAsc' },
-    { label: 'Score ↓', value: 'scoreDesc' },
-    { label: 'Score ↑', value: 'scoreAsc' },
+    { label: 'A→Z', value: 'labelAsc' },
+    { label: 'Z→A', value: 'labelDesc' },
   ];
 
   // Dropdown state and anchor (for absolute-positioned menu)
@@ -56,24 +60,6 @@ export default function HistoryScreen({ navigation }) {
     return '#22C55E';                   // green for high
   };
 
-  // Build marked dates for Calendar (one dot per day, colored by score)
-  const markedDates = useMemo(() => {
-    const marked = {};
-    history.forEach((item) => {
-      const dateKey = new Date(item.date).toISOString().split('T')[0];
-      const color = getScoreColor(item.score);
-      marked[dateKey] = {
-        selected: true,
-        selectedColor: color,
-        customStyles: {
-          container: { backgroundColor: color, borderRadius: 8 },
-          text: { color: 'white', fontWeight: 'bold' },
-        },
-      };
-    });
-    return marked;
-  }, [history]);
-
   // Header with title and divider
   const renderHeader = () => (
     <View style={stylesHeader.header}>
@@ -86,8 +72,19 @@ export default function HistoryScreen({ navigation }) {
   const renderCard = (item) => {
     const date = new Date(item.date).toLocaleDateString();
     const label = item.dominantGroup || 'Unknown';
-    const barColor = getScoreColor(item.score);
-    const preview = (item.recommendation?.title ? `${item.recommendation.title} — ` : '') + (item.reflection || 'No reflection');
+    const meta = getEmotionMeta(item.dominantGroup);
+    const barColor = Array.isArray(meta?.color) ? meta.color[0] : '#A78BFA';
+    // prefer shortDescription from session.l5; fallback to miniInsight; else '—'
+    const short = item?.session?.l5?.shortDescription?.trim?.() || '';
+    const mini  = item?.session?.l5?.miniInsight?.trim?.() || '';
+    const text  = short || mini || '—';
+
+    // Limit the length of the text (approximately 80 characters)
+    const maxLen = 80;
+    const preview =
+      text.length > maxLen
+        ? text.slice(0, maxLen).trim().replace(/[.,;:]?$/, '') + '...'
+        : text;
 
     return (
       <TouchableOpacity
@@ -102,7 +99,9 @@ export default function HistoryScreen({ navigation }) {
         <View style={[stylesCard.corner, { backgroundColor: barColor, width: corner, height: corner }]} />
         <Text style={[stylesCard.date, { color: data }]}>{date}</Text>
         <Text style={stylesCard.emotionLine}>{label}</Text>
-        <Text style={stylesCard.score}>Score: {item.score}/100</Text>
+        <Text style={stylesCard.score}>
+          Intensity: {item?.session?.l4?.intensity ?? '—'}/10
+        </Text>
         <Text numberOfLines={3} style={stylesCard.preview}>{preview}...</Text>
       </TouchableOpacity>
     );
@@ -180,9 +179,20 @@ export default function HistoryScreen({ navigation }) {
 
     list.sort((a, b) => {
       if (sortType === 'dateDesc') return new Date(b.date) - new Date(a.date);
-      if (sortType === 'dateAsc') return new Date(a.date) - new Date(b.date);
-      if (sortType === 'scoreDesc') return b.score - a.score;
-      if (sortType === 'scoreAsc') return a.score - b.score;
+      if (sortType === 'dateAsc')  return new Date(a.date) - new Date(b.date);
+
+      // NEW: sort by emotion label
+      if (sortType === 'labelAsc') {
+        const la = (a?.dominantGroup || '').toString();
+        const lb = (b?.dominantGroup || '').toString();
+        return la.localeCompare(lb, undefined, { sensitivity: 'base' });
+      }
+      if (sortType === 'labelDesc') {
+        const la = (a?.dominantGroup || '').toString();
+        const lb = (b?.dominantGroup || '').toString();
+        return lb.localeCompare(la, undefined, { sensitivity: 'base' });
+      }
+
       return 0;
     });
 
@@ -190,69 +200,25 @@ export default function HistoryScreen({ navigation }) {
   }, [history, dateFilter, sortType]);
 
   return (
-    <ScreenWrapper style={[stylesPage.container, { backgroundColor: bgcolor }]}>
+    <ScreenWrapper useFlexHeight noBottomInset style={[stylesPage.container, { backgroundColor: bgcolor }]}>
       <FlatList
         data={filteredHistory}
         keyExtractor={(item, index) => `${item.date}-${index}`}
         contentContainerStyle={{
           ...stylesPage.content,
-          // Purpose: avoid empty gap while keeping content clear of the tab bar
-          paddingBottom: 0, // no extra gap at the bottom
+          // Keep a small bottom padding so last card is not under the tab bar
+          paddingBottom: 8,
         }}
         ListHeaderComponent={() => (
           <>
             {renderHeader()}
             {renderFilterControls()}
             {showCalendar && (
-              <View
-                style={{
-                  // Purpose: match card width and edges exactly
-                  width: '92%',                 // same as cards
-                  alignSelf: 'center',          // center within screen
-                  borderRadius: corner,         // same rounding as cards
-                  overflow: 'hidden',           // clip calendar to rounded corners
-                  backgroundColor: button, // dropdown uses same color as Sort button
-                  elevation: 2,
-                  marginTop: pad * 0.6,
-                  marginBottom: pad * 0.8,
-                }}
-              >
-                <Calendar
-                  key={calendarKey}
-                  markingType="custom"
-                  markedDates={markedDates}
-                  onDayPress={(day) => {
-                    // Purpose: toggle date range selection
-                    if (!dateFilter.from || (dateFilter.from && dateFilter.to)) {
-                      setDateFilter({ from: day.dateString, to: null });
-                    } else {
-                      const fromDate = new Date(dateFilter.from);
-                      const toDate = new Date(day.dateString);
-                      if (toDate < fromDate) {
-                        setDateFilter({ from: day.dateString, to: dateFilter.from });
-                      } else {
-                        setDateFilter((prev) => ({ ...prev, to: day.dateString }));
-                      }
-                    }
-                  }}
-                  theme={{
-                    // Purpose: remove internal borders and keep colors consistent
-                    calendarBackground: cardBg,
-                    selectedDayBackgroundColor: '#A78BFA',
-                    selectedDayTextColor: '#fff',
-                    textDisabledColor: '#8B8B8B',
-                    arrowColor: textMain,
-                    textSectionTitleColor: weekHeaderColor, // weekday strip (Sun..Sat)
-                    monthTextColor: textMain,               // month title color
-                    dayTextColor: textMain,                 // days color
-                    textDayFontWeight: '500',
-                    borderWidth: 0,
-                  }}
-                  style={{
-                    // Purpose: let calendar fill wrapper exactly
-                    width: '100%',
-                    backgroundColor: 'transparent',
-                  }}
+              <View style={{ marginTop: pad * 0.3, marginBottom: pad * 0.5 }}>
+                <HistoryCalendar
+                  history={history}
+                  value={dateFilter}
+                  onChange={(range) => setDateFilter(range)}
                 />
               </View>
             )}
@@ -286,21 +252,31 @@ export default function HistoryScreen({ navigation }) {
         },
       ]}
     >
-      {sortOptions.map((opt) => (
-        <TouchableOpacity
-          key={opt.value}
-          style={[
-            stylesControls.dropdownItem,
-            opt.value === sortType && stylesControls.selectedItem,
-          ]}
-          onPress={() => {
-            setSortType(opt.value);
-            setDropdownOpen(false);
-          }}
-        >
-          <Text style={stylesControls.dropdownItemText}>{opt.label}</Text>
-        </TouchableOpacity>
-      ))}
+      {sortOptions.map((opt) => {
+        const selected = opt.value === sortType;
+        return (
+          <TouchableOpacity
+            key={opt.value}
+            style={[
+              stylesControls.dropdownItem,
+              selected && stylesControls.selectedItem,
+            ]}
+            onPress={() => {
+              setSortType(opt.value);
+              setDropdownOpen(false);
+            }}
+          >
+            <Text
+              style={[
+                stylesControls.dropdownItemText,
+                { color: selected ? '#fff' : textMain }, // ← видимый цвет
+              ]}
+            >
+              {opt.label}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
     </View>
   </View>
 )}
@@ -325,20 +301,25 @@ const stylesPage = StyleSheet.create({
 });
 
 const stylesHeader = StyleSheet.create({
-  header: { width: '100%', alignItems: 'center', marginTop: 16 },
+    header: {
+    width: '100%',
+    alignItems: 'center',
+    marginTop: Math.round(SCREEN_WIDTH * 0.08), // одинаковый верхний отступ
+  },
   title: {
     fontSize: Math.round(SCREEN_WIDTH * 0.08),
     fontWeight: '800',
     textAlign: 'center',
     alignSelf: 'center',
-    marginBottom: 16,
+    marginBottom: Math.round(SCREEN_WIDTH * 0.05),
   },
   divider: {
     height: 1.5,
     width: Math.round(SCREEN_WIDTH * 0.5),
     alignSelf: 'center',
-    opacity: 0.12,
-    marginBottom: 16,
+    opacity: 0.15,
+    borderRadius: 1,
+    marginBottom: Math.round(SCREEN_WIDTH * 0.08),
   },
 });
 
@@ -390,17 +371,21 @@ const stylesControls = StyleSheet.create({
     gap: 16,
   },
   calendarButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    borderRadius: 20,
+    width: SCREEN_WIDTH * 0.38, // около 40% экрана
+    height: BTN_HEIGHT,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: BTN_RADIUS,
   },
   calendarButtonActive: {
     opacity: 0.92, // simple pressed effect
   },
   button: {
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    borderRadius: 20,
+    width: SCREEN_WIDTH * 0.45, // чуть шире
+    height: BTN_HEIGHT,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: BTN_RADIUS,
   },
   sortButtonOpen: {
     borderBottomLeftRadius: 0,
@@ -408,8 +393,9 @@ const stylesControls = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
-    fontWeight: '500',
-    fontSize: 16,
+    fontWeight: '600',
+    fontSize: BTN_TEXT,
+    textAlign: 'center',
   },
   dropdownContainer: { position: 'relative', alignItems: 'center' },
   dropdownItem: {

@@ -14,7 +14,7 @@ const initialDraft = () => ({
   decision: null,                         // { mode, top, probs }
   l3: { emotionKey: null },               // dominant emotion (auto-picked)
   l4: { triggers: [], bodyMind: [], intensity: 0 },
-  l5: { context: '', tinyActionKey: null },
+  l5: { context: '', tinyActionKey: null, miniInsight: '', shortDescription: '' },
   l6: { insight: '', tips: [], encouragement: '', accuracy: 3 },
 });
 
@@ -145,6 +145,15 @@ const useStore = create(
         logEvent('store_l5_action', { key }, `Store: L5 action="${key}"`);
         const draft = get().sessionDraft;
         set({ sessionDraft: { ...draft, l5: { ...draft.l5, tinyActionKey: key } } });
+      },
+
+      setL5Fields(partial) {
+        // partial: { miniInsight?, shortDescription?, ... }
+        const patch = partial || {};
+        const draft = get().sessionDraft;
+        const next  = { ...draft, l5: { ...(draft.l5 || {}), ...patch } };
+        logEvent('store_l5_fields', { keys: Object.keys(patch) }, `Store: L5 merge fields`);
+        set({ sessionDraft: next });
       },
 
       // -------- L6

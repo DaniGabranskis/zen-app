@@ -18,3 +18,40 @@ export const EMOTION_META = {
   gratitude:    { valence: +0.8, arousal: 0.4, control: 0.7, label: 'Gratitude' },
   clarity:      { valence: +0.6, arousal: 0.3, control: 0.8, label: 'Clarity' },
 };
+
+// Thresholds to convert continuous valence to a discrete polarity.
+const POSITIVE_THRESHOLD = 0.15;
+const NEGATIVE_THRESHOLD = -0.15;
+
+/**
+ * Return 'positive' | 'negative' | 'neutral' based on EMOTION_META.valence.
+ * If valence is not available, returns null (caller may use a fallback).
+ */
+export function getPolarityFromMeta(key) {
+  const k = String(key || '').toLowerCase();
+  const v = EMOTION_META[k]?.valence;
+  if (typeof v !== 'number') return null;
+  if (v > POSITIVE_THRESHOLD) return 'positive';
+  if (v < NEGATIVE_THRESHOLD) return 'negative';
+  return 'neutral';
+}
+
+/**
+ * Fallback polarity map for emotions absent in EMOTION_META.
+ * Keep it minimal and easily replaceable by data-driven polarity later.
+ */
+export const POLARITY_FALLBACK = {
+  // negative-ish
+  tension: 'negative',
+  fear: 'negative',
+  irritation: 'negative',
+  disappointment: 'negative',
+  loneliness: 'negative',
+  disconnection: 'negative',
+  overwhelm: 'negative',   // a.k.a. "overload" in some places
+  tiredness: 'negative',
+  guilt: 'negative',
+  shame: 'negative',
+  // positive-ish
+  contentment: 'positive',
+};
