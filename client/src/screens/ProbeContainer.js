@@ -6,10 +6,24 @@ import ThoughtProbe from '../components/probe/ThoughtProbe';
 import { ProbeEngine } from '../utils/probeEngine';
 import { pickStartProbe } from '../utils/probeRouting';
 import { EMOTION_META } from '../data/emotionMeta';
+import { useBottomSystemBar } from '../hooks/useBottomSystemBar'; // ✅ NEW
 
 export default function ProbeContainer({ theme, onDone, onStep, onStart }) {
   // Create probe engine (keeps internal emotion vector)
   const engineRef = useRef(new ProbeEngine({ maxSteps: 3, confidence: 0.72 }));
+
+  // 🔹 Derive bar color + theme mode from theme
+  //    Adjust these keys to your actual theme structure.
+  const barColor =
+    theme?.colors?.probeBarBackground ||
+    theme?.colors?.barBackground ||
+    theme?.colors?.surface ||
+    '#000000';
+
+  const isDarkTheme =
+    theme?.mode === 'dark' ||
+    theme?.isDark === true ||
+    theme?.scheme === 'dark';
 
   // Build probe context from current top-2 emotions
   const context = useMemo(() => {
@@ -18,8 +32,12 @@ export default function ProbeContainer({ theme, onDone, onStep, onStart }) {
     const firstKey = r[0]?.key || null;
     const secondKey = r[1]?.key || null;
 
-    const first = firstKey ? { emotionId: firstKey, label: (EMOTION_META[firstKey]?.label || firstKey) } : null;
-    const second = secondKey ? { emotionId: secondKey, label: (EMOTION_META[secondKey]?.label || secondKey) } : null;
+    const first = firstKey
+      ? { emotionId: firstKey, label: EMOTION_META[firstKey]?.label || firstKey }
+      : null;
+    const second = secondKey
+      ? { emotionId: secondKey, label: EMOTION_META[secondKey]?.label || secondKey }
+      : null;
 
     return { first, second };
   }, [engineRef.current?.snapshot?.ranking]);
@@ -32,7 +50,11 @@ export default function ProbeContainer({ theme, onDone, onStep, onStart }) {
     console.log('[ProbeContainer] initialStart', { topTwo, start });
 
     if (typeof onStart === 'function') {
-        try { onStart({ start, topTwo, ranking }); } catch (e) { /* noop */ }
+      try {
+        onStart({ start, topTwo, ranking });
+      } catch (e) {
+        /* noop */
+      }
     }
 
     return start;
@@ -53,15 +75,17 @@ export default function ProbeContainer({ theme, onDone, onStep, onStart }) {
     console.log('[ProbeContainer] after choose', snap);
 
     if (typeof onStep === 'function') {
-        try {
+      try {
         onStep({
-            phase: 'probe',
-            probeType,
-            label,
-            delta: tags,
-            snapshot: snap,
+          phase: 'probe',
+          probeType,
+          label,
+          delta: tags,
+          snapshot: snap,
         });
-        } catch (e) { /* noop */ }
+      } catch (e) {
+        /* noop */
+      }
     }
 
     if (engineRef.current.shouldStop()) {
@@ -99,7 +123,7 @@ export default function ProbeContainer({ theme, onDone, onStep, onStart }) {
           key={probeKey}
           dominant={dominant}
           theme={theme}
-          context={context} 
+          context={context}
           onChoose={onChoose}
           onSkip={onSkip}
           excludeLabels={exclude}
