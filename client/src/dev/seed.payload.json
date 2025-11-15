@@ -1,0 +1,215 @@
+{
+  "nonce": 1762850361488,
+  "rows": [
+    {
+      "date": "2025-10-12T11:03:57.000Z",
+      "emotion": "Joy",
+      "intensity": 3,
+      "accuracy": 4,
+      "tags": []
+    },
+    {
+      "date": "2025-10-13T07:44:14.000Z",
+      "emotion": "Calm",
+      "intensity": 2,
+      "accuracy": 4,
+      "tags": []
+    },
+    {
+      "date": "2025-10-14T12:11:05.000Z",
+      "emotion": "Sadness",
+      "intensity": 6,
+      "accuracy": 3,
+      "tags": []
+    },
+    {
+      "date": "2025-10-15T12:46:14.000Z",
+      "emotion": "Anger",
+      "intensity": 7,
+      "accuracy": 3,
+      "tags": []
+    },
+    {
+      "date": "2025-10-16T08:32:55.000Z",
+      "emotion": "Gratitude",
+      "intensity": 2,
+      "accuracy": 5,
+      "tags": []
+    },
+    {
+      "date": "2025-10-17T06:43:41.000Z",
+      "emotion": "Frustration",
+      "intensity": 6,
+      "accuracy": 3,
+      "tags": []
+    },
+    {
+      "date": "2025-10-18T09:40:24.000Z",
+      "emotion": "Anxious",
+      "intensity": 7,
+      "accuracy": 3,
+      "tags": []
+    },
+    {
+      "date": "2025-10-19T11:01:52.000Z",
+      "emotion": "Calm",
+      "intensity": 3,
+      "accuracy": 4,
+      "tags": []
+    },
+    {
+      "date": "2025-10-20T07:45:56.000Z",
+      "emotion": "Disconnected",
+      "intensity": 6,
+      "accuracy": 3,
+      "tags": []
+    },
+    {
+      "date": "2025-10-21T07:34:33.000Z",
+      "emotion": "Clarity",
+      "intensity": 2,
+      "accuracy": 5,
+      "tags": []
+    },
+    {
+      "date": "2025-10-22T05:48:01.000Z",
+      "emotion": "Overload",
+      "intensity": 7,
+      "accuracy": 3,
+      "tags": []
+    },
+    {
+      "date": "2025-10-23T06:59:48.000Z",
+      "emotion": "Gratitude",
+      "intensity": 3,
+      "accuracy": 4,
+      "tags": []
+    },
+    {
+      "date": "2025-10-24T14:41:00.000Z",
+      "emotion": "Frustration",
+      "intensity": 6,
+      "accuracy": 3,
+      "tags": []
+    },
+    {
+      "date": "2025-10-25T05:51:52.000Z",
+      "emotion": "Joy",
+      "intensity": 3,
+      "accuracy": 4,
+      "tags": []
+    },
+    {
+      "date": "2025-10-26T11:04:18.000Z",
+      "emotion": "Anxious",
+      "intensity": 8,
+      "accuracy": 2,
+      "tags": []
+    },
+    {
+      "date": "2025-10-27T09:50:09.000Z",
+      "emotion": "Calm",
+      "intensity": 2,
+      "accuracy": 4,
+      "tags": []
+    },
+    {
+      "date": "2025-10-28T15:21:58.000Z",
+      "emotion": "Sadness",
+      "intensity": 6,
+      "accuracy": 3,
+      "tags": []
+    },
+    {
+      "date": "2025-10-29T09:55:48.000Z",
+      "emotion": "Clarity",
+      "intensity": 3,
+      "accuracy": 4,
+      "tags": []
+    },
+    {
+      "date": "2025-10-30T10:50:28.000Z",
+      "emotion": "Anger",
+      "intensity": 7,
+      "accuracy": 2,
+      "tags": []
+    },
+    {
+      "date": "2025-10-31T09:46:32.000Z",
+      "emotion": "Calm",
+      "intensity": 2,
+      "accuracy": 4,
+      "tags": []
+    },
+    {
+      "date": "2025-11-01T10:48:35.000Z",
+      "emotion": "Joy",
+      "intensity": 3,
+      "accuracy": 5,
+      "tags": []
+    },
+    {
+      "date": "2025-11-02T12:13:51.000Z",
+      "emotion": "Sadness",
+      "intensity": 6,
+      "accuracy": 3,
+      "tags": []
+    },
+    {
+      "date": "2025-11-03T12:48:59.000Z",
+      "emotion": "Gratitude",
+      "intensity": 3,
+      "accuracy": 4,
+      "tags": []
+    },
+    {
+      "date": "2025-11-04T08:51:49.000Z",
+      "emotion": "Confusion",
+      "intensity": 5,
+      "accuracy": 3,
+      "tags": []
+    },
+    {
+      "date": "2025-11-05T12:21:38.000Z",
+      "emotion": "Calm",
+      "intensity": 2,
+      "accuracy": 5,
+      "tags": []
+    },
+    {
+      "date": "2025-11-06T11:51:11.000Z",
+      "emotion": "Anxious",
+      "intensity": 7,
+      "accuracy": 3,
+      "tags": []
+    },
+    {
+      "date": "2025-11-07T15:47:35.000Z",
+      "emotion": "Clarity",
+      "intensity": 3,
+      "accuracy": 4,
+      "tags": []
+    },
+    {
+      "date": "2025-11-08T07:40:52.000Z",
+      "emotion": "Sadness",
+      "intensity": 6,
+      "accuracy": 3,
+      "tags": []
+    },
+    {
+      "date": "2025-11-09T14:45:20.000Z",
+      "emotion": "Gratitude",
+      "intensity": 2,
+      "accuracy": 5,
+      "tags": []
+    },
+    {
+      "date": "2025-11-10T09:34:30.000Z",
+      "emotion": "Overload",
+      "intensity": 7,
+      "accuracy": 2,
+      "tags": []
+    }
+  ]
+}

@@ -26,6 +26,29 @@ const useStore = create(
       aiOnline: false,        // ping status for AI backend
       hasHydrated: false,     // set true after rehydrate callback
 
+      // UI theme: 'light' | 'dark'
+      theme: 'light',
+
+      // Change theme explicitly (setTheme('light' | 'dark')) 
+      // or toggle if аргумент не передан
+      setTheme: (next) => {
+        const current = get().theme || 'light';
+        const resolved =
+          next === 'light' || next === 'dark'
+            ? next
+            : current === 'light'
+              ? 'dark'
+              : 'light';
+
+        logEvent(
+          'store_theme_change',
+          { theme: resolved },
+          `Store: theme=${resolved}`
+        );
+
+        set({ theme: resolved });
+      },
+
       // -------- Draft state for current multi-layer run
       sessionDraft: initialDraft(),
 
@@ -43,6 +66,17 @@ const useStore = create(
       clearHistory: () => {
         logEvent('store_history_clear', {}, 'Store: history cleared');
         set({ history: [] });
+      },
+      
+      // Alias for settings screen: same as clearHistory
+      resetHistory: () => {
+        logEvent(
+          'store_history_reset',
+          {},
+          'Store: resetHistory → clearHistory'
+        );
+        const { clearHistory } = get();
+        clearHistory();
       },
 
       setAiOnline: (value) => {

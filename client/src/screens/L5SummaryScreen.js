@@ -349,10 +349,21 @@ useEffect(() => {
 // LOADING SCREEN
 if (loading) {
   return (
-    <ScreenWrapper useFlexHeight noTopInset={fromHistory} style={{ backgroundColor: '#fff' }}>
+    <ScreenWrapper
+      useFlexHeight
+      noTopInset={fromHistory}
+      style={{ backgroundColor: t.background }}
+    >
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator size="large" color="#999" />
-        <Text style={{ marginTop: 12, fontSize: 16, fontWeight: '700', color: '#222' }}>
+        <ActivityIndicator size="large" color={t.textSecondary} />
+        <Text
+          style={{
+            marginTop: 12,
+            fontSize: 16,
+            fontWeight: '700',
+            color: t.textPrimary,
+          }}
+        >
           Analysing...
         </Text>
       </View>
@@ -362,7 +373,7 @@ if (loading) {
 
 // === MAIN SCREEN ===
 return (
-  <ScreenWrapper useFlexHeight noTopInset={fromHistory} style={{ backgroundColor: t.bg }}>
+  <ScreenWrapper useFlexHeight noTopInset={fromHistory} style={{ backgroundColor: t.background }}>
     <ScrollView style={{ flex: 1 }} contentContainerStyle={s.scroll} showsVerticalScrollIndicator>
       {!fromHistory && (
         <>
@@ -397,7 +408,7 @@ return (
               cy={CIRCLE / 2}
               r={Rpath}
               fill="none"
-              stroke="#cacaca"
+              stroke={t.divider || '#4B4B4B'}
               strokeWidth={RING_STROKE}
             />
             <Circle
@@ -405,8 +416,8 @@ return (
               cy={CIRCLE / 2}
               r={Rpath}
               fill="none"
-              stroke="#A78BFA"
-              strokeOpacity={0.9}
+              stroke={t.accent}
+              strokeOpacity={0.7}
               strokeWidth={RING_STROKE}
               strokeLinecap="round"
               strokeDasharray={`${arcLen} ${CIRC - arcLen}`}
@@ -425,20 +436,26 @@ return (
       </Text>
 
       {/* Mini Insight */}
-      <View style={[s.aiCard, { backgroundColor: t.cardBg }]}>
-        <Text style={s.aiCardTitle}>Mini insight</Text>
-        <Text style={[s.aiCardText, { color: t.textSub }]}>{miniInsight}</Text>
+      <View style={[s.aiCard, { backgroundColor: t.cardBackground }]}>
+        <Text style={[s.aiCardText, { color: t.textPrimary, marginBottom: 4 }]}>
+          Mini insight
+        </Text>
+        <Text style={[s.aiCardText, { color: t.textSecondary }]}>
+          {miniInsight}
+        </Text>
       </View>
 
       {/* AI Description */}
-      <View style={[s.aiCard, { backgroundColor: t.cardBg }]}>
-        <Text style={s.aiCardTitle}>
+      <View style={[s.aiCard, { backgroundColor: t.cardBackground }]}>
+        <Text style={[s.aiCardText, { color: t.textPrimary, marginBottom: 4 }]}>
           Short description{' '}
           {aiSource === 'local' ? (
-            <Text style={{ fontSize: 12, color: t.textSub }}>(offline)</Text>
+            <Text style={{ fontSize: 12, color: t.textSecondary }}>(offline)</Text>
           ) : null}
         </Text>
-        <Text style={[s.aiCardText, { color: t.textSub }]}>{aiDesc}</Text>
+        <Text style={[s.aiCardText, { color: t.textSecondary }]}>
+          {aiDesc}
+        </Text>
       </View>
 
       {/* выбранные Triggers */}
@@ -493,13 +510,13 @@ function SelectedChips({ data = EMPTY_ARR, emptyText = '—', theme }) {
             paddingVertical: 8,
             paddingHorizontal: 12,
             borderRadius: 999,
-            backgroundColor: theme.cardBg,
+            backgroundColor: t.cardBackground,
             margin: 6,
             borderWidth: 1,
             borderColor: '#00000022',
           }}
         >
-          <Text style={{ color: theme.textMain }}>{t}</Text>
+          <Text style={{ color: theme.textPrimary }}>{t}</Text>
         </View>
       ))}
     </View>
@@ -528,22 +545,37 @@ const makeStyles = (t, insets, CIRCLE, BAR_BASE_H, BAR_VPAD) => StyleSheet.creat
     elevation: 2,
     paddingHorizontal: 16,
   },
-  circleTitle: { color: 'white', fontWeight: '900', fontSize: 26, letterSpacing: 0.2, textAlign: 'center' },
-  circleHint: { color: '#FFFFFFCC', fontSize: 12, marginTop: 6, textAlign: 'center' },
+
+  circleTitle: {
+    // white в светлой теме, чёрный в тёмной
+    color: t.themeName === 'light' ? '#FFFFFF' : '#000000',
+    fontWeight: '900',
+    fontSize: 26,
+    letterSpacing: 0.2,
+    textAlign: 'center',
+  },
+
+  circleHint: {
+    // мягкий белый в светлой, мягкий чёрный в тёмной
+    color: t.themeName === 'light' ? '#FFFFFFCC' : '#00000099',
+    fontSize: 12,
+    marginTop: 6,
+    textAlign: 'center',
+  },
 
   intensityBadge: { fontSize: 14, fontWeight: '700', color: t.textMain, textAlign: 'center', marginTop: 12 },
   confNote: { fontSize: 12, fontWeight: '400', color: t.textSub, textAlign: 'center', marginTop: 2 },
 
   card: {
-    backgroundColor: t.cardBg,
+    backgroundColor: t.cardBackground,
     borderRadius: 12,
     padding: 12,
     marginTop: 12,
     borderWidth: 1,
     borderColor: '#00000012',
   },
-
   aiCard: {
+    backgroundColor: t.cardBackground,
     borderRadius: 12,
     padding: 12,
     marginTop: 12,

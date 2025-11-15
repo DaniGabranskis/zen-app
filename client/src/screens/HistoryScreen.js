@@ -19,11 +19,18 @@ const BTN_RADIUS = Math.round(SCREEN_WIDTH * 0.05);
 const BTN_TEXT = Math.round(SCREEN_WIDTH * 0.04);  // размер шрифта
 
 export default function HistoryScreen({ navigation }) {
-  // NOTE: get theme first, then compute keys that depend on theme
-  const { bgcolor, textMain, cardBg, data, divider, button } = useThemeVars();
+  // Новые переменные темы
+  const {
+  background,
+  textPrimary,
+  dataText,
+  cardBackground,
+  dividerColor,
+  accent,
+  } = useThemeVars();
 
-  // Purpose: force Calendar re-render on theme change (key depends on cardBg)
-  const calendarKey = `calendar-${cardBg}`;
+  // Purpose: force Calendar re-render on theme change (key depends on cardBackground)
+  const calendarKey = `calendar-${cardBackground}`;
 
   // Responsive helpers (optional vars if you use them in styles)
   const { pad, corner } = useResponsive();
@@ -63,8 +70,8 @@ export default function HistoryScreen({ navigation }) {
   // Header with title and divider
   const renderHeader = () => (
     <View style={stylesHeader.header}>
-      <Text style={[stylesHeader.title, { color: textMain }]}>Your History</Text>
-      <View style={[stylesHeader.divider, { backgroundColor: divider }]} />
+      <Text style={[stylesHeader.title, { color: textPrimary }]}>Your History</Text>
+      <View style={[stylesHeader.divider, { backgroundColor: dividerColor }]} />
     </View>
   );
 
@@ -88,7 +95,7 @@ export default function HistoryScreen({ navigation }) {
 
     return (
       <TouchableOpacity
-        style={[stylesCard.card, { backgroundColor: cardBg }]}
+        style={[stylesCard.card, { backgroundColor: cardBackground }]}
         onPress={() =>
           navigation.navigate('ResultModal', {
             ...item,
@@ -96,19 +103,32 @@ export default function HistoryScreen({ navigation }) {
           })
         }
       >
-        <View style={[stylesCard.corner, { backgroundColor: barColor, width: corner, height: corner }]} />
-        <Text style={[stylesCard.date, { color: data }]}>{date}</Text>
-        <Text style={stylesCard.emotionLine}>{label}</Text>
-        <Text style={stylesCard.score}>
+        <View
+          style={[
+            stylesCard.corner,
+            { backgroundColor: barColor, width: corner, height: corner },
+          ]}
+        />
+        {/* Дата и весь текст одной цветовой группы (как ты просил) */}
+        <Text style={[stylesCard.date, { color: dataText }]}>{date}</Text>
+        <Text style={[stylesCard.emotionLine, { color: dataText }]}>
+          {label}
+        </Text>
+        <Text style={[stylesCard.score, { color: dataText }]}>
           Intensity: {item?.session?.l4?.intensity ?? '—'}/10
         </Text>
-        <Text numberOfLines={3} style={stylesCard.preview}>{preview}...</Text>
+        <Text
+          numberOfLines={3}
+          style={[stylesCard.preview, { color: dataText }]}
+        >
+          {preview}
+        </Text>
       </TouchableOpacity>
     );
   };
 
-  // Purpose: detect if a hex color looks dark to adjust weekday header contrast
-  const isHexDark = (hex) => {
+  // Purpose: detect if a hex color looks dark to adjust contrast
+  function isHexDark(hex) {
     try {
       const h = (hex || '').replace('#', '');
       const r = parseInt(h.slice(0, 2), 16);
@@ -119,10 +139,7 @@ export default function HistoryScreen({ navigation }) {
     } catch {
       return false;
     }
-  };
-  // Use whole-screen background to detect dark mode, not card color
-  const isDark = isHexDark(bgcolor);
-  const weekHeaderColor = isDark ? '#6E6E6E' : '#4A4A4A';
+  }
 
   // Controls: toggle calendar + sort dropdown
   const renderFilterControls = () => (
@@ -131,7 +148,7 @@ export default function HistoryScreen({ navigation }) {
         style={[
           stylesControls.calendarButton,
           showCalendar && stylesControls.calendarButtonActive,
-          { backgroundColor: button },
+          { backgroundColor: accent },
         ]}
         onPress={() => setShowCalendar(!showCalendar)}
       >
@@ -146,7 +163,7 @@ export default function HistoryScreen({ navigation }) {
           style={[
             stylesControls.button,
             dropdownOpen && stylesControls.sortButtonOpen,
-            { backgroundColor: button },
+            { backgroundColor: accent },
           ]}
           onPress={() => {
             if (sortButtonRef.current) {
@@ -200,7 +217,11 @@ export default function HistoryScreen({ navigation }) {
   }, [history, dateFilter, sortType]);
 
   return (
-    <ScreenWrapper useFlexHeight noBottomInset style={[stylesPage.container, { backgroundColor: bgcolor }]}>
+    <ScreenWrapper
+      useFlexHeight
+      noBottomInset
+      style={[stylesPage.container, { backgroundColor: background }]}
+    >
       <FlatList
         data={filteredHistory}
         keyExtractor={(item, index) => `${item.date}-${index}`}
@@ -216,6 +237,7 @@ export default function HistoryScreen({ navigation }) {
             {showCalendar && (
               <View style={{ marginTop: pad * 0.3, marginBottom: pad * 0.5 }}>
                 <HistoryCalendar
+                  key={calendarKey}
                   history={history}
                   value={dateFilter}
                   onChange={(range) => setDateFilter(range)}
@@ -225,61 +247,66 @@ export default function HistoryScreen({ navigation }) {
           </>
         )}
         ListEmptyComponent={() => (
-          <Text style={stylesPage.empty}>You haven't saved any days yet.</Text>
+          <Text style={[stylesPage.empty, { color: textPrimary }]}>
+            You haven't saved any days yet.
+          </Text>
         )}
         renderItem={({ item }) => renderCard(item)}
       />
 
       {dropdownOpen && (
-  // Purpose: overlay contains backdrop and menu to control stacking on Android
-  <View style={stylesControls.overlay}>
-    {/* Backdrop catches outside taps */}
-    <TouchableOpacity
-      activeOpacity={1}
-      onPress={() => setDropdownOpen(false)}
-      style={stylesControls.overlayBackdrop}
-    />
-
-    {/* Dropdown menu above the backdrop */}
-    <View
-      style={[
-        stylesControls.dropdownMenuGlobal,
-        {
-          top: dropdownAnchor.y,
-          left: dropdownAnchor.x,
-          width: dropdownAnchor.width,
-          backgroundColor: cardBg,
-        },
-      ]}
-    >
-      {sortOptions.map((opt) => {
-        const selected = opt.value === sortType;
-        return (
+        // Purpose: overlay contains backdrop and menu to control stacking on Android
+        <View style={stylesControls.overlay}>
+          {/* Backdrop catches outside taps */}
           <TouchableOpacity
-            key={opt.value}
+            activeOpacity={1}
+            onPress={() => setDropdownOpen(false)}
+            style={stylesControls.overlayBackdrop}
+          />
+
+          {/* Dropdown menu above the backdrop */}
+          <View
             style={[
-              stylesControls.dropdownItem,
-              selected && stylesControls.selectedItem,
+              stylesControls.dropdownMenuGlobal,
+              {
+                top: dropdownAnchor.y,
+                left: dropdownAnchor.x,
+                width: dropdownAnchor.width,
+                backgroundColor: cardBackground ,
+              },
             ]}
-            onPress={() => {
-              setSortType(opt.value);
-              setDropdownOpen(false);
-            }}
           >
-            <Text
-              style={[
-                stylesControls.dropdownItemText,
-                { color: selected ? '#fff' : textMain }, // ← видимый цвет
-              ]}
-            >
-              {opt.label}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
-    </View>
-  </View>
-)}
+            {sortOptions.map((opt) => {
+              const selected = opt.value === sortType;
+              return (
+                <TouchableOpacity
+                  key={opt.value}
+                  style={[
+                    stylesControls.dropdownItem,
+                    selected && [
+                      stylesControls.selectedItem,
+                      { backgroundColor: accent },
+                    ],
+                  ]}
+                  onPress={() => {
+                    setSortType(opt.value);
+                    setDropdownOpen(false);
+                  }}
+                >
+                  <Text
+                    style={[
+                      stylesControls.dropdownItemText,
+                      { color: selected ? '#fff' : textPrimary },
+                    ]}
+                  >
+                    {opt.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+      )}
     </ScreenWrapper>
   );
 }
@@ -301,7 +328,7 @@ const stylesPage = StyleSheet.create({
 });
 
 const stylesHeader = StyleSheet.create({
-    header: {
+  header: {
     width: '100%',
     alignItems: 'center',
     marginTop: Math.round(SCREEN_WIDTH * 0.08), // одинаковый верхний отступ
@@ -358,7 +385,6 @@ const stylesCard = StyleSheet.create({
   },
   preview: {
     fontSize: Math.round(SCREEN_WIDTH * 0.04),
-    color: '#333',
   },
 });
 
@@ -399,15 +425,13 @@ const stylesControls = StyleSheet.create({
   },
   dropdownContainer: { position: 'relative', alignItems: 'center' },
   dropdownItem: {
-    // unified style (avoid duplicates)
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderRadius: 14,
   },
-  selectedItem: { backgroundColor: '#A78BFA' },
+  selectedItem: {},
   dropdownItemText: {
     fontSize: 14,
-    color: 'white',
     textAlign: 'center',
     fontWeight: '500',
   },
@@ -453,6 +477,4 @@ const stylesControls = StyleSheet.create({
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 2 },
   },
-
-
 });

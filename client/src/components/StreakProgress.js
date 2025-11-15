@@ -25,16 +25,24 @@ export default function StreakProgress({ current = 0, best = 1, width = 270, hei
               styles.barFill,
               {
                 width: `${progress * 100}%`,
-                backgroundColor: isNewRecord ? '#5e44b7' : '#A78BFA',
+                backgroundColor: (() => {
+                if (isNewRecord) return '#6C4CFF';
+                if (progress >= 0.8) return '#7A5BFF';
+                if (progress >= 0.6) return '#8F7BFF';
+                return '#B9A8FF'; 
+              })(),
               },
             ]}
           />
         </View>
+
         {/* Текст 30% */}
-        <View style={[
-          styles.textContainer,
-          { width: width * 0.3, height, paddingLeft: 30 }
-        ]}>
+        <View
+          style={[
+            styles.textContainer,
+            { width: width * 0.3 },
+          ]}
+        >
           <Text style={styles.streakText}>
             {current} day{current !== 1 ? 's' : ''} streak
           </Text>
@@ -59,7 +67,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 15,
     flex: 1,
-    color: '#2b2454',
+    color: '#6C63FF',
     textAlign: 'left',
   },
   newRecord: {
@@ -72,7 +80,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    minHeight: 34,
+    minHeight: 40,
     marginTop: 0,
     marginBottom: 2,
     gap: 4,
@@ -100,7 +108,8 @@ const styles = StyleSheet.create({
   textContainer: {
     alignItems: 'flex-start',
     justifyContent: 'center',
-    paddingLeft: 30,
+    paddingLeft: 8,
+    flexShrink: 1,
   },
   streakText: {
     fontSize: 15,

@@ -1,6 +1,7 @@
 // Самая компактная версия переключателя: иконки или 1-буквенные обозначения
 import React from 'react';
 import { View, Pressable, Text, StyleSheet } from 'react-native';
+import useThemeVars from '../hooks/useThemeVars';
 
 const options = [
   { key: 'week', label: 'Week' },
@@ -9,15 +10,25 @@ const options = [
 ];
 
 export default function TimeRangeTiny({ selected, onToggle }) {
+    const { accent, textSecondary, themeName } = useThemeVars();
   return (
-    <View style={styles.container}>
+    <View style={[styles.container,{ backgroundColor: themeName === 'light' ? '#f2f2f2' : '#3A3A40',},]}>
       {options.map((opt) => (
         <Pressable
           key={opt.key}
           onPress={() => onToggle(opt.key)}
-          style={[styles.button, selected === opt.key && styles.active]}
+          style={[
+            styles.button,
+            selected === opt.key && { backgroundColor: accent },
+          ]}
         >
-          <Text style={[styles.text, selected === opt.key && styles.activeText]}>
+          <Text
+            style={[
+              styles.text,
+              { color: textSecondary },
+              selected === opt.key && { color: '#FFFFFF' },
+            ]}
+          >
             {opt.label}
           </Text>
         </Pressable>
@@ -30,7 +41,6 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     gap: 4,
-    backgroundColor: '#f2f2f2',
     borderRadius: 40,
     padding: 2,
   },
@@ -41,15 +51,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  active: {
-    backgroundColor: '#A78BFA',
-  },
   text: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#444',
-  },
-  activeText: {
-    color: '#fff',
   },
 });

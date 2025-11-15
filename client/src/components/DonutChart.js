@@ -3,6 +3,7 @@ import { View, StyleSheet, Text } from 'react-native';
 import { PieChart } from 'react-native-gifted-charts';
 import Svg, { Line, Text as SvgText } from 'react-native-svg';
 import useResponsive from '../hooks/useResponsive';
+import useThemeVars from '../hooks/useThemeVars';
 
 const { width } = useResponsive(); // screen width, used for responsive caps
 
@@ -22,6 +23,10 @@ export default function DonutChart({
  smallFont = 10,            // (unused when showOuterLabels=false)
  showOuterLabels = false,   // ← NEW: hide labels on the donut by default
 }) {
+  const { cardBackground, textPrimary, themeName } = useThemeVars();
+  const ringColor = cardBackground || '#EBEBF0';
+  const centerColor = cardBackground || '#FFFFFF';
+  const labelColor = textPrimary || '#000000';
   const SIZE = containerWidth;
   const RADIUS = containerWidth * 0.46;
   const INNER_RADIUS = containerWidth * 0.29;
@@ -32,7 +37,9 @@ export default function DonutChart({
   if (!data || data.length === 0 || total === 0) {
     return (
       <View style={{ alignItems: 'center', paddingVertical: 20 }}>
-        <Text style={{ color: '#999', fontSize: 14 }}>No data to display</Text>
+        <Text style={{ color: textPrimary, opacity: 0.6, fontSize: 14 }}>
+          No data to display
+        </Text>
       </View>
     );
   }
@@ -49,7 +56,8 @@ export default function DonutChart({
           radius={RADIUS}
           innerRadius={INNER_RADIUS}
           strokeWidth={2}
-          strokeColor="#FAFAFB"
+          strokeColor={ringColor}
+          innerCircleColor={centerColor}
           isAnimated
           showText={false}
         />
@@ -123,7 +131,7 @@ export default function DonutChart({
                   y1={lineStartY}
                   x2={lineEndX}
                   y2={lineEndY}
-                  stroke="#000"
+                  stroke={labelColor}
                   strokeOpacity={0.25}
                   strokeWidth={0.8}
                 />
@@ -132,11 +140,9 @@ export default function DonutChart({
                   y={labelY}
                   fontSize={fontSize}
                   fontWeight="500"
-                  fill="#000"
+                  fill={labelColor}
                   textAnchor={textAnchor}
                   alignmentBaseline="middle"
-                  // Prevent font scaling artifacts on some devices
-                  // (SvgText doesn't support allowFontScaling prop directly; we keep sizes fixed)
                 >
                   {shortLabel}
                 </SvgText>

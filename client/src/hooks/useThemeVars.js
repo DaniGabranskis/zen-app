@@ -1,14 +1,19 @@
-// Hook to provide current theme variables (colors, etc.) to any component
+// src/hooks/useThemeVars.js
+
+// Hook that returns current theme tokens (colors etc.)
 import useStore from '../store/useStore';
 import { themes } from '../utils/theme';
 
 /**
- * Returns color variables for the active theme ("light" or "dark").
- * Used everywhere in the app to ensure dynamic theming.
+ * Returns color tokens for the active theme ("light" or "dark").
+ * No mapping here – we just return the theme object as is.
  */
 export default function useThemeVars() {
-  // Get current theme name from Zustand store
-  const theme = useStore(state => state.theme);
-  // Return the corresponding color map (default to light)
-  return themes[theme] || themes.light;
+  const themeName = useStore((state) => state.theme) || 'light';
+  const base = themes[themeName] || themes.light;
+
+  return {
+    ...base,
+    themeName,
+  };
 }

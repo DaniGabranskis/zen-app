@@ -28,7 +28,7 @@ const SWIPE_THRESHOLD = 0.25 * width;
  */
 
 export default function SwipeCard({ card, onSwipeLeft, onSwipeRight, onSwipeProgressChange }) {
-  const { cardBg, textMain, card_choice_text } = useThemeVars();
+  const { cardBackground, textPrimary, cardChoiceText } = useThemeVars();
 
   // X and Y translation values (for animation)
   const translateX = useSharedValue(0);
@@ -81,13 +81,14 @@ return (
   <View style={styles.fullscreen}>
     <View style={styles.cardWrapper}>
       <GestureDetector gesture={panGesture}>
-        <Animated.View style={[
+        <Animated.View
+          style={[
             styles.card,
             {
-              backgroundColor: cardBg,
+              backgroundColor: cardBackground,
               width: CARD_WIDTH,
               height: CARD_HEIGHT,
-              shadowColor: textMain,
+              shadowColor: textPrimary,
             },
             animatedStyle,
           ]}>
@@ -95,10 +96,10 @@ return (
           {/* Top label = LEFT swipe option */}
           <View style={styles.edgeTop}>
           <View style={styles.edgeRow}>
-            <Icon name="chevron-left" size={20} color={card_choice_text} />
+            <Icon name="chevron-left" size={20} color={cardChoiceText} />
             <Text
               allowFontScaling={false}
-              style={[styles.edgeText, { color: card_choice_text }]}
+              style={[styles.edgeText, { color: cardChoiceText }]}
               numberOfLines={2}
             >
               {card?.leftOption?.text}
@@ -107,7 +108,7 @@ return (
         </View>
 
           {/* Centered question */}
-          <Text style={styles.event} numberOfLines={2}>
+          <Text style={[styles.event, { color: textPrimary }]} numberOfLines={2}>
             {card?.text}
           </Text>
 
@@ -116,12 +117,12 @@ return (
           <View style={styles.edgeRow}>
             <Text
               allowFontScaling={false}
-              style={[styles.edgeText, { color: card_choice_text }]}
+              style={[styles.edgeText, { color: cardChoiceText }]}
               numberOfLines={2}
             >
               {card?.rightOption?.text}
             </Text>
-            <Icon name="chevron-right" size={20} color={card_choice_text} />
+            <Icon name="chevron-right" size={20} color={cardChoiceText} />
           </View>
         </View>
         </Animated.View>
@@ -161,7 +162,6 @@ const styles = StyleSheet.create({
   event: {
     fontSize: 36,
     fontWeight: '900',
-    color: '#1A1A1A',
     textAlign: 'center',
   },
   description: {

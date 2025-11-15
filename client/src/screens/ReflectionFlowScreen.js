@@ -192,6 +192,7 @@ export default function ReflectionFlowScreen({ route }) {
   const explainVectorRef = useRef(zeroVector()); // cumulative vector
   const navigation = useNavigation();
   const t = useThemeVars(); // use full theme object
+  const hintColor = t.textSecondary;
 
   // L1 + L2 sequence (5 + 6 cards)
   const flow = useMemo(() => [...L1, ...L2], []);
@@ -553,8 +554,8 @@ export default function ReflectionFlowScreen({ route }) {
     return (
       <ScreenWrapper useFlexHeight route={route}>
         <View style={{ flex: 1, position: 'relative' }}>
-          <SwipeHint color={t.textSub} top={8} />
-          <BottomAffirm color={t.textSub} bottom={12} />
+          <SwipeHint color={hintColor} top={8} />
+          <BottomAffirm color={hintColor} bottom={12} />
             <SwipeCard
             card={swipeCard}
               onSwipeLeft={() => onChooseForCurrent(swipeCard.leftOption.text,  swipeCard.leftOption.tags)}
@@ -574,8 +575,8 @@ export default function ReflectionFlowScreen({ route }) {
     return (
       <ScreenWrapper useFlexHeight route={route}>
         <View style={{ flex: 1, position: 'relative' }}>
-          <SwipeHint color={t.textSub} top={8} />
-          <BottomAffirm color={t.textSub} bottom={12} />
+          <SwipeHint color={hintColor} top={8} />
+          <BottomAffirm color={hintColor} bottom={12} />
             <SwipeCard
               card={{ text: currentCard.title, leftOption: left, rightOption: right }}
               onSwipeLeft={() => onChooseForCurrent(left.text, left.tags)}

@@ -6,23 +6,34 @@ import ScreenWrapper from '../components/ScreenWrapper';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const P = Math.round(SCREEN_WIDTH * 0.05);
-const P_SMALL = Math.round(SCREEN_WIDTH * 0.02);
 const P_LARGE = Math.round(SCREEN_WIDTH * 0.08);
-const PAD = Math.round(SCREEN_WIDTH * 0.045);
-const PAD_SMALL = Math.round(SCREEN_WIDTH * 0.02);
 
 /**
  * SettingsScreen — app settings and options.
- * Allows changing theme, clearing all history, and some stubs for future features.
+ * Allows changing theme and clearing all history.
  */
 export default function SettingsScreen() {
   // Theme colors for this screen
-  const { bgcolor, textMain, divider } = useThemeVars();
+  const {
+    background,
+    textPrimary,
+    textSecondary,
+    cardBackground,
+    dividerColor,
+    dangerBackground,
+    dangerText,
+    themeName,
+  } = useThemeVars();
+
+    const rowDividerColor =
+      themeName === 'light'
+        ? 'rgba(0,0,0,0.06)'
+        : 'rgba(255,255,255,0.16)';
 
   // Store methods: reset history, current theme, and theme setter
-  const reset = useStore((state) => state.resetHistory);
-  const theme = useStore(state => state.theme);
-  const setTheme = useStore(state => state.setTheme);
+  const resetHistory = useStore((state) => state.resetHistory);
+  const theme = useStore((state) => state.theme);
+  const setTheme = useStore((state) => state.setTheme);
 
   // Switches app theme between light and dark
   const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
@@ -34,59 +45,86 @@ export default function SettingsScreen() {
       'This will delete all your reflections permanently. Are you sure?',
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: reset },
+        { text: 'Delete', style: 'destructive', onPress: resetHistory },
       ]
     );
   };
 
   return (
-    <ScreenWrapper style={[styles.container, { backgroundColor: bgcolor }]}>
+    <ScreenWrapper style={[styles.container, { backgroundColor: background }]}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={[styles.title, { color: textMain }]}>Settings</Text>
-        <View style={[styles.divider, { backgroundColor: divider }]} />
+        <Text style={[styles.title, { color: textPrimary }]}>Settings</Text>
+        <View style={[styles.divider, { backgroundColor: rowDividerColor }]} />
       </View>
+
       <View style={styles.content}>
-         {/* Switch between Light and Dark theme */}
+        {/* Switch between Light and Dark theme */}
         <TouchableOpacity
-          style={[styles.option, { borderTopWidth: 1, borderTopColor: '#eee' }]}
+          style={[
+            styles.option,
+            { borderTopWidth: 1, borderTopColor: rowDividerColor },
+          ]}
           onPress={toggleTheme}
         >
-          <Text style={styles.optionText}>
+          <Text style={[styles.optionText, { color: textPrimary }]}>
             Theme: {theme === 'light' ? 'Light' : 'Dark'}
           </Text>
         </TouchableOpacity>
-        {/* Notifications option (disabled for now) */}
-        <TouchableOpacity style={styles.option} disabled>
-          <Text style={[styles.optionText, { color: '#bbb' }]}>Notifications (coming soon)</Text>
-        </TouchableOpacity>
+
         {/* Privacy Policy stub (no action yet) */}
-        <TouchableOpacity style={styles.option} onPress={() => {/* TODO: Show privacy policy */}}>
-          <Text style={styles.optionText}>Privacy Policy</Text>
+        <TouchableOpacity
+          style={[styles.option, { borderBottomColor: rowDividerColor }]}
+          onPress={() => {
+            // TODO: Show privacy policy screen
+          }}
+        >
+          <Text style={[styles.optionText, { color: textPrimary }]}>
+            Privacy Policy
+          </Text>
         </TouchableOpacity>
+
         {/* Feedback stub (no action yet) */}
-        <TouchableOpacity style={styles.option} onPress={() => {/* TODO: Send feedback */}}>
-          <Text style={styles.optionText}>Send Feedback</Text>
+        <TouchableOpacity
+          style={[styles.option, { borderBottomColor: rowDividerColor }]}
+          onPress={() => {
+            // TODO: Send feedback
+          }}
+        >
+          <Text style={[styles.optionText, { color: textPrimary }]}>
+            Send Feedback
+          </Text>
         </TouchableOpacity>
-        {/* Upgrade to Pro stub (disabled for now) */}
-        <TouchableOpacity style={styles.option} disabled>
-          <Text style={[styles.optionText, { color: '#bbb' }]}>Upgrade to Pro (coming soon)</Text>
-        </TouchableOpacity>
+
         {/* Divider and version number */}
-        <View style={styles.divider} />
-        <Text style={styles.version}>
+        <View style={[styles.divider, { backgroundColor: rowDividerColor }]} />
+        <Text style={[styles.version, { color: textSecondary }]}>
           Version 1.0.0
         </Text>
+
         {/* Button to clear all history, with confirmation */}
-        <TouchableOpacity style={styles.clearButton} onPress={confirmReset}>
-          <Text style={styles.clearText}>🗑 Clear reflection history</Text>
+        <TouchableOpacity
+          style={[
+            styles.clearButton,
+            { backgroundColor: dangerBackground },
+          ]}
+          onPress={confirmReset}
+        >
+          <Text
+            style={[
+              styles.clearText,
+              { color: dangerText },
+            ]}
+          >
+            🗑 Clear reflection history
+          </Text>
         </TouchableOpacity>
       </View>
     </ScreenWrapper>
   );
 }
 
-// ======= АДАПТИВНЫЕ СТИЛИ =======
+// ======= RESPONSIVE STYLES =======
 const styles = StyleSheet.create({
   container: {
     minHeight: '100%',
@@ -106,10 +144,9 @@ const styles = StyleSheet.create({
     marginBottom: P,
   },
   divider: {
-    height: 1.5,
+    height: 1,
     width: Math.round(SCREEN_WIDTH * 0.5),
-    alignSelf: 'center',
-    opacity: 0.15,
+    alignSelf: 'center', 
     marginBottom: P_LARGE,
     borderRadius: 1,
   },
@@ -123,28 +160,23 @@ const styles = StyleSheet.create({
   option: {
     paddingVertical: Math.round(SCREEN_WIDTH * 0.048),
     borderBottomWidth: 1,
-    borderColor: '#eee',
     minHeight: Math.round(SCREEN_WIDTH * 0.12),
     justifyContent: 'center',
   },
   optionText: {
     fontSize: Math.round(SCREEN_WIDTH * 0.042),
-    color: '#333',
   },
   clearButton: {
     marginTop: P_LARGE,
     padding: Math.round(SCREEN_WIDTH * 0.04),
-    backgroundColor: '#FFEBEE',
     borderRadius: Math.round(SCREEN_WIDTH * 0.03),
     alignItems: 'center',
   },
   clearText: {
-    color: '#C62828',
     fontWeight: '700',
     fontSize: Math.round(SCREEN_WIDTH * 0.045),
   },
   version: {
-    color: '#aaa',
     fontSize: Math.round(SCREEN_WIDTH * 0.037),
     textAlign: 'center',
     marginTop: Math.round(P_LARGE * 0.7),

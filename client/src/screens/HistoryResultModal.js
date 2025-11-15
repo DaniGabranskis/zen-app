@@ -8,6 +8,7 @@ import { makeHeaderStyles } from '../ui/screenChrome';
 export default function HistoryResultModal({ route, navigation }) {
   const t = useThemeVars();
   const item = route.params || {};
+  const s = makeStyles(t);
   const date = new Date(item.date || item.createdAt || Date.now()).toLocaleString();
 
   const sHead = makeHeaderStyles(t);
@@ -28,33 +29,37 @@ export default function HistoryResultModal({ route, navigation }) {
       <ScrollView contentContainerStyle={s.wrap}>
         
         {/* Mini Insight (placeholder) */}
-        <View style={[s.aiCard, { backgroundColor: t.cardBg }]}>
-          <Text style={s.aiCardTitle}>Mini insight</Text>
+        <View style={[s.aiCard, { backgroundColor: t.cardBackground }]}>
+            <Text style={[s.aiCardText, { color: t.textMain, marginBottom: 4 }]}>
+              Mini insight
+            </Text>
           <Text style={[s.aiCardText, { color: t.textSub }]}>{miniInsight}</Text>
         </View>
 
         {/* AI Description */}
-        <View style={[s.aiCard, { backgroundColor: t.cardBg }]}>
-          <Text style={s.aiCardTitle}>Short description</Text>
+        <View style={[s.aiCard, { backgroundColor: t.cardBackground }]}>
+          <Text style={[s.aiCardText, { color: t.textMain, marginBottom: 4 }]}>
+            Short description
+          </Text>
           <Text style={[s.aiCardText, { color: t.textSub }]}>{aiDesc}</Text>
         </View>
 
-        <View style={[s.card, { backgroundColor: t.cardBg }]}>
+        <View style={[s.card, { backgroundColor: t.cardBackground }]}>
           <Text style={s.cardLabel}>Dominant emotion</Text>
           <Text style={s.value}>{item.dominantGroup || '—'}</Text>
         </View>
 
-        <View style={[s.card, { backgroundColor: t.cardBg }]}>
+        <View style={[s.card, { backgroundColor: t.cardBackground }]}>
           <Text style={s.cardLabel}>Score</Text>
           <Text style={s.value}>{typeof item.score === 'number' ? `${item.score}/100` : '—'}</Text>
         </View>
 
-        <View style={[s.card, { backgroundColor: t.cardBg }]}>
+        <View style={[s.card, { backgroundColor: t.cardBackground }]}>
           <Text style={s.cardLabel}>Reflection</Text>
           <Text style={[s.paragraph, { color: t.textSub }]}>{item.reflection || '—'}</Text>
         </View>
 
-        <View style={[s.card, { backgroundColor: t.cardBg }]}>
+        <View style={[s.card, { backgroundColor: t.cardBackground }]}>
           <Text style={s.cardLabel}>Recommendation</Text>
           <Text style={s.value}>{item?.recommendation?.title || '—'}</Text>
           <Text style={[s.paragraph, { color: t.textSub }]}>{item?.recommendation?.detail || ''}</Text>
@@ -63,7 +68,7 @@ export default function HistoryResultModal({ route, navigation }) {
 
         {/* raw session snapshot (optional quick view) */}
         {item.session ? (
-          <View style={[s.card, { backgroundColor: t.cardBg }]}>
+          <View style={[s.card, { backgroundColor: t.cardBackground }]}>
             <Text style={s.cardLabel}>Session snapshot</Text>
             {/* L4 */}
             <Text style={s.sectionTitle}>L4</Text>
@@ -99,6 +104,12 @@ const makeStyles = (t) => StyleSheet.create({
     borderRadius: 12, padding: 12, marginTop: 12,
     borderWidth: 1, borderColor: '#00000012',
   },
+  aiCardText: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '500',
+    color: t.textSub,
+  },
   cardLabel: { fontSize: 14, fontWeight: '800', marginBottom: 6, color: t.textMain },
   sectionTitle: { fontSize: 13, fontWeight: '800', marginTop: 8, marginBottom: 4, color: t.textMain },
   key: { fontSize: 12, fontWeight: '700', marginTop: 6, color: t.textMain },
@@ -109,7 +120,7 @@ const makeStyles = (t) => StyleSheet.create({
     marginTop: 8,
     paddingVertical: 4, paddingHorizontal: 8,
     borderRadius: 999,
-    backgroundColor: '#00000012',
+    backgroundColor: t.accent,
     color: t.textMain,
     fontSize: 12,
     fontWeight: '700',
