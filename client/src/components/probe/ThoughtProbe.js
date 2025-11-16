@@ -1,3 +1,4 @@
+// src/probes/ThoughtProbe.js
 import React, { useState, useMemo } from 'react';
 import {
   View,
@@ -5,36 +6,57 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
-  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useThemeVars from '../../hooks/useThemeVars';
 import { THOUGHT_ITEMS } from '../../utils/probeContent';
 import { zeroVector, accumulate } from '../../utils/emotionSpace';
 import { buildProbeCopy } from '../../utils/probeText';
-import { makeHeaderStyles, makeBarStyles, computeBar, BAR_BTN_H } from '../../ui/screenChrome';
+import {
+  makeHeaderStyles,
+  makeBarStyles,
+  computeBar,
+  BAR_BTN_H,
+  getBarColor,
+} from '../../ui/screenChrome';
+import { useBottomSystemBar } from '../../hooks/useBottomSystemBar';
 
-
-export default function ThoughtProbe({ onChoose, onSkip, context, probeType = 'thought' }) {
-  const t = useThemeVars();
+export default function ThoughtProbe({
+  onChoose,
+  onSkip,
+  context,
+  probeType = 'thought',
+}) {
+  const colors = useThemeVars();
   const insets = useSafeAreaInsets();
 
-  const { BAR_BASE_H, BAR_SAFE } = computeBar(insets);
-  const sHead = makeHeaderStyles(t);
-  const sBar  = makeBarStyles(t, BAR_BASE_H);
+  // --- NEW canonical theme tokens ---
+  const screenBg = colors.background;
+  const cardBg = colors.cardBackground;
+  const cardBgPressed = colors.cardBackgroundPressed || colors.cardBackground;
+  const textPrimary = colors.textPrimary;
+  const textSecondary = colors.textSecondary;
 
-  // оставим локальный s, но пересчитаем паддинги без BAR_TOTAL:
-  const s = makeStyles(t, BAR_BASE_H, BAR_BTN_H);
+  // Цвет бара + системной панели
+  const barColor = getBarColor(colors);
+  const isDarkTheme = colors.themeName === 'dark';
+  useBottomSystemBar(barColor, isDarkTheme);
+
+  const { BAR_BASE_H, BAR_SAFE } = computeBar(insets);
+  const sHead = makeHeaderStyles(colors);
+  const sBar = makeBarStyles(colors, BAR_BASE_H);
+
+  const s = makeStyles(colors, BAR_BASE_H, BAR_BTN_H);
 
   const [selected, setSelected] = useState({}); // {key: true/false}
 
   const toggle = (key) => {
-    setSelected((s) => ({ ...s, [key]: !s[key] }));
+    setSelected((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const canConfirm = useMemo(
     () => Object.values(selected).some(Boolean),
-    [selected]
+    [selected],
   );
 
   const onConfirm = () => {
@@ -48,9 +70,13 @@ export default function ThoughtProbe({ onChoose, onSkip, context, probeType = 't
   const copy = buildProbeCopy(probeType, context);
 
   return (
-    <View style={[s.wrap, { backgroundColor: t.bg }]}>
-      <Text style={sHead.title}>{copy.title}</Text>
-      <Text style={sHead.subtitle}>{copy.subtitle}</Text>
+    <View style={[s.wrap, { backgroundColor: screenBg }]}>
+      <Text style={[sHead.title, { color: textPrimary }]}>
+        {copy.title}
+      </Text>
+      <Text style={[sHead.subtitle, { color: textSecondary }]}>
+        {copy.subtitle}
+      </Text>
 
       <ScrollView
         contentContainerStyle={s.scrollContent}
@@ -66,14 +92,14 @@ export default function ThoughtProbe({ onChoose, onSkip, context, probeType = 't
                 onPress={() => toggle(opt.key)}
                 style={[
                   s.card,
-                  { backgroundColor: active ? t.presscardBg : t.cardBg },
+                  { backgroundColor: active ? cardBgPressed : cardBg },
                 ]}
               >
-                <Text style={[s.cardText, { color: t.textMain }]}>
+                <Text style={[s.cardText, { color: textPrimary }]}>
                   {opt.label}
                 </Text>
                 {opt.hint ? (
-                  <Text style={[s.cardHint, { color: t.textSub }]}>
+                  <Text style={[s.cardHint, { color: textSecondary }]}>
                     {opt.hint}
                   </Text>
                 ) : null}
@@ -86,14 +112,21 @@ export default function ThoughtProbe({ onChoose, onSkip, context, probeType = 't
       {/* Нижний бар: Skip + Confirm */}
       <View style={[sBar.bottomBar, { paddingBottom: BAR_SAFE }]}>
         <View style={[sBar.bottomInner, { height: BAR_BASE_H }]}>
-          <TouchableOpacity style={[sBar.btn, sBar.btnSecondary, { height: BAR_BTN_H }]} onPress={onSkip}>
+          <TouchableOpacity
+            style={[sBar.btn, sBar.btnSecondary, { height: BAR_BTN_H }]}
+            onPress={onSkip}
+          >
             <Text style={sBar.btnSecondaryText}>Skip</Text>
           </TouchableOpacity>
 
           <View style={{ width: 12 }} />
 
           <TouchableOpacity
-            style={[ sBar.btn, sBar.btnPrimary, { height: BAR_BTN_H, opacity: canConfirm ? 1 : 0.5 } ]}
+            style={[
+              sBar.btn,
+              sBar.btnPrimary,
+              { height: BAR_BTN_H, opacity: canConfirm ? 1 : 0.5 },
+            ]}
             onPress={onConfirm}
             disabled={!canConfirm}
           >
@@ -105,31 +138,40 @@ export default function ThoughtProbe({ onChoose, onSkip, context, probeType = 't
   );
 }
 
-const makeStyles = (t, BAR_BASE_H, BAR_BTN_H) => StyleSheet.create({
-  wrap: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 15,
-    paddingBottom: BAR_BASE_H + 8, // резерв без безопасной зоны (как в L5)
-  },
-  scrollContent: { paddingBottom: 12 },
-  grid: {
-    flex: 1,
-    flexDirection: 'column',
-    justifyContent: 'flex-end'
-  },
-  card: {
-    margin: 6,
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 10,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 3,
-  },
-  cardText: { fontSize: 14, fontWeight: '800', textAlign: 'center' },
-  cardHint: { fontSize: 12, marginTop: 4, textAlign: 'center' },
-});
+const makeStyles = (t, BAR_BASE_H, BAR_BTN_H) =>
+  StyleSheet.create({
+    wrap: {
+      flex: 1,
+      paddingHorizontal: 16,
+      paddingTop: 15,
+      paddingBottom: BAR_BASE_H + 8, // резерв без безопасной зоны (как в L5)
+    },
+    scrollContent: { paddingBottom: 12 },
+    grid: {
+      flex: 1,
+      flexDirection: 'column',
+      justifyContent: 'flex-end',
+    },
+    card: {
+      margin: 6,
+      borderRadius: 12,
+      paddingVertical: 14,
+      paddingHorizontal: 10,
+      alignItems: 'center',
+      shadowColor: '#000',
+      shadowOpacity: 0.08,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 6 },
+      elevation: 3,
+    },
+    cardText: {
+      fontSize: 14,
+      fontWeight: '800',
+      textAlign: 'center',
+    },
+    cardHint: {
+      fontSize: 12,
+      marginTop: 4,
+      textAlign: 'center',
+    },
+  });

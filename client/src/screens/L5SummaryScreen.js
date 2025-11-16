@@ -23,82 +23,6 @@ function aiSummaryFromState(dominant) {
   return `Current state leans toward “${dominant}”. Try a short, concrete action below to consolidate progress.`;
 }
 
-// --- Mini Insight (placeholder; later will be AI-driven)
-function getMiniInsight(emotionKey) {
-  const bank = {
-    tiredness: [
-      'Notice how your body asks for stillness before the mind does.',
-      'Rest is not a reward — it is a need.',
-      'Even a short pause can reset your energy curve.'
-    ],
-    anxiety: [
-      'Breathing brings the body back where the mind can follow.',
-      'Name what you fear — clarity shrinks uncertainty.',
-      'A slower exhale is a faster way to calm.'
-    ],
-    anger: [
-      'Intensity is energy — let it move without harm.',
-      'Space before words can protect what matters.',
-      'Notice where the heat lives in your body.'
-    ],
-    sadness: [
-      'Gentleness is not weakness — it helps you move again.',
-      'Let your feelings sit beside you, not on you.',
-      'Small warmths add up: light, tea, soft music.'
-    ],
-    overwhelm: [
-      'Do one tiny thing — completion is a powerful signal.',
-      'Reduce inputs before you increase effort.',
-      'Boundaries create oxygen for focus.'
-    ],
-    frustration: [
-      'Expectations are heavy; reality is lighter to carry.',
-      'Channel the stuck energy into a 60-second reset.',
-      'Name one thing you can influence right now.'
-    ],
-    disconnection: [
-      'Text one person: “thinking of you”. Connection starts small.',
-      'Step outside for 60 seconds — let the world touch you.',
-      'Humans regulate humans — ask for a micro-moment.'
-    ],
-    tension: [
-      'Drop your shoulders; unclench your jaw — it counts.',
-      'Exhale longer than you inhale; tension follows the breath out.',
-      'Scan for tight points; soften by 5%.'
-    ],
-    clarity: [
-      'Write three bullet points. Clarity grows when seen.',
-      'If it’s obvious — act. If not — observe.',
-      'Keep it small, keep it true.'
-    ],
-    calm: [
-      'Protect this state: short, often, simple.',
-      'Let quiet be productive by itself.',
-      'Anchor calm with one breath you can recall later.'
-    ],
-    joy: [
-      'Savor: name three pleasant details right now.',
-      'Share the moment — joy multiplies when voiced.',
-      'Store a micro-memory for later.'
-    ],
-    gratitude: [
-      'Turn gratitude into action: one thank-you today.',
-      'Name what supported you, not just what happened.',
-      'Gratitude stabilizes — let it land in the body.'
-    ],
-    default: [
-      'Notice the smallest helpful signal — amplify that.',
-      'Name it to tame it. Clarity reduces spin.',
-      'One tiny step beats perfect timing.'
-    ],
-  };
-
-  const list = bank[emotionKey] || bank.default;
-  // стабильный выбор: по длине ключа (чтобы не “прыгало” на каждом рендере)
-  const idx = Math.abs(String(emotionKey || '').length) % list.length;
-  return list[idx];
-}
-
 // --- Local stats-based mini insight (human style, 1 sentence) ---------------
 function daysBetween(d1, d2) {
   const MS = 24*60*60*1000;
@@ -408,7 +332,7 @@ return (
               cy={CIRCLE / 2}
               r={Rpath}
               fill="none"
-              stroke={t.divider || '#4B4B4B'}
+              stroke={t.dividerColor  || '#4B4B4B'}
               strokeWidth={RING_STROKE}
             />
             <Circle
@@ -500,7 +424,7 @@ return (
 }
 
 function SelectedChips({ data = EMPTY_ARR, emptyText = '—', theme }) {
-  if (!data.length) return <Text style={{ color: theme.textSub }}>{emptyText}</Text>;
+  if (!data.length) return <Text style={{ color: theme.textSecondary }}>{emptyText}</Text>;
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 6 }}>
       {data.map((t) => (
@@ -510,7 +434,7 @@ function SelectedChips({ data = EMPTY_ARR, emptyText = '—', theme }) {
             paddingVertical: 8,
             paddingHorizontal: 12,
             borderRadius: 999,
-            backgroundColor: t.cardBackground,
+            backgroundColor: theme.cardBackground,
             margin: 6,
             borderWidth: 1,
             borderColor: '#00000022',
@@ -563,8 +487,8 @@ const makeStyles = (t, insets, CIRCLE, BAR_BASE_H, BAR_VPAD) => StyleSheet.creat
     textAlign: 'center',
   },
 
-  intensityBadge: { fontSize: 14, fontWeight: '700', color: t.textMain, textAlign: 'center', marginTop: 12 },
-  confNote: { fontSize: 12, fontWeight: '400', color: t.textSub, textAlign: 'center', marginTop: 2 },
+  intensityBadge: { fontSize: 14, fontWeight: '700', color: t.textPrimary, textAlign: 'center', marginTop: 12 },
+  confNote: { fontSize: 12, fontWeight: '400', color: t.textSecondary, textAlign: 'center', marginTop: 2 },
 
   card: {
     backgroundColor: t.cardBackground,

@@ -35,15 +35,27 @@ export default function VisualProbe(props) {
   const optionSecond =
     secondOption ?? b ?? { label: copy.secondLabel ?? 'Option B' };
 
+  // Вытаскиваем теги, если они есть у опций
+  const getOptionTags = (opt) => {
+    if (!opt) return [];
+    // если в объекте опции есть поле tags, используем его
+    if (Array.isArray(opt.tags)) return opt.tags;
+    return [];
+  };
+
   const handleChooseFirst =
     onChooseFirst
       ?? chooseA
-      ?? (onChoose ? () => onChoose('first', optionFirst) : () => {});
+      ?? (onChoose
+        ? () => onChoose(getOptionTags(optionFirst), optionFirst.label)
+        : () => {});
 
   const handleChooseSecond =
     onChooseSecond
       ?? chooseB
-      ?? (onChoose ? () => onChoose('second', optionSecond) : () => {});
+      ?? (onChoose
+        ? () => onChoose(getOptionTags(optionSecond), optionSecond.label)
+        : () => {});
 
   const colors = useThemeVars();
   const insets = useSafeAreaInsets();

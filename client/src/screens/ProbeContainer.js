@@ -62,10 +62,22 @@ export default function ProbeContainer({ theme, onDone, onStep, onStart }) {
 
   const [probeType, setProbeType] = useState(initialStart);
 
-  // Safe guard for onDone not provided
+  // Safe guard for onDone not provided + детальный лог
   const safeOnDone = (payload) => {
-    if (typeof onDone === 'function') onDone(payload);
-    else console.warn('[ProbeContainer] onDone not provided', payload);
+    console.log('[ProbeContainer] safeOnDone called', {
+      hasOnDone: typeof onDone === 'function',
+      payload,
+    });
+
+    if (typeof onDone === 'function') {
+      try {
+        onDone(payload);
+      } catch (e) {
+        console.error('[ProbeContainer] onDone threw error:', e);
+      }
+    } else {
+      console.warn('[ProbeContainer] onDone not provided', payload);
+    }
   };
 
   // Called when user selects an option

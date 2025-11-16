@@ -513,7 +513,7 @@ export default function ReflectionFlowScreen({ route }) {
         });
         if (emotion) pickEmotion(emotion);
       } catch (e) {
-        // ignore if store API differs
+        console.warn('[ReflectionFlow] store update failed in handleDone', e);
       }
 
       // Navigate to the next step in your flow
