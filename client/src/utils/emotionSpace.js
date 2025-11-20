@@ -1,24 +1,21 @@
 // src/data/emotionSpace.js
-// Core dimensional model (Russell + a few appraisal axes)
 
-/**
- * Dimensions used in state vectors and emotion centroids.
- */
+// List of dimensions for our emotional state space
 export const DIMENSIONS = [
   "valence",     // -3 (very negative) .. +3 (very positive)
-  "arousal",     // 0 .. 3  (activation / energy)
-  "tension",     // 0 .. 3  (muscle/inner tension)
-  "agency",      // 0 .. 2  (sense of control / ability to act)
-  "self_blame",  // 0 .. 2  (how much I blame myself)
-  "other_blame", // 0 .. 2  (how much I blame others / world)
-  "certainty",   // 0 .. 2  (clarity / understanding)
-  "socialness",  // 0 .. 2  (weight of social context)
-  "fatigue"      // 0 .. 2  (tired / drained)
+  "arousal",     // 0 .. 3 (activation / energy)
+  "tension",     // 0 .. 3 (muscle/inner tension)
+  "agency",      // 0 .. 2 (sense of control / ability to act)
+  "self_blame",  // 0 .. 2
+  "other_blame", // 0 .. 2
+  "certainty",   // 0 .. 2 (clarity / understanding)
+  "socialness",  // 0 .. 2 (social context weight)
+  "fatigue"      // 0 .. 2 (tired / drained)
 ];
 
-/**
- * Helper: create empty state vector (neutral).
- */
+// ---------- Base state helpers ----------
+
+// New neutral/empty state
 export function emptyState() {
   return {
     valence: 0,
@@ -27,37 +24,51 @@ export function emptyState() {
     agency: 0,
     self_blame: 0,
     other_blame: 0,
-    certainty: 1, // по умолчанию лёгкая ясность
+    certainty: 1, // light baseline clarity
     socialness: 0,
     fatigue: 0
   };
 }
 
-/**
- * Clamp state to allowed ranges.
- */
-export function clampState(state) {
-  const clamped = { ...state };
-
-  const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
-
-  clamped.valence    = clamp(clamped.valence,   -3, 3);
-  clamped.arousal    = clamp(clamped.arousal,    0, 3);
-  clamped.tension    = clamp(clamped.tension,    0, 3);
-  clamped.agency     = clamp(clamped.agency,     0, 2);
-  clamped.self_blame = clamp(clamped.self_blame, 0, 2);
-  clamped.other_blame= clamp(clamped.other_blame,0, 2);
-  clamped.certainty  = clamp(clamped.certainty,  0, 2);
-  clamped.socialness = clamp(clamped.socialness, 0, 2);
-  clamped.fatigue    = clamp(clamped.fatigue,    0, 2);
-
-  return clamped;
+// Backwards-compatibility: some old code calls zeroVector()
+export function zeroVector() {
+  return emptyState();
 }
 
-/**
- * Base emotion centroids in this dimensional space.
- * Эти значения можно потом постепенно тюнить по ощущениям/данным.
- */
+// Clamp state to allowed ranges
+export function clampState(state) {
+  const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+
+  return {
+    valence:    clamp(state.valence    ?? 0, -3, 3),
+    arousal:    clamp(state.arousal    ?? 0,  0, 3),
+    tension:    clamp(state.tension    ?? 0,  0, 3),
+    agency:     clamp(state.agency     ?? 0,  0, 2),
+    self_blame: clamp(state.self_blame ?? 0,  0, 2),
+    other_blame:clamp(state.other_blame?? 0,  0, 2),
+    certainty:  clamp(state.certainty  ?? 1,  0, 2),
+    socialness: clamp(state.socialness ?? 0,  0, 2),
+    fatigue:    clamp(state.fatigue    ?? 0,  0, 2)
+  };
+}
+
+// Backwards-compatibility helper: accumulate base + delta * weight
+// Used by some legacy simulation code.
+export function accumulate(base, delta, weight = 1) {
+  const state = { ...(base || emptyState()) };
+  const patch = delta || {};
+
+  for (const dim of DIMENSIONS) {
+    const cur = state[dim] ?? 0;
+    const add = patch[dim] ?? 0;
+    state[dim] = cur + weight * add;
+  }
+
+  return clampState(state);
+}
+
+// ---------- Emotion centroids ----------
+
 export const EMOTION_CENTROIDS = {
   // Cluster A — Anxiety / Tension / Fear
   anxiety: {
@@ -172,9 +183,9 @@ export const EMOTION_CENTROIDS = {
   }
 };
 
-/**
- * Compute squared distance between state and centroid.
- */
+// ---------- Distance & ranking ----------
+
+// Squared distance between state and one centroid
 function squaredDistance(state, centroid) {
   let sumSq = 0;
   for (const dim of DIMENSIONS) {
@@ -186,23 +197,18 @@ function squaredDistance(state, centroid) {
   return sumSq;
 }
 
-/**
- * Convert distance to similarity 0..1.
- */
-function distanceToSimilarity(dist) {
-  // 0 -> 1, grows towards 0 as dist increases
+// We use 1 / (1 + sqrt(dist)) as similarity in [0,1]
+function similarityToEmotion(stateVec, centroid) {
+  const dist = squaredDistance(stateVec, centroid);
   return 1 / (1 + Math.sqrt(dist));
 }
 
-/**
- * Rank all emotions by similarity to given state vector.
- */
+// Main: rank emotions by similarity to given state
 export function rankEmotions(stateVec) {
-  const scores = Object.entries(EMOTION_CENTROIDS).map(([key, centroid]) => {
-    const dist = squaredDistance(stateVec, centroid);
-    const score = distanceToSimilarity(dist);
-    return { key, score };
-  });
+  const scores = Object.entries(EMOTION_CENTROIDS).map(([key, centroid]) => ({
+    key,
+    score: similarityToEmotion(stateVec, centroid),
+  }));
   scores.sort((a, b) => b.score - a.score);
   return scores;
 }

@@ -15,7 +15,8 @@
     "deps:pin": "node scripts/deps-pin.mjs",
     "deps:check": "node scripts/deps-check.mjs",
     "sim:sample": "node scripts/simulateAllFlows.js --inDir src/data --mode sample --samples 20000 --out analysis/sim_sample",
-    "sim:all": "node scripts/simulateAllFlows.js --inDir src/data --mode exhaustive --maxPaths 300000 --out analysis/sim_all"
+    "sim:all": "node scripts/simulateAllFlows.js --inDir src/data --mode exhaustive --maxPaths 300000 --out analysis/sim_all",
+    "check:balance": "node scripts/checkBalance.js"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",

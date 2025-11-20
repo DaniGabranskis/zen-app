@@ -7,7 +7,7 @@ import {
   emptyState,
   clampState,
   rankEmotions,
-} from '../data/emotionSpace';
+} from '../utils/emotionSpace';
 
 // Thresholds for routing decisions
 const T_MIX = 0.55;      // show at least something (dominant or mix)
