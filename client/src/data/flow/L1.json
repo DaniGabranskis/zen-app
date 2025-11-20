@@ -4,9 +4,8 @@
     "title": "Mood now",
     "type": "swipe",
     "options": [
-      { "label": "Heavy / uneasy", "tags": ["mood_negative","body_tension","anxiety?"] },
-      { "label": "Neutral / flat", "tags": ["mood_neutral","low_arousal"] },
-      { "label": "Light / positive", "tags": ["mood_positive","ease","gratitude?"] }
+      { "label": "Heavy / uneasy",      "tags": ["L1_MOOD_NEG"] },
+      { "label": "Light / positive",    "tags": ["L1_MOOD_POS"] }
     ]
   },
   {
@@ -14,9 +13,8 @@
     "title": "Body state",
     "type": "swipe",
     "options": [
-      { "label": "Tension / tight", "tags": ["body_tension","tension?"] },
-      { "label": "Heavy / low", "tags": ["body_heavy","tiredness?"] },
-      { "label": "Light / relaxed", "tags": ["body_light","calm?"] }
+      { "label": "Tension / tight",     "tags": ["L1_BODY_TENSION"] },
+      { "label": "Light / relaxed",     "tags": ["L1_BODY_RELAXED"] }
     ]
   },
   {
@@ -24,9 +22,8 @@
     "title": "Energy level",
     "type": "swipe",
     "options": [
-      { "label": "Low", "tags": ["energy_low","tiredness?"] },
-      { "label": "Steady", "tags": ["energy_steady"] },
-      { "label": "High / wired", "tags": ["energy_high","mind_racing?"] }
+      { "label": "Low",                 "tags": ["L1_ENERGY_LOW"] },
+      { "label": "High / wired",        "tags": ["L1_ENERGY_HIGH"] }
     ]
   },
   {
@@ -34,9 +31,8 @@
     "title": "Social connection",
     "type": "swipe",
     "options": [
-      { "label": "Avoiding people", "tags": ["social_avoid","disconnection?"] },
-      { "label": "Neutral", "tags": ["social_neutral"] },
-      { "label": "Drawn to people", "tags": ["social_seek","support?","gratitude?"] }
+      { "label": "Avoiding people",     "tags": ["L1_SOCIAL_THREAT"] },
+      { "label": "Drawn to people",     "tags": ["L1_SOCIAL_SUPPORT"] }
     ]
   },
   {
@@ -44,9 +40,8 @@
     "title": "Sense of control",
     "type": "swipe",
     "options": [
-      { "label": "Losing control", "tags": ["low_control","overwhelm?","anxiety?"] },
-      { "label": "Shaky", "tags": ["control_shaky"] },
-      { "label": "In control", "tags": ["in_control","clarity?","calm?"] }
+      { "label": "Losing control",      "tags": ["L1_CONTROL_LOW"] },
+      { "label": "In control",          "tags": ["L1_CONTROL_HIGH"] }
     ]
   }
 ]

@@ -1,0 +1,217 @@
+flowchart TD
+
+    START([Start]) --> L1_Q1
+
+    %%Layer1
+
+    %% L1.Q1
+    L1_Q1[[L1_mood]]
+
+    L1_Q1 --> L1_Q1_A1
+    L1_Q1 --> L1_Q1_A2
+
+    mood_negative --> L1_Q1_A1
+    mood_positive --> L1_Q1_A2
+
+    L1_Q1_A1 --> L1_Q2
+    L1_Q1_A2 --> L1_Q2
+
+    %% L1.Q2
+    L1_Q2[[L1_body]]
+
+    L1_Q2 --> L1_Q2_A1
+    L1_Q2 --> L1_Q2_A2
+
+    body_tension --> L1_Q2_A1
+    body_relaxed --> L1_Q2_A2
+    body_heavy --> L1_Q2_A1
+    body_light --> L1_Q2_A2
+
+    L1_Q2_A1 --> L1_Q3
+    L1_Q2_A2 --> L1_Q3
+
+    %% L1.Q3
+    L1_Q3[[L1_energy]]
+
+    L1_Q3 --> L1_Q3_A1
+    L1_Q3 --> L1_Q3_A2
+
+    energy_low --> L1_Q3_A1
+    energy_high --> L1_Q3_A2
+
+    L1_Q3_A1 --> L1_Q4
+    L1_Q3_A2 --> L1_Q4
+
+    %% L1.Q4
+    L1_Q4[[L1_control]]
+
+    L1_Q4 --> L1_Q4_A1
+    L1_Q4 --> L1_Q4_A2
+
+    mind_racing --> L1_Q4_A1
+    mind_slow --> L1_Q4_A2
+    mind_unfocused --> L1_Q4_A1
+    mind_present --> L1_Q4_A2
+
+    L1_Q4_A1 --> L1_Q5
+    L1_Q4_A2 --> L1_Q5
+
+    %% L1.Q5
+    L1_Q5[[L1_social]]
+
+    L1_Q5 --> L1_Q5_A1
+    L1_Q5 --> L1_Q5_A2
+
+    social_disconnected --> L1_Q5_A1
+    social_supported --> L1_Q5_A2
+    self_doubt --> L1_Q5_A1
+    self_acceptance --> L1_Q5_A2
+
+    L1_Q5_A1 --> L2_Q1
+    L1_Q5_A2 --> L2_Q1
+
+    %%Layer2
+
+    %% L2.Q2
+    L2_Q1[[L2_mind]]
+
+    L2_Q1 --> L2_Q1_A1
+    L2_Q1 --> L2_Q1_A2
+
+    L2_Q1_A1 --> L2_Q2
+    L2_Q1_A2 --> L2_Q2
+
+    %% L2.Q2
+    L2_Q2[[L2_workload]]
+
+    L2_Q2 --> L2_Q2_A1
+    L2_Q2 --> L2_Q2_A2
+
+    L2_Q2_A1 --> L2_Q3
+    L2_Q2_A2 --> L2_Q3
+
+    %% L2.Q3
+    L2_Q3[[L2_uncertainty]]
+
+    L2_Q3 --> L2_Q3_A1
+    L2_Q3 --> L2_Q3_A2
+
+    L2_Q3_A1 --> L2_Q4
+    L2_Q3_A2 --> L2_Q4
+
+    %% L2.Q4
+    L2_Q4[[L2_inter_a]]
+
+    L2_Q4 --> L2_Q4_A1
+    L2_Q4 --> L2_Q4_A2
+
+    L2_Q4_A1 --> L2_Q5
+    L2_Q4_A2 --> L2_Q5
+
+    %% L2.Q5
+    L2_Q5[[L2_inter_b]]
+
+    L2_Q5 --> L2_Q5_A1
+    L2_Q5 --> L2_Q5_A2
+
+    L2_Q5_A1 --> L2_Q6
+    L2_Q5_A2 --> L2_Q6
+
+        %% L2.Q6
+    L2_Q6[[L2_self]]
+
+    L2_Q6 --> L2_Q6_A1
+    L2_Q6 --> L2_Q6_A2
+
+    L2_Q6_A1 --> L2_Q7
+    L2_Q6_A2 --> L2_Q7
+
+        %% L2.Q7
+    L2_Q7[[L2_threat]]
+
+    L2_Q7 --> L2_Q7_A1
+    L2_Q7 --> L2_Q7_A2
+
+    L2_Q7_A1 --> L2_Q8
+    L2_Q7_A2 --> L2_Q8
+
+        %% L2.Q8
+    L2_Q8[[L2_connection]]
+
+    L2_Q8 --> L2_Q8_A1
+    L2_Q8 --> L2_Q8_A2
+
+    L2_Q8_A1 --> L2_Q9
+    L2_Q8_A2 --> L2_Q9
+
+            %% L2.Q9
+    L2_Q9[[L2_control]]
+
+    L2_Q9 --> L2_Q9_A1
+    L2_Q9 --> L2_Q9_A2
+
+    L2_Q9_A1 --> L2_Q10
+    L2_Q9_A2 --> L2_Q10
+
+            %% L2.Q10
+    L2_Q10[[L2_expectations]]
+
+    L2_Q10 --> L2_Q10_A1
+    L2_Q10 --> L2_Q10_A2
+
+    L2_Q10_A1 --> L3_ENTRY
+    L2_Q10_A2 --> L3_ENTRY
+
+    
+    %%Tags
+    %%Level 1
+    mood_negative
+    mood_positive
+    energy_low
+    energy_high
+    body_tension
+    body_relaxed
+    body_heavy
+    body_light
+    mind_racing
+    mind_slow
+    mind_unfocused
+    mind_present
+    overwhelmed
+    in_control
+    social_disconnected
+    social_supported
+    self_doubt
+    self_acceptance
+
+    %%Level 2
+    threat
+    future_worry
+    hypervigilance
+    fear_core
+    panic_edge
+    injustice
+    boundary_crossed
+    conflict
+    irritation_core
+    blocked_goals
+    loss
+    unmet_expectations
+    loneliness_core
+    social_rejection
+    grief_core
+    mental_fog
+    overload_core
+    shutdown
+    emotional_numb
+    tiredness_core
+    self_blame
+    self_attack
+    regret
+    worthlessness
+    shame_core
+    calm_core
+    clarity_core
+    gratitude_focus
+    joy_spark
+    contentment_core

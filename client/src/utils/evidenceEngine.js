@@ -1,104 +1,237 @@
 // utils/evidenceEngine.js
 // Pure functions only. All comments in English.
 
-import weights from '../data/weights.tag2emotion.v1.json';
 import emotions from '../data/emotions20.json';
-import { canonicalizeTags } from './canonicalizeTags';
 import { getPolarityFromMeta, POLARITY_FALLBACK } from '../data/emotionMeta';
+import {
+  emptyState,
+  clampState,
+  rankEmotions,
+} from '../data/emotionSpace';
 
-const T_MIX = 0.55;   // show at least something (dominant or mix)
-const T_DOM = 0.68;   // confident dominant
+// Thresholds for routing decisions
+const T_MIX = 0.55;      // show at least something (dominant or mix)
+const T_DOM = 0.68;      // confident dominant
 const DELTA_PROBE = 0.08; // if p1-p2 below -> consider probe
 const DELTA_MIX = 0.06;   // if close -> allow mix
 
-// Softmax to get a proper probability distribution (sums to 1).
-// Temperature < 1 sharpens; > 1 smooths. Small eps prevents p=1.0 locks.
-function softmax(scoresObj, temperature = 0.9, eps = 1e-6) {
-  const keys = Object.keys(scoresObj || {});
-  if (keys.length === 0) return {};
-  const vals = keys.map(k => scoresObj[k]);
-  const max = Math.max(...vals);
-  const scaled = vals.map(v => (v - max) / Math.max(temperature, 0.1));
-  const exps = scaled.map(v => Math.exp(v));
-  const denom = exps.reduce((a, b) => a + b, 0) + eps * exps.length;
-  const probs = {};
-  keys.forEach((k, i) => {
-    probs[k] = (exps[i] + eps) / denom;
-  });
-  return probs;
-}
+// ============================================================================
+// TAG → DIMENSION RULES
+// These are the only tags the engine understands.
+// L1/L2 cards must emit these tag keys in their options.
+// ============================================================================
 
-function accumulateFromCards(acceptedCards, { wL1 = 1.0, wL2 = 1.7, wProbe = 2.2 } = {}) {
-  // Expect cards with .id like "L1_..." "L2_..." or "PR_..."
-  // Each card: { selectedOption, options: { [label]: [tags...] } }
-  const emotionScores = {};
-  const tagFreq = {};
+const TAG_RULES = {
+  // ===== L1 =====
 
-  // prefill zeros
-    for (const e of (emotions || [])) {
-    const key = e.key || e.id || e.name;
-    if (key) emotionScores[key] = 0;
-  }
+  // 1) Valence (pleasant/unpleasant) – L1.Q1 (mood)
+  L1_MOOD_NEG: { valence: -2 },
+  L1_MOOD_POS: { valence: +2 },
 
-  const bump = (tag, gain) => {
-    const row = weights[tag];
-    if (!row) return;
-    tagFreq[tag] = (tagFreq[tag] || 0) + 1;
-    for (const [emotion, w] of Object.entries(row)) {
-      emotionScores[emotion] = (emotionScores[emotion] || 0) + w * gain;
+  // 2) Body / tension – optional L1.Q2
+  L1_BODY_TENSION: { tension: +2 },
+  L1_BODY_RELAXED: { tension: -1 },
+
+  // 3) Arousal (high/low) – L1.Q3 (energy)
+  L1_ENERGY_LOW:  { arousal: -1, fatigue: +1 },
+  L1_ENERGY_HIGH: { arousal: +2 },
+
+  // 4) Control vs overwhelmed – L1.Q4
+  L1_CONTROL_HIGH: { agency: +2, tension: 0 },
+  L1_CONTROL_LOW:  { agency: -1, tension: +1 },
+
+  // 5) Social threat vs support – L1.Q5
+  L1_SOCIAL_SUPPORT: { socialness: +2, valence: +1 },
+  L1_SOCIAL_THREAT:  { socialness: +2, valence: -1, tension: +1 },
+
+  // ===== L2 =====
+
+  // 6) Cognitive focus (future vs past) – L2.Q1
+  L2_FOCUS_FUTURE: { arousal: +1, tension: +1 },
+  L2_FOCUS_PAST:   { fatigue: +1, valence: -1 },
+
+  // 7) Source of problem (people vs workload) – L2.Q2
+  L2_SOURCE_PEOPLE: { other_blame: +2, socialness: +1 },
+  L2_SOURCE_TASKS:  { other_blame: +1, tension: +1 },
+
+  // 8) Uncertainty – L2.Q3
+  L2_UNCERT_HIGH: { certainty: 0, tension: +1 },
+  L2_UNCERT_LOW:  { certainty: +2 },
+
+  // 9) Social pain – L2.Q4
+  L2_SOCIAL_PAIN_YES: { socialness: +2, valence: -2, tension: +1 },
+  L2_SOCIAL_PAIN_NO:  {},
+
+  // 10) Shutdown vs emotional flooding – L2.Q5
+  L2_SHUTDOWN: { fatigue: +2, tension: 0, agency: -1 },
+  L2_FLOODING: { arousal: +1, tension: +1 },
+
+  // 11) Guilt vs shame – L2.Q6–Q7
+  L2_GUILT: { self_blame: +2, valence: -2 },
+  L2_SHAME: { self_blame: +2, valence: -2, socialness: +2 },
+
+  // 12) Positive moments (gratitude vs joy) – L2.Q8
+  L2_POS_GRATITUDE: { valence: +2, certainty: +1, socialness: +1 },
+  L2_POS_JOY:       { valence: +3, arousal: +2, socialness: +2 },
+
+  // 13) Regulation capacity & clarity – L2.Q9–10
+  L2_REGULATION_GOOD: { agency: +1, tension: -1 },
+  L2_REGULATION_BAD:  { agency: -1, tension: +1 },
+  L2_CLARITY_HIGH:    { certainty: +2 },
+  L2_CLARITY_LOW:     { certainty: 0 }
+};
+
+// ============================================================================
+// INTERNAL HELPERS
+// ============================================================================
+
+/**
+ * Build state vector from tags using TAG_RULES.
+ */
+function buildStateFromTags(rawTags = []) {
+  const unique = Array.from(new Set(rawTags));
+  let state = emptyState();
+
+  for (const tag of unique) {
+    const rule = TAG_RULES[tag];
+    if (!rule) continue;
+    for (const [dim, delta] of Object.entries(rule)) {
+      state[dim] = (state[dim] ?? 0) + delta;
     }
-  };
-
-  for (const card of acceptedCards || []) {
-    const selectedRaw = card.options?.[card.selectedOption] || [];
-    const selected = canonicalizeTags(selectedRaw); // <- canonicalize here
-    const isL2 = String(card.id || '').startsWith('L2_');
-    const isProbe = String(card.id || '').startsWith('PR_');
-    const gain = isProbe ? wProbe : (isL2 ? wL2 : wL1);
-    for (const tag of selected) bump(tag, gain);
   }
 
-  return { emotionScores, tagFreq };
+  return clampState(state);
 }
 
-export function routeEmotionFromCards(acceptedCards) {
-  const { emotionScores, tagFreq } = accumulateFromCards(acceptedCards);
-  const probs = softmax(emotionScores, 0.9, 1e-6);
+/**
+ * Softmax over similarity scores.
+ * Input: [{ key, score }, ...]
+ * Output: [{ key, p }, ...] with sum(p) ~= 1.
+ */
+function softmaxFromScores(pairs, temperature = 0.9, eps = 1e-6) {
+  if (!pairs || pairs.length === 0) return [];
+  const scaled = pairs.map(({ key, score }) => ({
+    key,
+    v: Math.exp((score / Math.max(temperature, 0.1)) || 0)
+  }));
+  const sum = scaled.reduce((acc, x) => acc + x.v, 0) + eps;
+  return scaled.map(({ key, v }) => ({ key, p: v / sum }));
+}
 
-  // pick top-2
-  const sorted = Object.entries(probs).sort((a, b) => b[1] - a[1]);
-  const [e1, p1] = sorted[0] || [null, 0];
-  const [e2, p2] = sorted[1] || [null, 0];
+/**
+ * Decide between single / mix / probe based on sorted probabilities.
+ * pairs: [ [emotionKey, prob], ... ] sorted desc by prob.
+ */
+function decideMixOrSingle(pairs) {
+  const [first, second] = [
+    pairs[0] || ['unknown', 0],
+    pairs[1] || [null, 0],
+  ];
+  const [e1, p1] = first;
+  const [e2, p2] = second;
   const delta = p1 - p2;
 
-  const result = {
+  const base = {
     dominant: e1 || 'unknown',
     secondary: null,
     confidence: p1 || 0,
     delta,
-    probs,
-    tagFreq
+    mode: 'single',
   };
 
   if (p1 >= T_DOM) {
     // confident single
-    return { ...result, secondary: null, mode: 'single' };
+    return { ...base, secondary: null, mode: 'single' };
   }
 
   if (p1 >= T_MIX && delta < DELTA_MIX && e2) {
     // show mix of two
-    return { ...result, secondary: e2, mode: 'mix' };
+    return { ...base, secondary: e2, mode: 'mix' };
   }
 
   if (p1 < T_MIX || delta < DELTA_PROBE) {
     // probe recommended
-    return { ...result, mode: 'probe' };
+    return { ...base, mode: 'probe' };
   }
 
   // fallback single
-  return { ...result, mode: 'single' };
+  return { ...base, mode: 'single' };
 }
 
+// ============================================================================
+// PUBLIC API
+// ============================================================================
+
+/**
+ * Extract option tags only for selected options.
+ * NOTE: now it returns raw tags as they are in cards (no canonicalization).
+ */
+export function accumulateTagsFromCards(cards = []) {
+  const raw = [];
+  for (const c of cards) {
+    const opt = c.options?.[c.selectedOption];
+    const tags = Array.isArray(opt) ? opt : (opt?.tags || []);
+    for (const t of tags) raw.push(t);
+  }
+  return raw;
+}
+
+/**
+ * Classify canonical tags into emotions and decide routing.
+ * @returns {{ decision: {dominant, secondary, confidence, delta, mode}, probsSorted: [ [key, p], ... ] }}
+ */
+export function classifyTags(tags = []) {
+  // 1) Build dimensional state
+  const state = buildStateFromTags(tags);
+
+  // 2) Rank emotions by similarity
+  const similarityRank = rankEmotions(state); // [{ key, score }, ...]
+
+  // 3) Convert similarity scores to probabilities
+  const withProb = softmaxFromScores(similarityRank); // [{ key, p }, ...]
+  const pairs = withProb.map(({ key, p }) => [key, p]);
+
+  // 4) Decide mode (single/mix/probe)
+  const decision = decideMixOrSingle(pairs);
+
+  return { decision, probsSorted: pairs };
+}
+
+/**
+ * Main entry for routing from cards (L1/L2/Probe).
+ * Keeps the same shape as the old version.
+ */
+export function routeEmotionFromCards(acceptedCards) {
+  const tags = accumulateTagsFromCards(acceptedCards || []);
+
+  // Compute tag frequency just for debug / transparency
+  const tagFreq = {};
+  for (const t of tags) {
+    tagFreq[t] = (tagFreq[t] || 0) + 1;
+  }
+
+  const { decision, probsSorted } = classifyTags(tags);
+
+  // Build probs map from sorted pairs
+  const probs = {};
+  for (const [k, p] of probsSorted) {
+    probs[k] = p;
+  }
+
+  return {
+    dominant: decision.dominant || 'unknown',
+    secondary: decision.secondary || null,
+    confidence: decision.confidence || 0,
+    delta: decision.delta || 0,
+    probs,
+    tagFreq,
+    mode: decision.mode,
+  };
+}
+
+/**
+ * Get rich meta info for an emotion key (for UI).
+ */
 export function getEmotionMeta(key) {
   // Normalize lookup to be robust to key/name usage
   const k = String(key || '').toLowerCase();
@@ -113,8 +246,8 @@ export function getEmotionMeta(key) {
 
   // Color can be array or string — take the first if array
   const color = Array.isArray(found.color)
-  ? found.color
-  : [found.color || '#ccc', found.color || '#ccc'];
+    ? found.color
+    : [found.color || '#ccc', found.color || '#ccc'];
 
   // Resolve polarity:
   // 1) try meta-driven valence → polarity,
@@ -135,35 +268,4 @@ export function getEmotionMeta(key) {
     emoji: found.emoji || '',
     polarity,
   };
-}
-
-export function accumulateTagsFromCards(cards = []) {
-  // Extract option tags only for selected options
-  const raw = [];
-  for (const c of cards) {
-    const opt = c.options?.[c.selectedOption];
-    const tags = Array.isArray(opt) ? opt : (opt?.tags || []);
-    for (const t of tags) raw.push(t);
-  }
-  return canonicalizeTags(raw);
-}
-
-/**
- * Classify canonical tags into emotions and decide routing.
- * @returns { decision, probsSorted }
- */
-export function classifyTags(tags = []) {
-  // Build raw scores
-  const scores = {};
-  for (const tag of tags) {
-    const row = weights[tag];
-    if (!row) continue;
-    for (const emo in row) {
-      scores[emo] = (scores[emo] || 0) + row[emo];
-    }
-  }
-  const probs = softmax(scores);
-  const pairs = Object.entries(probs).sort((a,b) => b[1]-a[1]);
-  const top = pairs.slice(0, 2).map(([k]) => k);
-  return decideMixOrSingle(pairs);
 }

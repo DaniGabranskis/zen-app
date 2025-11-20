@@ -1,92 +1,83 @@
 [
   {
-    "id": "L2_mind",
-    "title": "Mind focus",
+    "id": "L2_focus",
+    "title": "What does your mind focus on more?",
     "type": "swipe",
     "options": [
-      { "label": "Calm / focused", "tags": ["mind_calm","clarity?","contentment?"] },
-      { "label": "Racing / noisy", "tags": ["mind_racing","tension?","anxiety?"] }
+      { "label": "Mostly future worries", "tags": ["L2_FOCUS_FUTURE"] },
+      { "label": "Mostly past events",    "tags": ["L2_FOCUS_PAST"] }
     ]
   },
   {
-    "id": "L2_workload",
-    "title": "Workload",
+    "id": "L2_source",
+    "title": "Where does the biggest tension come from?",
     "type": "swipe",
     "options": [
-      { "label": "Manageable", "tags": ["work_ok","confidence?"] },
-      { "label": "Too much", "tags": ["work_too_much","low_control","overwhelm?"] }
+      { "label": "People / unfairness",   "tags": ["L2_SOURCE_PEOPLE"] },
+      { "label": "Tasks / workload",      "tags": ["L2_SOURCE_TASKS"] }
     ]
   },
   {
     "id": "L2_uncertainty",
-    "title": "Uncertainty",
+    "title": "How uncertain does this situation feel?",
     "type": "swipe",
     "options": [
-      { "label": "Clear", "tags": ["uncertainty_low","clarity?"] },
-      { "label": "High / outcome fear", "tags": ["uncertainty_high","fear?","anxiety?"] }
+      { "label": "Clear enough",          "tags": ["L2_UNCERT_LOW"] },
+      { "label": "High / outcome unclear","tags": ["L2_UNCERT_HIGH"] }
     ]
   },
   {
-    "id": "L2_inter_a",
-    "title": "Interpersonal (support / criticism)",
+    "id": "L2_social_pain",
+    "title": "Is there social pain here?",
     "type": "swipe",
     "options": [
-      { "label": "Supported", "tags": ["support","gratitude?"] },
-      { "label": "Criticized / ignored", "tags": ["criticism","ignored","shame?","guilt?","sadness?"] }
+      { "label": "Rejected / ignored",    "tags": ["L2_SOCIAL_PAIN_YES"] },
+      { "label": "Generally okay with others", "tags": ["L2_SOCIAL_PAIN_NO"] }
     ]
   },
   {
-    "id": "L2_inter_b",
-    "title": "Interpersonal (calm / conflict)",
+    "id": "L2_shutdown",
+    "title": "How does your system react?",
     "type": "swipe",
     "options": [
-      { "label": "Calm discussion", "tags": ["support","clarity?"] },
-      { "label": "Conflict / reactive", "tags": ["conflict","anger?","frustration?","irritation?"] }
+      { "label": "Numb / shut down",      "tags": ["L2_SHUTDOWN"] },
+      { "label": "Tired but still feeling", "tags": ["L2_FLOODING"] }
     ]
   },
   {
-    "id": "L2_self",
-    "title": "Self-perception",
+    "id": "L2_guilt_shame",
+    "title": "How do you see yourself in this?",
     "type": "swipe",
     "options": [
-      { "label": "Proud / okay", "tags": ["self_ok","contentment?"] },
-      { "label": "Blamed myself", "tags": ["guilt","shame"] }
+      { "label": "I did something wrong (guilt)", "tags": ["L2_GUILT"] },
+      { "label": "There is something wrong with me (shame)", "tags": ["L2_SHAME"] }
     ]
   },
   {
-    "id": "L2_threat",
-    "title": "Safety",
+    "id": "L2_positive_moments",
+    "title": "Any positive moments during this?",
     "type": "swipe",
     "options": [
-      { "label": "Safe", "tags": ["safe","calm?"] },
-      { "label": "On guard", "tags": ["vigilant","tension?"] }
+      { "label": "Moments of gratitude / appreciation", "tags": ["L2_POS_GRATITUDE"] },
+      { "label": "Moments of joy / fun",               "tags": ["L2_POS_JOY"] }
     ]
   },
   {
-    "id": "L2_connection",
-    "title": "Connection",
+    "id": "L2_regulation",
+    "title": "How is your ability to regulate right now?",
     "type": "swipe",
     "options": [
-      { "label": "Connected", "tags": ["social_seek","support?","gratitude?"] },
-      { "label": "Isolated", "tags": ["social_avoid","disconnection?","loneliness?"] }
+      { "label": "I can come back to calm",           "tags": ["L2_REGULATION_GOOD"] },
+      { "label": "Still on edge even in good moments","tags": ["L2_REGULATION_BAD"] }
     ]
   },
   {
-    "id": "L2_control",
-    "title": "Sense of control",
+    "id": "L2_clarity",
+    "title": "Do you understand what you feel?",
     "type": "swipe",
     "options": [
-      { "label": "In control", "tags": ["in_control","clarity?","calm?"] },
-      { "label": "Shaky / slipping", "tags": ["control_shaky","confusion?"] }
-    ]
-  },
-  {
-    "id": "L2_expectations",
-    "title": "Expectations / outcome",
-    "type": "swipe",
-    "options": [
-      { "label": "Things went well", "tags": ["contentment?","gratitude?"] },
-      { "label": "Let down / failed", "tags": ["disappointment?","sadness?","frustration?"] }
+      { "label": "I understand what I feel",          "tags": ["L2_CLARITY_HIGH"] },
+      { "label": "Still confused about it",           "tags": ["L2_CLARITY_LOW"] }
     ]
   }
 ]

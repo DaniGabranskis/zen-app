@@ -1,0 +1,331 @@
+flowchart TD
+
+    START([Start]) --> L1_Q1
+
+    %% =========================
+    %% LAYER 1  (L1 QUESTIONS)
+    %% =========================
+
+    %% L1.Q1 – MOOD
+    L1_Q1[L1_mood]
+
+    L1_Q1 --> L1_Q1_A1[Ans1: mood feels heavy]
+    L1_Q1 --> L1_Q1_A2[Ans2: mood feels mostly ok]
+
+    L1_Q1_A1 --> mood_negative
+    L1_Q1_A2 --> mood_positive
+
+    mood_negative --> L1_Q2
+    mood_positive --> L1_Q2
+
+    %% L1.Q2 – BODY
+    L1_Q2[L1_body]
+
+    L1_Q2 --> L1_Q2_A1[Ans1: tense or heavy]
+    L1_Q2 --> L1_Q2_A2[Ans2: light or relaxed]
+
+    L1_Q2_A1 --> body_tension
+    L1_Q2_A1 --> body_heavy
+
+    L1_Q2_A2 --> body_relaxed
+    L1_Q2_A2 --> body_light
+
+    body_tension --> L1_Q3
+    body_heavy --> L1_Q3
+    body_relaxed --> L1_Q3
+    body_light --> L1_Q3
+
+    %% L1.Q3 – ENERGY
+    L1_Q3[L1_energy]
+
+    L1_Q3 --> L1_Q3_A1[Ans1: low energy]
+    L1_Q3 --> L1_Q3_A2[Ans2: high energy]
+
+    L1_Q3_A1 --> energy_low
+    L1_Q3_A2 --> energy_high
+
+    energy_low --> L1_Q4
+    energy_high --> L1_Q4
+
+    %% L1.Q4 – CONTROL AND MIND
+    L1_Q4[L1_control]
+
+    L1_Q4 --> L1_Q4_A1[Ans1: racing or unfocused mind]
+    L1_Q4 --> L1_Q4_A2[Ans2: present and in control]
+
+    L1_Q4_A1 --> mind_racing
+    L1_Q4_A1 --> mind_unfocused
+    L1_Q4_A1 --> overwhelmed
+
+    L1_Q4_A2 --> mind_slow
+    L1_Q4_A2 --> mind_present
+    L1_Q4_A2 --> in_control
+
+    mind_racing --> L1_Q5
+    mind_unfocused --> L1_Q5
+    overwhelmed --> L1_Q5
+    mind_slow --> L1_Q5
+    mind_present --> L1_Q5
+    in_control --> L1_Q5
+
+    %% L1.Q5 – SOCIAL AND SELF VIEW
+    L1_Q5[L1_social]
+
+    L1_Q5 --> L1_Q5_A1[Ans1: disconnected and self doubt]
+    L1_Q5 --> L1_Q5_A2[Ans2: supported and self acceptance]
+
+    L1_Q5_A1 --> social_disconnected
+    L1_Q5_A1 --> self_doubt
+
+    L1_Q5_A2 --> social_supported
+    L1_Q5_A2 --> self_acceptance
+
+    social_disconnected --> L2_Q1
+    self_doubt --> L2_Q1
+    social_supported --> L2_Q1
+    self_acceptance --> L2_Q1
+
+    %% =========================
+    %% LAYER 2  (L2 QUESTIONS)
+    %% =========================
+
+    %% L2.Q1 – FOCUS OF MIND (THREAT VS LOSS)
+    L2_Q1[L2_mind_focus]
+
+    L2_Q1 --> L2_Q1_A1[Ans1: mostly future worries]
+    L2_Q1 --> L2_Q1_A2[Ans2: mostly past events]
+
+    L2_Q1_A1 --> threat
+    L2_Q1_A1 --> future_worry
+    L2_Q1_A1 --> hypervigilance
+
+    L2_Q1_A2 --> loss
+    L2_Q1_A2 --> regret
+    L2_Q1_A2 --> grief_core
+
+    threat --> L2_Q2
+    future_worry --> L2_Q2
+    hypervigilance --> L2_Q2
+    loss --> L2_Q2
+    regret --> L2_Q2
+    grief_core --> L2_Q2
+
+    %% L2.Q2 – WORKLOAD OR PEOPLE CONFLICT
+    L2_Q2[L2_workload]
+
+    L2_Q2 --> L2_Q2_A1[Ans1: conflict or unfairness with people]
+    L2_Q2 --> L2_Q2_A2[Ans2: pressure from tasks or work]
+
+    L2_Q2_A1 --> injustice
+    L2_Q2_A1 --> boundary_crossed
+    L2_Q2_A1 --> conflict
+    L2_Q2_A1 --> irritation_core
+
+    L2_Q2_A2 --> blocked_goals
+    L2_Q2_A2 --> overload_core
+    L2_Q2_A2 --> mental_fog
+
+    injustice --> L2_Q3
+    boundary_crossed --> L2_Q3
+    conflict --> L2_Q3
+    irritation_core --> L2_Q3
+    blocked_goals --> L2_Q3
+    overload_core --> L2_Q3
+    mental_fog --> L2_Q3
+
+    %% L2.Q3 – UNCERTAINTY
+    L2_Q3[L2_uncertainty]
+
+    L2_Q3 --> L2_Q3_A1[Ans1: high uncertainty]
+    L2_Q3 --> L2_Q3_A2[Ans2: low uncertainty]
+
+    L2_Q3_A1 --> future_worry
+    L2_Q3_A1 --> threat
+
+    L2_Q3_A2 --> clarity_core
+    L2_Q3_A2 --> calm_core
+
+    future_worry --> L2_Q4
+    threat --> L2_Q4
+    clarity_core --> L2_Q4
+    calm_core --> L2_Q4
+
+    %% L2.Q4 – SOCIAL PAIN
+    L2_Q4[L2_social_pain]
+
+    L2_Q4 --> L2_Q4_A1[Ans1: rejected or ignored]
+    L2_Q4 --> L2_Q4_A2[Ans2: generally okay with others]
+
+    L2_Q4_A1 --> social_rejection
+    L2_Q4_A1 --> loneliness_core
+
+    L2_Q4_A2 --> gratitude_focus
+    L2_Q4_A2 --> contentment_core
+
+    social_rejection --> L2_Q5
+    loneliness_core --> L2_Q5
+    gratitude_focus --> L2_Q5
+    contentment_core --> L2_Q5
+
+    %% L2.Q5 – SHUTDOWN OR STILL FEELING
+    L2_Q5[L2_shutdown]
+
+    L2_Q5 --> L2_Q5_A1[Ans1: numb or shut down]
+    L2_Q5 --> L2_Q5_A2[Ans2: tired but still feel]
+
+    L2_Q5_A1 --> shutdown
+    L2_Q5_A1 --> emotional_numb
+
+    L2_Q5_A2 --> tiredness_core
+    L2_Q5_A2 --> grief_core
+
+    shutdown --> L2_Q6
+    emotional_numb --> L2_Q6
+    tiredness_core --> L2_Q6
+    grief_core --> L2_Q6
+
+    %% L2.Q6 – SELF EVALUATION
+    L2_Q6[L2_self_evaluation]
+
+    L2_Q6 --> L2_Q6_A1[Ans1: blame myself]
+    L2_Q6 --> L2_Q6_A2[Ans2: more about situation]
+
+    L2_Q6_A1 --> self_blame
+    L2_Q6_A1 --> regret
+
+    L2_Q6_A2 --> clarity_core
+    L2_Q6_A2 --> calm_core
+
+    self_blame --> L2_Q7
+    regret --> L2_Q7
+    clarity_core --> L2_Q7
+    calm_core --> L2_Q7
+
+    %% L2.Q7 – SHAME VS GUILT FLAVOR
+    L2_Q7[L2_shame_guilt]
+
+    L2_Q7 --> L2_Q7_A1[Ans1: there is something wrong with me]
+    L2_Q7 --> L2_Q7_A2[Ans2: I did something wrong]
+
+    L2_Q7_A1 --> shame_core
+    L2_Q7_A1 --> self_attack
+    L2_Q7_A1 --> worthlessness
+
+    L2_Q7_A2 --> self_blame
+    L2_Q7_A2 --> regret
+
+    shame_core --> L2_Q8
+    self_attack --> L2_Q8
+    worthlessness --> L2_Q8
+    self_blame --> L2_Q8
+    regret --> L2_Q8
+
+    %% L2.Q8 – POSITIVE MOMENTS
+    L2_Q8[L2_positive_moments]
+
+    L2_Q8 --> L2_Q8_A1[Ans1: moments of gratitude]
+    L2_Q8 --> L2_Q8_A2[Ans2: moments of joy or fun]
+
+    L2_Q8_A1 --> gratitude_focus
+    L2_Q8_A1 --> contentment_core
+
+    L2_Q8_A2 --> joy_spark
+    L2_Q8_A2 --> calm_core
+
+    gratitude_focus --> L2_Q9
+    contentment_core --> L2_Q9
+    joy_spark --> L2_Q9
+    calm_core --> L2_Q9
+
+    %% L2.Q9 – CALM VS AGITATION WITH GOOD THINGS
+    L2_Q9[L2_calm_or_edgy]
+
+    L2_Q9 --> L2_Q9_A1[Ans1: can relax into good moments]
+    L2_Q9 --> L2_Q9_A2[Ans2: still on edge even in good]
+
+    L2_Q9_A1 --> calm_core
+    L2_Q9_A1 --> contentment_core
+
+    L2_Q9_A2 --> hypervigilance
+    L2_Q9_A2 --> fear_core
+    L2_Q9_A2 --> panic_edge
+
+    calm_core --> L2_Q10
+    contentment_core --> L2_Q10
+    hypervigilance --> L2_Q10
+    fear_core --> L2_Q10
+    panic_edge --> L2_Q10
+
+    %% L2.Q10 – CLARITY VS CONFUSION ABOUT FEELINGS
+    L2_Q10[L2_clarity_of_feelings]
+
+    L2_Q10 --> L2_Q10_A1[Ans1: I understand what I feel]
+    L2_Q10 --> L2_Q10_A2[Ans2: still confused about it]
+
+    L2_Q10_A1 --> clarity_core
+    L2_Q10_A2 --> mental_fog
+
+    clarity_core --> EVIDENCE
+    mental_fog --> EVIDENCE
+
+    %% =========================
+    %% EVIDENCE ENGINE ENTRY
+    %% =========================
+
+    EVIDENCE[[Evidence engine input\nall Level1 and Level2 tags]]
+
+    %% =========================
+    %% TAG NODES (DEFINITIONS)
+    %% =========================
+
+    %% Level 1 tags
+    mood_negative[mood_negative]
+    mood_positive[mood_positive]
+    energy_low[energy_low]
+    energy_high[energy_high]
+    body_tension[body_tension]
+    body_relaxed[body_relaxed]
+    body_heavy[body_heavy]
+    body_light[body_light]
+    mind_racing[mind_racing]
+    mind_slow[mind_slow]
+    mind_unfocused[mind_unfocused]
+    mind_present[mind_present]
+    overwhelmed[overwhelmed]
+    in_control[in_control]
+    social_disconnected[social_disconnected]
+    social_supported[social_supported]
+    self_doubt[self_doubt]
+    self_acceptance[self_acceptance]
+
+    %% Level 2 tags
+    threat[threat]
+    future_worry[future_worry]
+    hypervigilance[hypervigilance]
+    fear_core[fear_core]
+    panic_edge[panic_edge]
+    injustice[injustice]
+    boundary_crossed[boundary_crossed]
+    conflict[conflict]
+    irritation_core[irritation_core]
+    blocked_goals[blocked_goals]
+    loss[loss]
+    unmet_expectations[unmet_expectations]
+    loneliness_core[loneliness_core]
+    social_rejection[social_rejection]
+    grief_core[grief_core]
+    mental_fog[mental_fog]
+    overload_core[overload_core]
+    shutdown[shutdown]
+    emotional_numb[emotional_numb]
+    tiredness_core[tiredness_core]
+    self_blame[self_blame]
+    self_attack[self_attack]
+    regret[regret]
+    worthlessness[worthlessness]
+    shame_core[shame_core]
+    calm_core[calm_core]
+    clarity_core[clarity_core]
+    gratitude_focus[gratitude_focus]
+    joy_spark[joy_spark]
+    contentment_core[contentment_core]
