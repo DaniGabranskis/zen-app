@@ -125,7 +125,7 @@ export const EMOTION_CENTROIDS = {
   disconnection: {
     valence: -2, arousal: 0, tension: 0, agency: 0,
     self_blame: 0, other_blame: 0, certainty: 0,
-    socialness: 0, fatigue: 2
+    socialness: 1, fatigue: 2
   },
   confusion: {
     valence: -1, arousal: 1, tension: 1, agency: 0,

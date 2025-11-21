@@ -56,46 +56,59 @@ function clampState(state) {
 // ---------- TAG_RULES (как в evidenceEngine.js) ----------
 
 const TAG_RULES = {
-  // L1
+  // ===== L1 =====
 
-  L1_MOOD_NEG: { valence: -2 },
+  // 1) Valence (pleasant/unpleasant) – L1.Q1 (mood)
+  L1_MOOD_NEG: { valence: -1 },
   L1_MOOD_POS: { valence: +2 },
 
-  L1_BODY_TENSION: { tension: +2 },
+  // 2) Body / tension – optional L1.Q2
+  L1_BODY_TENSION: { tension: +1 },
   L1_BODY_RELAXED: { tension: -1 },
 
-  L1_ENERGY_LOW:  { arousal: -1, fatigue: +1 },
+  // 3) Arousal (high/low) – L1.Q3 (energy)
+  L1_ENERGY_LOW:  { arousal: -2, fatigue: +1 },
   L1_ENERGY_HIGH: { arousal: +2 },
 
+  // 4) Control vs overwhelmed – L1.Q4
   L1_CONTROL_HIGH: { agency: +2, tension: 0 },
   L1_CONTROL_LOW:  { agency: -1, tension: +1 },
 
-  L1_SOCIAL_SUPPORT: { socialness: +2, valence: +1 },
-  L1_SOCIAL_THREAT:  { socialness: +2, valence: -1, tension: +1 },
+  // 5) Social threat vs support – L1.Q5
+  L1_SOCIAL_SUPPORT: { socialness: +1, valence: +1 },
+  L1_SOCIAL_THREAT:  { socialness: +1, valence: -1, tension: +1 },
 
-  // L2
+  // ===== L2 =====
 
+  // 6) Cognitive focus (future vs past) – L2.Q1
   L2_FOCUS_FUTURE: { arousal: +1, tension: +1 },
-  L2_FOCUS_PAST:   { fatigue: +1, valence: -1 },
+  L2_FOCUS_PAST:   { fatigue: +1, valence: -1, arousal: -1 },
 
-  L2_SOURCE_PEOPLE: { other_blame: +2, socialness: +1 },
-  L2_SOURCE_TASKS:  { other_blame: +1, tension: +1 },
+  // 7) Source of problem (people vs workload) – L2.Q2
+  L2_SOURCE_PEOPLE: { other_blame: +1, socialness: +1 },
+  L2_SOURCE_TASKS:  { other_blame: 0,  tension: +1 },
 
+  // 8) Uncertainty – L2.Q3
   L2_UNCERT_HIGH: { certainty: 0, tension: +1 },
   L2_UNCERT_LOW:  { certainty: +2 },
 
-  L2_SOCIAL_PAIN_YES: { socialness: +2, valence: -2, tension: +1 },
+  // 9) Social pain – L2.Q4
+  L2_SOCIAL_PAIN_YES: {socialness: +1,valence: -1,tension: +1,fatigue: +1},
   L2_SOCIAL_PAIN_NO:  {},
 
-  L2_SHUTDOWN: { fatigue: +2, tension: 0, agency: -1 },
+  // 10) Shutdown vs emotional flooding – L2.Q5
+  L2_SHUTDOWN: { fatigue: +2, tension: 0, agency: -1, arousal: -1 },
   L2_FLOODING: { arousal: +1, tension: +1 },
 
-  L2_GUILT: { self_blame: +2, valence: -2 },
-  L2_SHAME: { self_blame: +2, valence: -2, socialness: +2 },
+  // 11) Guilt vs shame – L2.Q6–Q7
+  L2_GUILT: { self_blame: +2},
+  L2_SHAME: { self_blame: +2, socialness: +1, fatigue: +1 },
 
-  L2_POS_GRATITUDE: { valence: +2, certainty: +1, socialness: +1 },
+  // 12) Positive moments (gratitude vs joy) – L2.Q8
+  L2_POS_GRATITUDE: { valence: +1, certainty: +1 },
   L2_POS_JOY:       { valence: +3, arousal: +2, socialness: +2 },
 
+  // 13) Regulation capacity & clarity – L2.Q9–10
   L2_REGULATION_GOOD: { agency: +1, tension: -1 },
   L2_REGULATION_BAD:  { agency: -1, tension: +1 },
   L2_CLARITY_HIGH:    { certainty: +2 },
@@ -156,7 +169,7 @@ const EMOTION_CENTROIDS = {
   disconnection: {
     valence: -2, arousal: 0, tension: 0, agency: 0,
     self_blame: 0, other_blame: 0, certainty: 0,
-    socialness: 0, fatigue: 2
+    socialness: 1, fatigue: 2
   },
   confusion: {
     valence: -1, arousal: 1, tension: 1, agency: 0,
@@ -175,7 +188,7 @@ const EMOTION_CENTROIDS = {
   },
 
   guilt: {
-    valence: -2, arousal: 2, tension: 2, agency: 0,
+    valence: -1, arousal: 1, tension: 1, agency: 0,
     self_blame: 2, other_blame: 0, certainty: 2,
     socialness: 1, fatigue: 1
   },
@@ -294,10 +307,18 @@ function getCardOptions(card) {
 const emotionCounts = {};
 const emotionExamplePath = {};
 let totalCombos = 0;
+const tagCounts = {};
 
 function explore(idx, accTags, accPath) {
   if (idx >= ALL_CARDS.length) {
     totalCombos += 1;
+
+    // считаем теги
+    const uniq = Array.from(new Set(accTags));
+    uniq.forEach(t => {
+      tagCounts[t] = (tagCounts[t] || 0) + 1;
+    });
+   
     const { primary } = classifyFromTags(accTags);
     const emo = primary || 'unknown';
     emotionCounts[emo] = (emotionCounts[emo] || 0) + 1;
@@ -321,6 +342,7 @@ function explore(idx, accTags, accPath) {
   }
 }
 
+
 console.log('Starting brute-force over all L1+L2 combinations...');
 explore(0, [], []);
 console.log(`Total combinations: ${totalCombos}`);
@@ -332,6 +354,14 @@ for (const [emo, count] of sorted) {
   const pct = ((count / totalCombos) * 100).toFixed(2);
   console.log(`${emo.padEnd(12)} : ${String(count).padStart(5)} (${pct}%)`);
 }
+
+console.log('\n=== Tag frequencies (unique per path) ===');
+Object.entries(tagCounts)
+  .sort((a, b) => b[1] - a[1])
+  .forEach(([tag, count]) => {
+    const pct = ((count / totalCombos) * 100).toFixed(2);
+    console.log(`${tag.padEnd(20)} : ${String(count).padStart(6)} (${pct}%)`);
+  });
 
 const ALL_EMOTIONS = [
   'anxiety','tension','fear',

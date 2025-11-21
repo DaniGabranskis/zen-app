@@ -67,8 +67,8 @@ const TAG_RULES = {
   L2_FLOODING: { arousal: +1, tension: +1 },
 
   // 11) Guilt vs shame – L2.Q6–Q7
-  L2_GUILT: { self_blame: +2, valence: -2 },
-  L2_SHAME: { self_blame: +2, valence: -2, socialness: +2 },
+  L2_GUILT: { self_blame: +1, valence: -1 },
+  L2_SHAME: { self_blame: +2, valence: -1, socialness: +1 },
 
   // 12) Positive moments (gratitude vs joy) – L2.Q8
   L2_POS_GRATITUDE: { valence: +2, certainty: +1, socialness: +1 },
