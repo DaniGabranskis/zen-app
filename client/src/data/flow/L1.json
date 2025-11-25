@@ -43,5 +43,55 @@
       { "label": "Losing control",      "tags": ["L1_CONTROL_LOW"] },
       { "label": "In control",          "tags": ["L1_CONTROL_HIGH"] }
     ]
+  },
+
+  {
+    "id": "L1_safety",
+    "title": "Sense of safety",
+    "type": "swipe",
+    "options": [
+      { "label": "Unsafe / threatened", "tags": ["L1_SAFETY_LOW"] },
+      { "label": "Safe enough",         "tags": ["L1_SAFETY_HIGH"] }
+    ]
+  },
+
+  {
+    "id": "L1_self_worth",
+    "title": "Self-worth now",
+    "type": "swipe",
+    "options": [
+      { "label": "Not good enough",     "tags": ["L1_WORTH_LOW"] },
+      { "label": "Capable enough",      "tags": ["L1_WORTH_HIGH"] }
+    ]
+  },
+
+  {
+    "id": "L1_expectations",
+    "title": "Expectations",
+    "type": "swipe",
+    "options": [
+      { "label": "Worse than expected", "tags": ["L1_EXPECT_LOW"] },
+      { "label": "As expected",         "tags": ["L1_EXPECT_OK"] }
+    ]
+  },
+
+  {
+    "id": "L1_pressure",
+    "title": "Time pressure",
+    "type": "swipe",
+    "options": [
+      { "label": "Rushed / pressured",  "tags": ["L1_PRESSURE_HIGH"] },
+      { "label": "Slow / spacious",     "tags": ["L1_PRESSURE_LOW"] }
+    ]
+  },
+
+  {
+    "id": "L1_clarity",
+    "title": "Clarity of mind",
+    "type": "swipe",
+    "options": [
+      { "label": "Foggy / unclear",     "tags": ["L1_CLARITY_LOW"] },
+      { "label": "Clear enough",        "tags": ["L1_CLARITY_HIGH"] }
+    ]
   }
 ]

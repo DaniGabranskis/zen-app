@@ -21,7 +21,8 @@ const DIMENSIONS = [
   "other_blame",
   "certainty",
   "socialness",
-  "fatigue"
+  "fatigue",
+  "fear_bias"
 ];
 
 function emptyState() {
@@ -34,8 +35,9 @@ function emptyState() {
     other_blame: 0,
     certainty: 1,
     socialness: 0,
-    fatigue: 0
-  };
+    fatigue: 0,
+    fear_bias: 0
+  }
 }
 
 function clampState(state) {
@@ -49,58 +51,244 @@ function clampState(state) {
     other_blame:clamp(state.other_blame?? 0,  0, 2),
     certainty:  clamp(state.certainty  ?? 1,  0, 2),
     socialness: clamp(state.socialness ?? 0,  0, 2),
-    fatigue:    clamp(state.fatigue    ?? 0,  0, 2)
-  };
+    fatigue:    clamp(state.fatigue    ?? 0,  0, 2),
+    fear_bias:  clamp(state.fear_bias  ?? 0,  0, 3)
+  }
 }
 
 // ---------- TAG_RULES (как в evidenceEngine.js) ----------
 
 const TAG_RULES = {
-  // L1
+  // ───────────────────────────────
+  // L1 — базовые эмоциональные оси
+  // ───────────────────────────────
 
-  L1_MOOD_NEG: { valence: -2 },
-  L1_MOOD_POS: { valence: +2 },
+  L1_MOOD_NEG: { 
+    valence: -1.2,        // -1.6 → -1.2
+    arousal: +0.2,
+    tension: +0.3,
+    fatigue: +0.3,
+    certainty: -0.2 
+  },
 
-  L1_BODY_TENSION: { tension: +2 },
-  L1_BODY_RELAXED: { tension: -1 },
+  L1_MOOD_POS: { 
+    valence: +2.1,        // +1.8 → +2.1
+    arousal: +0.3,
+    tension: -0.7,
+    fatigue: -0.5,
+    certainty: +0.4,
+    agency: +0.4
+  },
 
-  L1_ENERGY_LOW:  { arousal: -1, fatigue: +1 },
-  L1_ENERGY_HIGH: { arousal: +2 },
+  L1_BODY_TENSION: { tension: +1.6 },   // 2 → 1.6
+  L1_BODY_RELAXED: { tension: -1.1 },   // -1 → -1.1
 
-  L1_CONTROL_HIGH: { agency: +2, tension: 0 },
-  L1_CONTROL_LOW:  { agency: -1, tension: +1 },
+  L1_ENERGY_LOW:  { arousal: -0.7, fatigue: +1.6 }, // Сделано мягче
+  L1_ENERGY_HIGH: { arousal: +2.3 },                // Поддержка joy
 
-  L1_SOCIAL_SUPPORT: { socialness: +2, valence: +1 },
-  L1_SOCIAL_THREAT:  { socialness: +2, valence: -1, tension: +1 },
+  L1_CONTROL_HIGH: { agency: +2, tension: -0.2 },   // Высокий контроль = меньше напряжения
+  L1_CONTROL_LOW:  { agency: -0.7, tension: +0.7 },
 
-  // L2
+  L1_SOCIAL_SUPPORT: { 
+    socialness: +1.2,     
+    valence: +1.2,         // Было +0.8 → усилено для joy/gratitude
+    agency: +0.5,
+    certainty: +0.4,
+  },
 
-  L2_FOCUS_FUTURE: { arousal: +1, tension: +1 },
-  L2_FOCUS_PAST:   { fatigue: +1, valence: -1 },
+  L1_SOCIAL_THREAT:  { 
+    socialness: +0.3,
+    valence: -0.4,
+    other_blame: +0.3,
+    certainty: -0.2,
+    tension: +0.3
+  },
 
-  L2_SOURCE_PEOPLE: { other_blame: +2, socialness: +1 },
-  L2_SOURCE_TASKS:  { other_blame: +1, tension: +1 },
+  // ───────────────────────────────
+  // Дополнительные L1-оси
+  // ───────────────────────────────
 
-  L2_UNCERT_HIGH: { certainty: 0, tension: +1 },
-  L2_UNCERT_LOW:  { certainty: +2 },
+  L1_SAFETY_LOW: {
+    valence: -0.8,        // -1 → -0.8 (мягче)
+    arousal: +0.7,
+    tension: +1.0,
+    certainty: -0.5,
+    fear_bias: +0.4        // +0.6 → +0.4 (ослабили fear)
+  },
 
-  L2_SOCIAL_PAIN_YES: { socialness: +2, valence: -2, tension: +1 },
+  L1_SAFETY_HIGH: {
+    valence: +1.0,
+    arousal: -0.6,
+    tension: -1.0,
+    certainty: +0.6
+  },
+
+  L1_WORTH_LOW: {
+    valence: -1.0,
+    self_blame: +1.0,     // 1.2 → 1.0
+    tension: +0.3,
+    certainty: -0.2
+  },
+
+  L1_WORTH_HIGH: {
+    valence: +0.8,
+    agency: +0.5,
+    certainty: +0.4
+  },
+
+  L1_EXPECT_LOW: {
+    valence: -0.8,
+    arousal: +0.5,
+    tension: +1.0,
+    self_blame: +0.3,
+    other_blame: +0.6,
+    fatigue: +0.2
+  },
+
+  L1_EXPECT_OK: {
+    valence: +0.4,
+    tension: -0.3,
+    fatigue: -0.3
+  },
+
+  L1_PRESSURE_HIGH: {
+    arousal: +1.0,
+    tension: +1.0,
+    fatigue: +0.5,
+    valence: -0.5
+  },
+
+  L1_PRESSURE_LOW: {
+    arousal: -0.6,
+    tension: -0.9,
+    fatigue: -0.6,
+    valence: +0.6
+  },
+
+  L1_CLARITY_LOW: {
+    certainty: -0.7,
+    tension: +0.2,
+    fatigue: +0.3,
+    valence: -0.3
+  },
+
+  L1_CLARITY_HIGH: {
+    certainty: +1.0,
+    tension: -0.3,
+    valence: +0.3
+  },
+
+  // ───────────────────────────────
+  // L2 — когнитивные и социальные факторы
+  // ───────────────────────────────
+
+  L2_FOCUS_FUTURE: { arousal: +0.7, tension: +0.7 },  // Было слишком сильным
+  L2_FOCUS_PAST:   { fatigue: +0.8, valence: -0.7 },
+
+  L2_SOURCE_PEOPLE: { other_blame: +0.8, socialness: +1 },
+  L2_SOURCE_TASKS:  { other_blame: +0.3, tension: +0.4 },
+
+  L2_UNCERT_HIGH: { certainty: -1.1, arousal: 0.3, tension: 0.4 },
+  L2_UNCERT_LOW:  { certainty: 0.7, tension: -0.4 },
+
+  L2_SOCIAL_PAIN_YES: {
+    socialness: +0.5,
+    valence: -1.0,
+    tension: +0.8,
+    fatigue: +0.3
+  },
+
   L2_SOCIAL_PAIN_NO:  {},
 
-  L2_SHUTDOWN: { fatigue: +2, tension: 0, agency: -1 },
-  L2_FLOODING: { arousal: +1, tension: +1 },
+  L2_SHUTDOWN: { 
+    fatigue: +1.6, 
+    tension: -0.3, 
+    agency: -0.8, 
+    arousal: -0.4 
+  },
 
-  L2_GUILT: { self_blame: +2, valence: -2 },
-  L2_SHAME: { self_blame: +2, valence: -2, socialness: +2 },
+  L2_FLOODING: { arousal: +0.8, tension: +0.8 },
 
-  L2_POS_GRATITUDE: { valence: +2, certainty: +1, socialness: +1 },
-  L2_POS_JOY:       { valence: +3, arousal: +2, socialness: +2 },
+  L2_GUILT: { self_blame: +0.6, valence: -0.1, certainty: +0.2 },
+  L2_SHAME: { self_blame: +0.8, valence: -0.3, certainty: -0.1, tension: +0.2 },
 
-  L2_REGULATION_GOOD: { agency: +1, tension: -1 },
-  L2_REGULATION_BAD:  { agency: -1, tension: +1 },
-  L2_CLARITY_HIGH:    { certainty: +2 },
-  L2_CLARITY_LOW:     { certainty: 0 }
+  L2_POS_GRATITUDE: { 
+    valence: +2.0,        // Было +1.6
+    certainty: +1.0,
+    socialness: +1.2
+  },
+
+  L2_POS_JOY: { 
+    valence: +2.6,        // Было +2.2
+    arousal: +1.4,
+    socialness: +1.5
+  },
+
+  L2_REGULATION_GOOD: { agency: +1.2, tension: -1.0 },
+  L2_REGULATION_BAD:  { agency: -0.8, tension: +0.8 },
+
+  L2_CLARITY_HIGH: { certainty: 0.4, tension: -0.2 },
+  L2_CLARITY_LOW:  { certainty: -0.6, tension: +0.2 },
+
+  // ───────────────────────────────
+  // Дополнительные теги
+  // ───────────────────────────────
+
+  L2_NO_POSITIVE: { valence: -0.7, fatigue: +0.7, arousal: -0.2 },
+
+  L2_DISCONNECT_NUMB: {
+    arousal: -0.7,
+    certainty: -0.8,
+    agency: -0.8,
+    fatigue: +1.3,
+    tension: -0.2
+  },
+
+  L2_LET_DOWN: {
+    valence: -1.2,
+    arousal: +0.8,
+    tension: +0.8,
+    self_blame: +0.6,
+    other_blame: +0.6,
+    fatigue: +0.2
+  },
+
+  L2_CONTENT_WARM: {
+    valence: +1.8,        // +1.5 → +1.8
+    arousal: +0.3,
+    tension: -0.7,
+    certainty: +0.4
+  },
+
+  L2_SAD_HEAVY: { 
+    valence: -1.2,        // Было -1.5
+    arousal: -0.6,
+    fatigue: +1.3,
+    tension: -0.2
+  },
+
+  L2_FEAR_SPIKE: {
+    valence: -1.3,        // ослабили fear
+    arousal: +1.3,
+    tension: +1.3,
+    agency: -0.2,
+    certainty: -0.7,
+    socialness: +0.4,
+    fear_bias: +0.7
+  },
+
+  L2_MEANING_LOW: {
+    valence: -1.0,
+    certainty: -0.6,
+    fatigue: +0.5
+  },
+
+  L2_MEANING_HIGH: {
+    valence: +0.9,
+    certainty: +0.7
+  },
 };
+
 
 // ---------- EMOTION_CENTROIDS (из emotionSpace.js) ----------
 
@@ -115,33 +303,24 @@ const EMOTION_CENTROIDS = {
     self_blame: 0, other_blame: 0, certainty: 1,
     socialness: 0, fatigue: 0
   },
-  fear: {
-    valence: -3, arousal: 3, tension: 3, agency: 0,
-    self_blame: 0, other_blame: 0, certainty: 0,
-    socialness: 1, fatigue: 0
+  fear:   { 
+    valence: -2.5, arousal: 3, tension: 3, agency: 0,
+    self_blame: 0.5, other_blame: 0, certainty: 0,
+    socialness: 0.5, fatigue: 0,
+    fear_bias: 2
   },
-
-  anger: {
-    valence: -2, arousal: 3, tension: 3, agency: 2,
-    self_blame: 0, other_blame: 2, certainty: 2,
-    socialness: 1, fatigue: 0
-  },
-  frustration: {
-    valence: -2, arousal: 2, tension: 2, agency: 1,
-    self_blame: 0, other_blame: 2, certainty: 1,
-    socialness: 0, fatigue: 0
-  },
+  anger:  { valence:-2, arousal:3, tension:3, agency:2,
+          self_blame:0, other_blame:1.6, certainty:1.5, socialness:1, fatigue:0 },
+  frustration:{
+          valence:-2, arousal:2, tension:2, agency:1,
+          self_blame:0, other_blame:1.4, certainty:1, socialness:0, fatigue:0 },
   irritation: {
     valence: -1, arousal: 2, tension: 2, agency: 1,
     self_blame: 0, other_blame: 1, certainty: 1,
     socialness: 0, fatigue: 0
   },
-
-  sadness: {
-    valence: -3, arousal: 0, tension: 1, agency: 0,
-    self_blame: 1, other_blame: 0, certainty: 1,
-    socialness: 0, fatigue: 2
-  },
+  sadness:{ valence: -2.5, arousal:0, tension:1, agency:0,
+          self_blame:1, other_blame:0, certainty:1, socialness:0, fatigue:2 },
   disappointment: {
     valence: -2, arousal: 1, tension: 1, agency: 0,
     self_blame: 1, other_blame: 1, certainty: 1,
@@ -152,7 +331,6 @@ const EMOTION_CENTROIDS = {
     self_blame: 1, other_blame: 0, certainty: 1,
     socialness: 2, fatigue: 1
   },
-
   disconnection: {
     valence: -2, arousal: 0, tension: 0, agency: 0,
     self_blame: 0, other_blame: 0, certainty: 0,
@@ -173,7 +351,6 @@ const EMOTION_CENTROIDS = {
     self_blame: 0, other_blame: 0, certainty: 1,
     socialness: 0, fatigue: 3
   },
-
   guilt: {
     valence: -2, arousal: 2, tension: 2, agency: 0,
     self_blame: 2, other_blame: 0, certainty: 2,
@@ -184,7 +361,6 @@ const EMOTION_CENTROIDS = {
     self_blame: 2, other_blame: 0, certainty: 2,
     socialness: 2, fatigue: 1
   },
-
   calm: {
     valence: 2, arousal: 0, tension: 0, agency: 2,
     self_blame: 0, other_blame: 0, certainty: 2,

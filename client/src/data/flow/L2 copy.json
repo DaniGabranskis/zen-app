@@ -64,8 +64,8 @@
     "title": "How do you see yourself in this?",
     "type": "swipe",
     "options": [
-      { "label": "I did something wrong (guilt)",          "tags": ["L2_GUILT"] },
-      { "label": "There is something wrong with me (shame)","tags": ["L2_SHAME"] }
+      { "label": "I did something wrong (guilt)", "tags": ["L2_GUILT"] },
+      { "label": "There is something wrong with me (shame)", "tags": ["L2_SHAME"] }
     ]
   },
   {
@@ -103,17 +103,8 @@
     "title": "Do you understand what you feel?",
     "type": "swipe",
     "options": [
-      { "label": "I understand what I feel", "tags": ["L2_CLARITY_HIGH"] },
-      { "label": "Still confused about it",  "tags": ["L2_CLARITY_LOW"] }
-    ]
-  },
-  {
-    "id": "L2_meaning",
-    "title": "Sense of meaning",
-    "type": "swipe",
-    "options": [
-      { "label": "Meaningless / empty",      "tags": ["L2_MEANING_LOW"] },
-      { "label": "Some sense of meaning",    "tags": ["L2_MEANING_HIGH"] }
+      { "label": "I understand what I feel",          "tags": ["L2_CLARITY_HIGH"] },
+      { "label": "Still confused about it",           "tags": ["L2_CLARITY_LOW"] }
     ]
   }
 ]
