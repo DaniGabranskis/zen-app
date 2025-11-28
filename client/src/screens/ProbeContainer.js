@@ -7,17 +7,28 @@ import { ProbeEngine } from '../utils/probeEngine';
 import { pickStartProbe } from '../utils/probeRouting';
 import { EMOTION_META } from '../data/emotionMeta';
 import { useBottomSystemBar } from '../hooks/useBottomSystemBar';
+import {  getVisualScenesFor, getScenarioItemsFor } from '../utils/probeContent';
 
 export default function ProbeContainer({
   theme,
   onDone,
   onStep,
   onStart,
-  // NEW: seedEmotions comes from evidenceEngine (e.g. ['guilt', 'shame'])
+  // Seed emotions from evidenceEngine (e.g. ['sadness', 'disappointment'])
   seedEmotions,
+  // ❗ Новый проп: исходный вектор из evidenceEngine
+  seedVector,
 }) {
   // Create probe engine (keeps internal emotion vector)
-  const engineRef = useRef(new ProbeEngine({ maxSteps: 2, confidence: 0.72 }));
+  const engineRef = useRef(null);
+
+  if (!engineRef.current) {
+    engineRef.current = new ProbeEngine({
+      maxSteps: 2,
+      confidence: 0.72,
+      initialState: seedVector, // ❗ сюда кладём L1+L2 вектор
+    });
+  }
 
   // 🔹 Derive bar color + theme mode from theme
   //    Adjust these keys to your actual theme structure.
@@ -40,13 +51,15 @@ export default function ProbeContainer({
     const snap = engineRef.current?.snapshot || {};
     const r = snap.ranking || [];
 
-    if (r.length > 0) {
-      return [r[0]?.key, r[1]?.key].filter(Boolean);
-    }
-
+    // 1) Prefer explicit seedEmotions from evidenceEngine
     if (Array.isArray(seedEmotions) && seedEmotions.length > 0) {
       const [d, s] = seedEmotions;
       return [d, s].filter(Boolean);
+    }
+
+    // 2) Fallback to ProbeEngine ranking
+    if (r.length > 0) {
+      return [r[0]?.key, r[1]?.key].filter(Boolean);
     }
 
     return [];
@@ -75,13 +88,14 @@ export default function ProbeContainer({
     const snap = engineRef.current.snapshot || {};
     const ranking = snap.ranking || [];
 
+    // Use seedTopTwo from evidenceEngine as primary
     const topTwo =
-      ranking.length > 0
-        ? [ranking[0]?.key, ranking[1]?.key].filter(Boolean)
-        : seedTopTwo;
+      seedTopTwo.length > 0
+        ? seedTopTwo
+        : [ranking[0]?.key, ranking[1]?.key].filter(Boolean);
 
     const start = pickStartProbe(topTwo);
-    console.log('[ProbeContainer] initialStart', { topTwo, start, ranking });
+    console.log('[ProbeContainer] initialStart', { ranking, start, topTwo });
 
     if (typeof onStart === 'function') {
       try {
@@ -136,9 +150,32 @@ export default function ProbeContainer({
     }
 
     if (engineRef.current.shouldStop()) {
-      console.log('[ProbeContainer] final emotion', snap.top);
+      // 1) Take raw ranking from probe engine
+      const ranking = snap.ranking || [];
+
+      // 2) Clamp result to seedTopTwo from evidenceEngine (L1/L2 decision)
+      let finalTop = ranking[0] || null;
+
+      if (Array.isArray(seedTopTwo) && seedTopTwo.length > 0) {
+        // Only keep emotions that are in [dominant, secondary]
+        const clamped = ranking.filter(
+          it => it && seedTopTwo.includes(it.key)
+        );
+
+        if (clamped.length > 0) {
+          finalTop = clamped[0];
+        }
+      }
+
+      console.log('[ProbeContainer] final emotion (clamped)', {
+        rawTop: snap.top,
+        finalTop,
+        seedTopTwo,
+      });
+
       safeOnDone({
-        emotion: snap.top.key,
+        // If for some reason clamping fails, fallback to raw top
+        emotion: finalTop?.key || snap.top?.key,
         ranking: snap.ranking,
         vector: snap.vector,
       });
@@ -146,7 +183,7 @@ export default function ProbeContainer({
       const next = engineRef.current.nextProbeType(probeType);
       setProbeType(next);
     }
-  };
+  }
 
   // Called when user skips
   const onSkip = () => {
@@ -157,38 +194,55 @@ export default function ProbeContainer({
 
   // Extract current ranking and top emotion
   const ranking = engineRef.current.snapshot.ranking || [];
-  const dominant = ranking[0]?.key || seedTopTwo[0] || null;
+  const step = engineRef.current.step || 0;
+
+  const dominant =
+    step === 0 && seedTopTwo[0]
+      ? seedTopTwo[0]                 // before any probe answers → use evidenceEngine seed
+      : ranking[0]?.key || seedTopTwo[0] || null;
   const exclude = engineRef.current.getExcludeLabels?.() || [];
   // Unique key to force re-mount of probes (reset local state)
   const probeKey = `${probeType}-${engineRef.current.step}`;
 
   // Dynamic switch for current probe
   switch (probeType) {
-    case 'visual':
+    case 'visual': {
+      // 🔹 Берём A/B-сцены с тегами под выбранную dominant-эмоцию
+      const [optA, optB] = getVisualScenesFor(dominant);
+
       return (
         <VisualProbe
           key={probeKey}
           dominant={dominant}
           theme={theme}
           context={context}
+          firstOption={optA}
+          secondOption={optB}
           onChoose={onChoose}
           onSkip={onSkip}
           excludeLabels={exclude}
         />
       );
+    }
 
-    case 'scenario':
+    case 'scenario': {
+      // 🔹 Берём сюжетные A/B-сценарии с тегами под ту же dominant-эмоцию
+      const [optA, optB] = getScenarioItemsFor(dominant);
+
       return (
         <ScenarioProbe
           key={probeKey}
           dominant={dominant}
           theme={theme}
           context={context}
+          firstOption={optA}
+          secondOption={optB}
           onChoose={onChoose}
           onSkip={onSkip}
           excludeLabels={exclude}
         />
       );
+    }
 
     case 'body':
       return (

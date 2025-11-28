@@ -4,8 +4,12 @@ import { nextProbeAdaptive } from "./probeRouting";
 
 // Minimal in-memory state. You can move to Zustand if needed.
 export class ProbeEngine {
-  constructor({ maxSteps = 3, confidence = 0.72 } = {}) {
-    this.state = zeroVector();
+  constructor({ maxSteps = 3, confidence = 0.72, initialState } = {}) {
+    // ❗ Берём state из L1+L2, если он есть
+    this.state = initialState
+      ? { ...zeroVector(), ...initialState }
+      : zeroVector();
+
     this.step = 0;
     this.maxSteps = maxSteps;
     this.confidence = confidence;

@@ -70,27 +70,45 @@ export function buildProbeEvidence({ style, label, tags }) {
  */
 export function getVisualScenesFor(dominant) {
   const cat = emotionCategoryMap[dominant] || 'positive';
-  // Each option has a label and tags we want to inject.
+
   if (cat === 'cognitive') {
     return [
-      { label: 'Looping thoughts', tags: ['rumination', 'tension?'] },
-      { label: 'Letting go for now', tags: ['acceptance', 'calm?'] },
+      // Было: ['rumination', 'tension?']
+      // Стало: просто усиливаем "зацикленность"/напряжение в голове
+      { label: 'Looping thoughts', tags: ['rumination'] },
+
+      // Было: ['acceptance', 'calm?']
+      // Стало: мягкое снижение напряжения без прямого "calm"
+      { label: 'Letting go for now', tags: ['acceptance'] },
     ];
   }
+
   if (cat === 'social') {
     return [
-      { label: 'Replaying a social moment', tags: ['social_risk', 'shame?'] },
-      { label: 'Feeling supported enough', tags: ['support', 'gratitude?'] },
+      // Оставляем полюс "social_risk/shame", но без явного "?-эмоции"
+      { label: 'Replaying a social moment', tags: ['social_risk'] },
+
+      // Оставляем "support", но без 'gratitude?'
+      { label: 'Feeling supported enough', tags: ['support'] },
     ];
   }
+
   if (cat === 'tension') {
     return [
-      { label: 'Restless scrolling', tags: ['agitation', 'anxiety?'] },
-      { label: 'Quiet break', tags: ['calm_attempt', 'clarity?'] },
+      // Усиливаем тревожную сторону через "agitation"
+      { label: 'Restless scrolling', tags: ['agitation'] },
+
+      // И более спокойный полюс, но через 'calm_attempt'
+      // (то есть пользователь сам выбирает "я чуть успокаиваюсь"),
+      // без прямого 'calm?'/'clarity?'
+      { label: 'Quiet break', tags: ['calm_attempt'] },
     ];
   }
+
   // positive or fallback
   return [
+    // Здесь уже ok, потому что если мы реально в позитивном кластере,
+    // "calm"/"clarity"/"joy" — это честные кандидаты.
     { label: 'Grounded presence', tags: ['calm', 'clarity'] },
     { label: 'Bright excitement', tags: ['joy', 'energy_high'] },
   ];

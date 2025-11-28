@@ -525,6 +525,12 @@ export default function ReflectionFlowScreen({ route }) {
       <ScreenWrapper useFlexHeight route={route}>
         <ProbeContainer
           theme={theme}
+          seedEmotions={
+            routed
+              ? [routed.dominant, routed.secondary].filter(Boolean)
+              : undefined
+          }
+          seedVector={routed?.vector}
           onDone={handleDone}
           onStart={({ start, topTwo, ranking }) => {
             console.log('[EXPLAIN PROBE START]', { start, topTwo });

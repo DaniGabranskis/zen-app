@@ -316,18 +316,15 @@ function softmaxFromScores(pairs, temperature = 0.9, eps = 1e-6) {
  * pairs: [ [emotionKey, prob], ... ] sorted desc by prob.
  */
 function decideMixOrSingle(pairs) {
-  const [first, second] = [
-    pairs[0] || ['unknown', 0],
-    pairs[1] || [null, 0],
-  ];
-  const [e1, p1] = first;
-  const [e2, p2] = second;
-  const delta = p1 - p2;
+  const [first, second] = pairs;
+  const [e1, p1] = first || [];
+  const [e2, p2] = second || [];
+  const delta = (p1 ?? 0) - (p2 ?? 0);
 
   const base = {
     dominant: e1 || 'unknown',
-    secondary: null,
-    confidence: p1 || 0,
+    secondary: e2 || null, // <- сразу кладём вторую эмоцию, если есть
+    confidence: p1 ?? 0,
     delta,
     mode: 'single',
   };
@@ -337,24 +334,25 @@ function decideMixOrSingle(pairs) {
     T_DOM, T_MIX, DELTA_PROBE, DELTA_MIX,
   });
 
+  // 1) Супер-уверенная одна эмоция
   if (p1 >= T_DOM) {
-    // confident single
-    return { ...base, secondary: null, mode: 'single' };
+    return { ...base, mode: 'single' };
   }
 
+  // 2) Смесь двух, gap маленький
   if (p1 >= T_MIX && delta < DELTA_MIX && e2) {
-    // show mix of two
-    return { ...base, secondary: e2, mode: 'mix' };
+    return { ...base, mode: 'mix' };
   }
 
+  // 3) Нужно докопать через probe, но мы ВСЁ РАВНО даём secondary = e2
   if (p1 < T_MIX || delta < DELTA_PROBE) {
-    // probe recommended
     return { ...base, mode: 'probe' };
   }
 
-  // fallback single
+  // 4) Дефолт: одна эмоция, но secondary всё равно остаётся как второй кандидат
   return { ...base, mode: 'single' };
 }
+
 
 // ============================================================================
 // PUBLIC API
@@ -392,8 +390,10 @@ export function classifyTags(tags = []) {
   // 4) Decide mode (single/mix/probe)
   const decision = decideMixOrSingle(pairs);
 
-  return { decision, probsSorted: pairs };
+  // ❗ ВАЖНО: возвращаем ещё и state для L3-пробы
+  return { decision, probsSorted: pairs, state };
 }
+
 
 /**
  * Main entry for routing from cards (L1/L2/Probe).
@@ -402,15 +402,14 @@ export function classifyTags(tags = []) {
 export function routeEmotionFromCards(acceptedCards) {
   const tags = accumulateTagsFromCards(acceptedCards || []);
 
-  // Compute tag frequency just for debug / transparency
   const tagFreq = {};
   for (const t of tags) {
     tagFreq[t] = (tagFreq[t] || 0) + 1;
   }
 
-  const { decision, probsSorted } = classifyTags(tags);
+  // ❗ Теперь забираем ещё и state
+  const { decision, probsSorted, state } = classifyTags(tags);
 
-  // Build probs map from sorted pairs
   const probs = {};
   for (const [k, p] of probsSorted) {
     probs[k] = p;
@@ -424,6 +423,8 @@ export function routeEmotionFromCards(acceptedCards) {
     probs,
     tagFreq,
     mode: decision.mode,
+    // ❗ Новый параметр: исходный вектор L1+L2
+    vector: state,
   };
 }
 
