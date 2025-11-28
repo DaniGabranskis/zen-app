@@ -18,6 +18,7 @@ export default function BodyProbe({
   secondOption,
   onChooseFirst,
   onChooseSecond,
+  onChoose,
   onSkip,
   context,
   probeType = 'body',
@@ -47,13 +48,42 @@ export default function BodyProbe({
   const sBar = makeBarStyles(colors, BAR_BASE_H);
 
   const copy = buildProbeCopy(probeType, context ?? { first: a, second: b });
-  const optFirst =
-    firstOption ?? a ?? { label: copy.firstLabel ?? 'Option A' };
-  const optSecond =
-    secondOption ?? b ?? { label: copy.secondLabel ?? 'Option B' };
 
-  const handleFirst = onChooseFirst ?? chooseA ?? (() => {});
-  const handleSecond = onChooseSecond ?? chooseB ?? (() => {});
+  // Универсальный helper: достаём теги из опции, если есть
+  const getOptionTags = (opt) => {
+    if (!opt) return [];
+    if (Array.isArray(opt.tags)) return opt.tags;
+    return [];
+  };
+
+  // Нормализованные опции: всегда есть label, а теги берём, если они есть
+  const optFirst =
+    firstOption
+    ?? a
+    ?? { label: copy.firstLabel ?? 'Option A', tags: [] };
+
+  const optSecond =
+    secondOption
+    ?? b
+    ?? { label: copy.secondLabel ?? 'Option B', tags: [] };
+
+  // Хендлеры нажатий:
+  // 1) если передали onChooseFirst / onChooseSecond — используем их (legacy)
+  // 2) если нет, но есть общий onChoose — пробрасываем в движок теги + label
+  // 3) в крайнем случае — no-op
+  const handleFirst =
+    onChooseFirst
+    ?? chooseA
+    ?? (onChoose
+        ? () => onChoose(getOptionTags(optFirst), optFirst.label)
+        : () => {});
+
+  const handleSecond =
+    onChooseSecond
+    ?? chooseB
+    ?? (onChoose
+        ? () => onChoose(getOptionTags(optSecond), optSecond.label)
+        : () => {});
 
   const s = makeStyles(colors, BAR_BASE_H);
 

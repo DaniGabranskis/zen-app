@@ -22,63 +22,256 @@ const DELTA_MIX = 0.06;   // if close -> allow mix
 // ============================================================================
 
 const TAG_RULES = {
-  // ===== L1 =====
+  // ───────────────────────────────
+  // L1 — базовые эмоциональные оси
+  // ───────────────────────────────
 
-  // 1) Valence (pleasant/unpleasant) – L1.Q1 (mood)
-  L1_MOOD_NEG: { valence: -2 },
-  L1_MOOD_POS: { valence: +2 },
+  L1_MOOD_NEG: { 
+    valence: -1.2,
+    arousal: +0.2,
+    tension: +0.3,
+    fatigue: +0.3,
+    certainty: -0.2 
+  },
 
-  // 2) Body / tension – optional L1.Q2
-  L1_BODY_TENSION: { tension: +2 },
-  L1_BODY_RELAXED: { tension: -1 },
+  L1_MOOD_POS: { 
+    valence: +1.6,
+    arousal: +0.3,
+    tension: -0.7,
+    fatigue: -0.5,
+    certainty: +0.4,
+    agency: +0.4
+  },
 
-  // 3) Arousal (high/low) – L1.Q3 (energy)
-  L1_ENERGY_LOW:  { arousal: -1, fatigue: +1 },
-  L1_ENERGY_HIGH: { arousal: +2 },
+  L1_BODY_TENSION: { tension: +1.6 },
+  L1_BODY_RELAXED: { tension: -1.1 },
 
-  // 4) Control vs overwhelmed – L1.Q4
-  L1_CONTROL_HIGH: { agency: +2, tension: 0 },
-  L1_CONTROL_LOW:  { agency: -1, tension: +1 },
+  L1_ENERGY_LOW:  { 
+    arousal: -0.7, 
+    fatigue: +1.8 // was +1.6
+  },
+  L1_ENERGY_HIGH: { arousal: +2.3 },
 
-  // 5) Social threat vs support – L1.Q5
-  L1_SOCIAL_SUPPORT: { socialness: +2, valence: +1 },
-  L1_SOCIAL_THREAT:  { socialness: +2, valence: -1, tension: +1 },
+  L1_CONTROL_HIGH: { agency: +2, tension: -0.2 },
+  L1_CONTROL_LOW:  { agency: -0.7, tension: +0.7 },
 
-  // ===== L2 =====
+  L1_SOCIAL_SUPPORT: { 
+    socialness: +1.2,
+    valence: +0.8,
+    agency: +0.5,
+    certainty: +0.4
+  },
 
-  // 6) Cognitive focus (future vs past) – L2.Q1
-  L2_FOCUS_FUTURE: { arousal: +1, tension: +1 },
-  L2_FOCUS_PAST:   { fatigue: +1, valence: -1 },
+  L1_SOCIAL_THREAT:  { 
+    socialness: +0.3,
+    valence: -0.4,
+    other_blame: +0.3,
+    certainty: -0.2,
+    tension: +0.3
+  },
 
-  // 7) Source of problem (people vs workload) – L2.Q2
-  L2_SOURCE_PEOPLE: { other_blame: +2, socialness: +1 },
-  L2_SOURCE_TASKS:  { other_blame: +1, tension: +1 },
+  // ───────────────────────────────
+  // Дополнительные L1-оси
+  // ───────────────────────────────
 
-  // 8) Uncertainty – L2.Q3
-  L2_UNCERT_HIGH: { certainty: 0, tension: +1 },
-  L2_UNCERT_LOW:  { certainty: +2 },
+  L1_SAFETY_LOW: {
+    valence: -0.8,
+    arousal: +1.0,
+    tension: +1.0,
+    certainty: -0.5,
+    // ослабили fear_bias (было 0.9)
+    fear_bias: +0.55
+  },
 
-  // 9) Social pain – L2.Q4
-  L2_SOCIAL_PAIN_YES: { socialness: +2, valence: -2, tension: +1 },
+  L1_SAFETY_HIGH: {
+    valence: +1.0,
+    arousal: -0.6,
+    tension: -1.0,
+    certainty: +0.6
+  },
+
+  L1_WORTH_LOW: {
+    valence: -0.8,      // was -1.0
+    self_blame: +0.6,   // was +0.8
+    tension: +0.3,
+    certainty: -0.2
+  },
+
+  L1_WORTH_HIGH: {
+    valence: +1.0,
+    agency: +0.5,
+    certainty: +0.4
+  },
+
+  L1_EXPECT_LOW: {
+    valence: -0.8,
+    arousal: +0.5,
+    tension: +1.0,
+    self_blame: +0.3,
+    other_blame: +0.6,
+    fatigue: +0.2
+  },
+
+  L1_EXPECT_OK: {
+    valence: +0.4,
+    tension: -0.3,
+    fatigue: -0.3
+  },
+
+  L1_PRESSURE_HIGH: {
+    arousal: +1.0,
+    tension: +1.0,
+    fatigue: +0.5,
+    valence: -0.5
+  },
+
+  L1_PRESSURE_LOW: {
+    arousal: -0.6,
+    tension: -0.9,
+    fatigue: -0.6,
+    valence: +0.6,
+    agency: +0.4,
+    certainty: +0.3
+  },
+
+  L1_CLARITY_LOW: {
+    certainty: -0.6,  // was -0.7
+    tension: +0.6,    // was +0.2
+    fatigue: +0.5,    // was +0.3
+    valence: -0.1     // was -0.3
+  },
+
+  L1_CLARITY_HIGH: {
+    certainty: +1.2,
+    tension: -0.5,
+    valence: +0.7,
+    agency: +0.5
+  },
+
+  // ───────────────────────────────
+  // L2 — когнитивные и социальные факторы
+  // ───────────────────────────────
+
+  L2_FOCUS_FUTURE: { arousal: +0.7, tension: +0.7 },
+  L2_FOCUS_PAST:   { fatigue: +0.8, valence: -0.7 },
+
+  L2_SOURCE_PEOPLE: { other_blame: +0.8, socialness: +1 },
+  L2_SOURCE_TASKS:  { other_blame: +0.3, tension: +0.4 },
+
+  L2_UNCERT_HIGH: { certainty: -1.1, arousal: 0.3, tension: 0.4 },
+  L2_UNCERT_LOW:  { certainty: 0.7, tension: -0.4 },
+
+  L2_SOCIAL_PAIN_YES: {
+    socialness: +0.3,
+    valence: -0.8,
+    tension: +0.8,
+    fatigue: +0.3
+  },
+
   L2_SOCIAL_PAIN_NO:  {},
 
-  // 10) Shutdown vs emotional flooding – L2.Q5
-  L2_SHUTDOWN: { fatigue: +2, tension: 0, agency: -1 },
-  L2_FLOODING: { arousal: +1, tension: +1 },
+  L2_SHUTDOWN: { 
+    fatigue: +1.6, 
+    tension: -0.3, 
+    agency: -0.8, 
+    arousal: -0.4 
+  },
 
-  // 11) Guilt vs shame – L2.Q6–Q7
-  L2_GUILT: { self_blame: +2, valence: -2 },
-  L2_SHAME: { self_blame: +2, valence: -2, socialness: +2 },
+  L2_FLOODING: { arousal: +0.8, tension: +0.8 },
 
-  // 12) Positive moments (gratitude vs joy) – L2.Q8
-  L2_POS_GRATITUDE: { valence: +2, certainty: +1, socialness: +1 },
-  L2_POS_JOY:       { valence: +3, arousal: +2, socialness: +2 },
+  L2_GUILT: { 
+    self_blame: +0.40,  // was 0.55
+    valence: -0.1,
+    certainty: +0.1     // was 0.2
+  },
+  
+  L2_SHAME: { 
+    self_blame: +0.55,  // was 0.7
+    valence: -0.2,
+    certainty: -0.2,    // was -0.1
+    tension: +0.2
+  },
 
-  // 13) Regulation capacity & clarity – L2.Q9–10
-  L2_REGULATION_GOOD: { agency: +1, tension: -1 },
-  L2_REGULATION_BAD:  { agency: -1, tension: +1 },
-  L2_CLARITY_HIGH:    { certainty: +2 },
-  L2_CLARITY_LOW:     { certainty: 0 }
+  L2_POS_GRATITUDE: { 
+    valence: +0.3,
+    certainty: +0.3,
+    socialness: +0.25
+  },
+
+  L2_POS_JOY: { 
+    valence: +0.9,      // было 1.0
+    arousal: +0.35,     // было 0.4
+    socialness: +0.5    // было 0.6
+  },
+
+  L2_REGULATION_GOOD: { agency: +1.2, tension: -1.0 },
+  L2_REGULATION_BAD:  { agency: -0.8, tension: +0.8 },
+
+  L2_CLARITY_HIGH: { certainty: 0.7, tension: -0.3 },
+  L2_CLARITY_LOW:  { 
+    certainty: -0.7,  // was -0.6
+    tension: +0.6,    // was +0.2
+    fatigue: +0.4     // new, supports confusion/tiredness
+  },
+
+  // ───────────────────────────────
+  // Дополнительные теги
+  // ───────────────────────────────
+
+  L2_NO_POSITIVE: { valence: -0.7, fatigue: +0.7, arousal: -0.2 },
+
+  L2_DISCONNECT_NUMB: {
+    arousal: -0.9,     // a bit lower activation
+    certainty: -1.0,   // even less sense of clarity
+    agency: -1.0,      // even less control
+    fatigue: +1.8,     // stronger exhaustion
+    tension: -0.3      // slightly more relaxed / flat
+  },
+
+  L2_LET_DOWN: {
+    valence: -0.9,
+    arousal: +0.8,
+    tension: +0.8,
+    self_blame: +0.6,
+    other_blame: +0.6,
+    fatigue: +0.2
+  },
+
+  L2_SAD_HEAVY: { 
+    valence: -1.0,
+    arousal: -0.6,
+    fatigue: +1.3,
+    tension: -0.2
+  },
+
+  // fear-спайк: ослабили fear_bias с 1.5 → 1.1
+  L2_FEAR_SPIKE: {
+    valence: -1.2,
+    arousal: +1.3,
+    tension: +1.3,
+    agency: -0.2,
+    certainty: -0.7,
+    socialness: +0.4,
+    fear_bias: +1.0
+  },
+
+  L2_MEANING_LOW: {
+    valence: -1.0,
+    certainty: -0.6,
+    fatigue: +0.5
+  },
+
+  L2_MEANING_HIGH: {
+    valence: +1.1,
+    certainty: +0.7
+  },
+
+  L2_CONTENT_WARM: {
+    valence: +1.4,
+    arousal: +0.3,
+    tension: -0.7,
+    certainty: +0.4
+  }
 };
 
 // ============================================================================

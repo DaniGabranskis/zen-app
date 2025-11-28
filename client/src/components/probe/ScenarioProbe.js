@@ -20,6 +20,7 @@ export default function ScenarioProbe({
   onChooseSecond,
   onSkip,
   context,
+  onChoose,
   probeType = 'scenario',
   // legacy
   a,
@@ -51,13 +52,31 @@ export default function ScenarioProbe({
 
   const copy = buildProbeCopy(probeType, context ?? { first: a, second: b });
 
-  const optFirst =
+const optFirst =
     firstOption ?? a ?? { label: copy.firstLabel ?? 'Option A', desc: copy.firstDesc };
   const optSecond =
     secondOption ?? b ?? { label: copy.secondLabel ?? 'Option B', desc: copy.secondDesc };
 
-  const handleFirst = onChooseFirst ?? chooseA ?? (() => {});
-  const handleSecond = onChooseSecond ?? chooseB ?? (() => {});
+  // Вытаскиваем теги из опций, если есть
+  const getOptionTags = (opt) => {
+    if (!opt) return [];
+    if (Array.isArray(opt.tags)) return opt.tags;
+    return [];
+  };
+
+  const handleFirst =
+    onChooseFirst
+      ?? chooseA
+      ?? (onChoose
+        ? () => onChoose(getOptionTags(optFirst), optFirst.label)
+        : () => {});
+
+  const handleSecond =
+    onChooseSecond
+      ?? chooseB
+      ?? (onChoose
+        ? () => onChoose(getOptionTags(optSecond), optSecond.label)
+        : () => {});
 
   return (
     <View style={[s.container, { backgroundColor: screenBg }]}>
@@ -69,39 +88,47 @@ export default function ScenarioProbe({
         {copy.subtitle}
       </Text>
 
-      <Pressable style={[s.card, { backgroundColor: cardBg }]} onPress={handleFirst}>
-        <Text
-          style={[s.cardTitle, { color: textPrimary }]}
-          numberOfLines={2}
+      <View style={s.cards}>
+        <Pressable
+          style={[s.card, { backgroundColor: cardBg }]}
+          onPress={handleFirst}
         >
-          {optFirst.label}
-        </Text>
-        {!!optFirst.desc && (
           <Text
-            style={[s.cardDesc, { color: textSecondary }]}
-            numberOfLines={3}
+            style={[s.cardTitle, { color: textPrimary }]}
+            numberOfLines={2}
           >
-            {optFirst.desc}
+            {optFirst.label}
           </Text>
-        )}
-      </Pressable>
+          {!!optFirst.desc && (
+            <Text
+              style={[s.cardDesc, { color: textSecondary }]}
+              numberOfLines={3}
+            >
+              {optFirst.desc}
+            </Text>
+          )}
+        </Pressable>
 
-      <Pressable style={[s.card, { backgroundColor: cardBg }]} onPress={handleSecond}>
-        <Text
-          style={[s.cardTitle, { color: textPrimary }]}
-          numberOfLines={2}
+        <Pressable
+          style={[s.card, { backgroundColor: cardBg }]}
+          onPress={handleSecond}
         >
-          {optSecond.label}
-        </Text>
-        {!!optSecond.desc && (
           <Text
-            style={[s.cardDesc, { color: textSecondary }]}
-            numberOfLines={3}
+            style={[s.cardTitle, { color: textPrimary }]}
+            numberOfLines={2}
           >
-            {optSecond.desc}
+            {optSecond.label}
           </Text>
-        )}
-      </Pressable>
+          {!!optSecond.desc && (
+            <Text
+              style={[s.cardDesc, { color: textSecondary }]}
+              numberOfLines={3}
+            >
+              {optSecond.desc}
+            </Text>
+          )}
+        </Pressable>
+      </View>
 
       <View style={[sBar.bottomBar, { paddingBottom: BAR_SAFE }]}>
         <View style={[sBar.bottomInner, { height: BAR_BASE_H }]}>
@@ -128,15 +155,12 @@ const makeStyles = (t, BAR_BASE_H) =>
       paddingBottom: BAR_BASE_H + 8,
     },
     cards: {
-      flexDirection: 'row',
-      gap: 12,
-      justifyContent: 'center',
-      alignItems: 'stretch',
-      paddingTop: 8,
+      width: '100%',
+      gap: 14,
+      marginTop: 8,
     },
     card: {
-      flex: 1,
-      borderRadius: 12,
+      borderRadius: 14,
       paddingVertical: 16,
       paddingHorizontal: 12,
       alignItems: 'center',
