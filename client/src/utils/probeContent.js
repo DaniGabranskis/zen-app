@@ -28,6 +28,17 @@ export function getVisualScenesFor(dominant) {
         { label: "Empty bench in rain", tags: d({ valence: -2, arousal: 0, tension: +1, socialness: +2, fatigue: +1 }) },
         { label: "Grey shoreline", tags: d({ valence: -2, arousal: 0, tension: 0, certainty: +1, fatigue: +1 }) },
       ];
+    case "frustration":
+      return [
+        {
+          label: "Stuck in a traffic jam",
+          tags: d({ valence: -1, arousal: +2, tension: +2, other_blame: +1, certainty: +1 }),
+        },
+        {
+          label: "Loading bar stuck at 99%",
+          tags: d({ valence: -1, arousal: +1, tension: +1, fatigue: +1 }),
+        },
+      ];
     default:
       return [
         { label: "Quiet lake", tags: d({ valence: +1, arousal: 0, tension: 0, certainty: +1 }) },
@@ -39,16 +50,42 @@ export function getVisualScenesFor(dominant) {
 // ---------- SCENARIO (A/B micro-situations) ----------
 export function getScenarioItemsFor(dominant) {
   // Each item returns: { label, tags }
-  return [
-    {
-      label: "A teammate overlooked your idea and you feel heat rising.",
-      tags: d({ valence: -1, arousal: +2, tension: +2, other_blame: +1, socialness: +2, certainty: +1 }),
-    },
-    {
-      label: "You have an upcoming call and your stomach is tight.",
-      tags: d({ valence: -2, arousal: +2, tension: +2, certainty: -1 }),
-    },
-  ];
+  switch (dominant) {
+    case "frustration":
+      return [
+        {
+          label: "You keep hitting blockers and feel stuck in place.",
+          tags: d({ valence: -1, arousal: +1, tension: +2, other_blame: +1, certainty: +1 }),
+        },
+        {
+          label: "You have to redo the same task again and again.",
+          tags: d({ valence: -1, arousal: +1, tension: +1, fatigue: +1 }),
+        },
+      ];
+    case "loneliness":
+    case "disconnection":
+      return [
+        {
+          label: "You scroll through chats and no one replies.",
+          tags: d({ valence: -2, arousal: 0, tension: +1, socialness: +2, fatigue: +1 }),
+        },
+        {
+          label: "You are home and feel like nobody really sees you.",
+          tags: d({ valence: -2, arousal: -1, tension: 0, socialness: +2, fatigue: +1 }),
+        },
+      ];
+    default:
+      return [
+        {
+          label: "A teammate overlooked your idea and you feel heat rising.",
+          tags: d({ valence: -1, arousal: +2, tension: +2, other_blame: +1, socialness: +2, certainty: +1 }),
+        },
+        {
+          label: "You have an upcoming call and your stomach is tight.",
+          tags: d({ valence: -2, arousal: +2, tension: +2, certainty: -1 }),
+        },
+      ];
+  }
 }
 
 // ---------- BODY (chips/checkboxes) ----------

@@ -10,10 +10,10 @@ import {
 } from '../utils/emotionSpace';
 
 // Thresholds for routing decisions
-const T_MIX = 0.55;      // show at least something (dominant or mix)
-const T_DOM = 0.68;      // confident dominant
-const DELTA_PROBE = 0.08; // if p1-p2 below -> consider probe
-const DELTA_MIX = 0.06;   // if close -> allow mix
+const T_MIX = 0.50;      // show at least something (dominant or mix)
+const T_DOM = 0.70;      // confident dominant
+const DELTA_PROBE = 0.04; // if p1-p2 below -> consider probe
+const DELTA_MIX = 0.10;   // if close -> allow mix
 
 // ============================================================================
 // TAG → DIMENSION RULES
@@ -331,6 +331,11 @@ function decideMixOrSingle(pairs) {
     delta,
     mode: 'single',
   };
+
+  console.log('[evidenceEngine] decideMixOrSingle', {
+    e1, p1, e2, p2, delta,
+    T_DOM, T_MIX, DELTA_PROBE, DELTA_MIX,
+  });
 
   if (p1 >= T_DOM) {
     // confident single

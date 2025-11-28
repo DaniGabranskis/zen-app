@@ -6,11 +6,18 @@ import ThoughtProbe from '../components/probe/ThoughtProbe';
 import { ProbeEngine } from '../utils/probeEngine';
 import { pickStartProbe } from '../utils/probeRouting';
 import { EMOTION_META } from '../data/emotionMeta';
-import { useBottomSystemBar } from '../hooks/useBottomSystemBar'; // ✅ NEW
+import { useBottomSystemBar } from '../hooks/useBottomSystemBar';
 
-export default function ProbeContainer({ theme, onDone, onStep, onStart }) {
+export default function ProbeContainer({
+  theme,
+  onDone,
+  onStep,
+  onStart,
+  // NEW: seedEmotions comes from evidenceEngine (e.g. ['guilt', 'shame'])
+  seedEmotions,
+}) {
   // Create probe engine (keeps internal emotion vector)
-  const engineRef = useRef(new ProbeEngine({ maxSteps: 3, confidence: 0.72 }));
+  const engineRef = useRef(new ProbeEngine({ maxSteps: 2, confidence: 0.72 }));
 
   // 🔹 Derive bar color + theme mode from theme
   //    Adjust these keys to your actual theme structure.
@@ -26,11 +33,29 @@ export default function ProbeContainer({ theme, onDone, onStep, onStart }) {
     theme?.scheme === 'dark';
 
   // Build probe context from current top-2 emotions
-  const context = useMemo(() => {
+  // Compute top-2 emotions for probe context:
+  // 1) if ProbeEngine already has ranking → use it
+  // 2) otherwise → fallback to seedEmotions from evidenceEngine
+  const seedTopTwo = useMemo(() => {
     const snap = engineRef.current?.snapshot || {};
     const r = snap.ranking || [];
-    const firstKey = r[0]?.key || null;
-    const secondKey = r[1]?.key || null;
+
+    if (r.length > 0) {
+      return [r[0]?.key, r[1]?.key].filter(Boolean);
+    }
+
+    if (Array.isArray(seedEmotions) && seedEmotions.length > 0) {
+      const [d, s] = seedEmotions;
+      return [d, s].filter(Boolean);
+    }
+
+    return [];
+  }, [engineRef.current?.snapshot?.ranking, seedEmotions]);
+
+  // Build probe context from seedTopTwo
+  const context = useMemo(() => {
+    const firstKey = seedTopTwo[0] || null;
+    const secondKey = seedTopTwo[1] || null;
 
     const first = firstKey
       ? { emotionId: firstKey, label: EMOTION_META[firstKey]?.label || firstKey }
@@ -40,14 +65,23 @@ export default function ProbeContainer({ theme, onDone, onStep, onStart }) {
       : null;
 
     return { first, second };
-  }, [engineRef.current?.snapshot?.ranking]);
+  }, [seedTopTwo]);
 
-  // Determine the first probe type from top-2 emotions (more intelligent start)
+  // Determine the first probe type from top-2 emotions.
+  // Prefer:
+  // 1) current ProbeEngine ranking
+  // 2) fallback to seedEmotions from evidenceEngine
   const initialStart = (() => {
-    const ranking = engineRef.current.snapshot.ranking || [];
-    const topTwo = [ranking[0]?.key, ranking[1]?.key].filter(Boolean);
+    const snap = engineRef.current.snapshot || {};
+    const ranking = snap.ranking || [];
+
+    const topTwo =
+      ranking.length > 0
+        ? [ranking[0]?.key, ranking[1]?.key].filter(Boolean)
+        : seedTopTwo;
+
     const start = pickStartProbe(topTwo);
-    console.log('[ProbeContainer] initialStart', { topTwo, start });
+    console.log('[ProbeContainer] initialStart', { topTwo, start, ranking });
 
     if (typeof onStart === 'function') {
       try {
@@ -82,7 +116,8 @@ export default function ProbeContainer({ theme, onDone, onStep, onStart }) {
 
   // Called when user selects an option
   const onChoose = (maybeTags, label) => {
-    const tags = Array.isArray(maybeTags) ? maybeTags : [];
+    // Не ломаем объект-вектор: передаём как есть, если он есть
+    const tags = maybeTags ?? [];
     const snap = engineRef.current.apply(tags, label);
     console.log('[ProbeContainer] after choose', snap);
 
@@ -122,7 +157,7 @@ export default function ProbeContainer({ theme, onDone, onStep, onStart }) {
 
   // Extract current ranking and top emotion
   const ranking = engineRef.current.snapshot.ranking || [];
-  const dominant = ranking[0]?.key;
+  const dominant = ranking[0]?.key || seedTopTwo[0] || null;
   const exclude = engineRef.current.getExcludeLabels?.() || [];
   // Unique key to force re-mount of probes (reset local state)
   const probeKey = `${probeType}-${engineRef.current.step}`;

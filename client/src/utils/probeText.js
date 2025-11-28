@@ -56,30 +56,81 @@ export function buildProbeCopy(probeType, context) {
   const subtitle = SUBS[probeType] ?? SUBS.default;
 
   // Labels by axis + probeType (keep tone aligned to screen)
-  const byAxis = {
+   const byAxis = {
     valence: {
-      visual:   [`More like ${E1} — heavier/tense vibe`, `More like ${E2} — lighter/relief vibe`],
-      body:     [`Feels heavy/dense (like ${E1})`,       `Feels lighter/eased (like ${E2})`],
-      scenario: [`Closer to ${E1} in tone`,              `Closer to ${E2} in tone`],
-      default:  [`Closer to ${E1} right now`,            `Closer to ${E2} right now`],
+      visual: [
+        'Heavier / more tense vibe',
+        'Lighter / more relief vibe',
+      ],
+      body: [
+        'Feels heavy / dense in the body',
+        'Feels softer / more relaxed in the body',
+      ],
+      scenario: [
+        'Feels emotionally heavier overall',
+        'Feels emotionally lighter overall',
+      ],
+      default: [
+        'Feels heavier / more tense',
+        'Feels lighter / more at ease',
+      ],
     },
+
     arousal: {
-      visual:   [`Feels amped/edgy like ${E1}`,          `Feels slow/drained like ${E2}`],
-      body:     [`Tense/charged (like ${E1})`,           `Low/flat energy (like ${E2})`],
-      scenario: [`More urgent/reactive (${E1})`,         `More calm/low-pace (${E2})`],
-      default:  [`Closer to ${E1} right now`,            `Closer to ${E2} right now`],
+      visual: [
+        'More activated / on edge',
+        'More slowed down / drained',
+      ],
+      body: [
+        'Body feels wired or jittery',
+        'Body feels low or flat',
+      ],
+      scenario: [
+        'More urgent / reactive',
+        'More slow / low-pace',
+      ],
+      default: [
+        'More keyed-up',
+        'More slowed-down',
+      ],
     },
+
     control: {
-      visual:   [`It’s mostly on me (like ${E1})`,       `Mostly outside my control (like ${E2})`],
-      body:     [`Body-driven/compelled (${E1})`,        `I can ease it a bit (${E2})`],
-      scenario: [`I drive the outcome (${E1})`,          `Circumstances drive it (${E2})`],
-      default:  [`Closer to ${E1} right now`,            `Closer to ${E2} right now`],
+      visual: [
+        'Feels more on you to solve',
+        'Feels more outside your control',
+      ],
+      body: [
+        'Body feels driven / compelled',
+        'Body feels like it can ease a bit',
+      ],
+      scenario: [
+        'You mainly drive the outcome',
+        'Circumstances mainly drive it',
+      ],
+      default: [
+        'Feels more in your hands',
+        'Feels more out of your hands',
+      ],
     },
+
     generic: {
-      visual:   [`Closer to ${E1} right now`,            `Closer to ${E2} right now`],
-      body:     [`More like ${E1} in the body`,          `More like ${E2} in the body`],
-      scenario: [`This feels more like ${E1}`,           `This feels more like ${E2}`],
-      default:  [`Closer to ${E1} right now`,            `Closer to ${E2} right now`],
+      visual: [
+        'Option A fits more right now',
+        'Option B fits more right now',
+      ],
+      body: [
+        'First option fits your body more',
+        'Second option fits your body more',
+      ],
+      scenario: [
+        'First option matches better',
+        'Second option matches better',
+      ],
+      default: [
+        'First option fits better',
+        'Second option fits better',
+      ],
     },
   };
 

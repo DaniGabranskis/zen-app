@@ -38,8 +38,18 @@ export default function VisualProbe(props) {
   // Вытаскиваем теги, если они есть у опций
   const getOptionTags = (opt) => {
     if (!opt) return [];
-    // если в объекте опции есть поле tags, используем его
-    if (Array.isArray(opt.tags)) return opt.tags;
+
+    // Если теги — массив векторов
+    if (Array.isArray(opt.tags)) {
+      return opt.tags;
+    }
+
+    // Если теги — одиночный вектор (объект), как в probeContent.js
+    if (opt.tags && typeof opt.tags === 'object') {
+      return opt.tags;
+    }
+
+    // Иначе ничего не передаём
     return [];
   };
 

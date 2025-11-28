@@ -53,13 +53,23 @@ export class ProbeEngine {
 
   apply(tags, label) {
     console.log("[ProbeEngine] apply ->", { tags, label });
-    this.state = accumulate(this.state, tags);
+
+    // Allow both a single vector and an array of vectors
+    if (Array.isArray(tags)) {
+      this.state = tags.reduce(
+        (state, t) => accumulate(state, t),
+        this.state
+      );
+    } else {
+      this.state = accumulate(this.state, tags);
+    }
+
     if (label) this.usedLabels.add(label);
     this.history.push({ step: this.step, label, tags });
     this.step += 1;
     return this.snapshot;
   }
-
+  
   shouldStop() {
     const { confidence, step } = this.snapshot;
     const stop = confidence >= this.confidence || step >= this.maxSteps;

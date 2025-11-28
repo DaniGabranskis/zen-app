@@ -52,7 +52,15 @@ export default function BodyProbe({
   // Универсальный helper: достаём теги из опции, если есть
   const getOptionTags = (opt) => {
     if (!opt) return [];
-    if (Array.isArray(opt.tags)) return opt.tags;
+
+    if (Array.isArray(opt.tags)) {
+      return opt.tags;
+    }
+
+    if (opt.tags && typeof opt.tags === 'object') {
+      return opt.tags;
+    }
+
     return [];
   };
 
