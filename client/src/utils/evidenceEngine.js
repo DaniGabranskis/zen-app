@@ -1,19 +1,27 @@
 // utils/evidenceEngine.js
 // Pure functions only. All comments in English.
 
-import emotions from '../data/emotions20.json';
-import { getPolarityFromMeta, POLARITY_FALLBACK } from '../data/emotionMeta';
+// Use emotion meta only (works in app and in Node scripts)
+import { EMOTION_META } from '../data/emotionMeta';
+
+// Derive emotion keys and list from meta
+export const emotionKeys = Object.keys(EMOTION_META);
+
+export const emotions = emotionKeys.map((key) => ({
+  key,
+  ...EMOTION_META[key],
+}));
 import {
   emptyState,
   clampState,
   rankEmotions,
-} from '../utils/emotionSpace';
+} from '../utils/emotionSpace.js';
 
 // Thresholds for routing decisions
-const T_MIX = 0.50;      // show at least something (dominant or mix)
-const T_DOM = 0.70;      // confident dominant
-const DELTA_PROBE = 0.04; // if p1-p2 below -> consider probe
-const DELTA_MIX = 0.10;   // if close -> allow mix
+const T_DOM = 0.20;      // confident dominant: strong peak
+const T_MIX = 0.08;      // allow mix if top emotion is at least 8%
+const DELTA_MIX = 0.03;  // if p1 - p2 < 3% → treat as mix (when p1 is high enough)
+const DELTA_PROBE = 0.0002; // if p1 - p2 < 1% → ask for probe
 
 // ============================================================================
 // TAG → DIMENSION RULES
@@ -344,8 +352,10 @@ function decideMixOrSingle(pairs) {
     return { ...base, mode: 'mix' };
   }
 
-  // 3) Нужно докопать через probe, но мы ВСЁ РАВНО даём secondary = e2
-  if (p1 < T_MIX || delta < DELTA_PROBE) {
+  // 3) Need extra disambiguation through probe
+  // We only trigger probe when top-2 emotions are almost equal.
+  // We DO NOT use "p1 < T_MIX" anymore, otherwise we always fall into probe.
+  if (delta < DELTA_PROBE && e2) {
     return { ...base, mode: 'probe' };
   }
 

@@ -29,6 +29,10 @@ const useStore = create(
       // UI theme: 'light' | 'dark'
       theme: 'light',
 
+      // -------- Custom pills for L4 (persisted across runs)
+      l4CustomTriggers: [],
+      l4CustomBodyMind: [],
+
       // Change theme explicitly (setTheme('light' | 'dark')) 
       // or toggle if аргумент не передан
       setTheme: (next) => {
@@ -147,6 +151,8 @@ const useStore = create(
 
       // -------- L4
 
+      // -------- L4
+
       setL4Triggers(list) {
         logEvent('store_l4_triggers', { list }, `Store: L4 triggers (${list.length})`);
         const draft = get().sessionDraft;
@@ -164,6 +170,60 @@ const useStore = create(
         logEvent('store_l4_intensity', { value: v }, `Store: L4 intensity=${v}`);
         const draft = get().sessionDraft;
         set({ sessionDraft: { ...draft, l4: { ...draft.l4, intensity: v } } });
+      },
+
+      addL4CustomTrigger: (label) => {
+        const raw = String(label ?? '');
+        const trimmed = raw.trim();
+        if (!trimmed) {
+          // Nothing to add
+          return;
+        }
+
+        const current = Array.isArray(get().l4CustomTriggers)
+          ? get().l4CustomTriggers
+          : [];
+
+        // Avoid duplicates
+        if (current.includes(trimmed)) {
+          return;
+        }
+
+        const next = [...current, trimmed];
+
+        logEvent(
+          'store_l4_custom_trigger_add',
+          { value: trimmed, count: next.length },
+          `Store: L4 custom trigger "${trimmed}" (total=${next.length})`,
+        );
+
+        set({ l4CustomTriggers: next });
+      },
+
+      addL4CustomBodyMind: (label) => {
+        const raw = String(label ?? '');
+        const trimmed = raw.trim();
+        if (!trimmed) {
+          return;
+        }
+
+        const current = Array.isArray(get().l4CustomBodyMind)
+          ? get().l4CustomBodyMind
+          : [];
+
+        if (current.includes(trimmed)) {
+          return;
+        }
+
+        const next = [...current, trimmed];
+
+        logEvent(
+          'store_l4_custom_bodymind_add',
+          { value: trimmed, count: next.length },
+          `Store: L4 custom bodyMind "${trimmed}" (total=${next.length})`,
+        );
+
+        set({ l4CustomBodyMind: next });
       },
 
       // -------- L5

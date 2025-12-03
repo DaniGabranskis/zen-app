@@ -7,7 +7,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ScreenWrapper from '../components/ScreenWrapper';
 import useStore from '../store/useStore';
 import useThemeVars from '../hooks/useThemeVars';
-import rawProbes from '../data/probes.v1.json';
 import { estimateIntensity } from '../utils/intensity';
 import { getEmotionMeta } from '../utils/evidenceEngine';
 import { makeHeaderStyles, makeBarStyles, computeBar, BAR_BTN_H } from '../ui/screenChrome';
@@ -143,20 +142,6 @@ export default function L5SummaryScreen({ navigation, route }) {
   const [editTrig] = useState(storeTriggers);
   const [editBM]   = useState(storeBM);
   const [intAdj]   = useState(0); // ручная подстройка будет позже в модалке
-
-  // ---- (на будущее) полные наборы
-  const probes = useMemo(() => ({
-    triggers: Array.isArray(rawProbes?.triggers)
-      ? rawProbes.triggers
-      : Array.isArray(rawProbes?.L4_triggers)
-        ? rawProbes.L4_triggers
-        : ['Work', 'Conflict', 'Uncertainty', 'Deadlines', 'Fatigue'],
-    bodyMind: Array.isArray(rawProbes?.bodyMind)
-      ? rawProbes.bodyMind
-      : Array.isArray(rawProbes?.L4_bodyMind)
-        ? rawProbes.L4_bodyMind
-        : ['Tight chest', 'Racing thoughts', 'Shallow breathing', 'Low energy', 'Irritable'],
-  }), []);
 
   const { intensity: autoIntensity, confidence } = estimateIntensity({
     tags: evidenceTags,

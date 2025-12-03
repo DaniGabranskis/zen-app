@@ -8,10 +8,12 @@ import {
   ScrollView,
   useWindowDimensions,
   Animated,
+  Modal,
+  TextInput,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useStore from '../store/useStore';
-import rawProbes from '../data/probes.v1.json';
+import l4Pills from '../data/l4Pills.json';
 import { estimateIntensity } from '../utils/intensity';
 import ScreenWrapper from '../components/ScreenWrapper';
 import useThemeVars from '../hooks/useThemeVars';
@@ -32,17 +34,19 @@ export default function L4DeepenScreen({ navigation }) {
   const setBodyMind = useStore((s) => s.setL4BodyMind);
   const setIntensity = useStore((s) => s.setL4Intensity);
 
-  // probes source with fallbacks
+  // custom pills from store (global, user-defined)
+  const customTriggers = useStore((s) => s.l4CustomTriggers ?? []);
+  const customBodyMind = useStore((s) => s.l4CustomBodyMind ?? []);
+  const addCustomTrigger = useStore((s) => s.addL4CustomTrigger);
+  const addCustomBodyMind = useStore((s) => s.addL4CustomBodyMind);
+
+  // L4 pills source
   const probes = {
-    triggers: Array.isArray(rawProbes?.triggers)
-      ? rawProbes.triggers
-      : Array.isArray(rawProbes?.L4_triggers)
-      ? rawProbes.L4_triggers
+    triggers: Array.isArray(l4Pills?.triggers)
+      ? l4Pills.triggers
       : ['Work', 'Conflict', 'Uncertainty', 'Deadlines', 'Fatigue'],
-    bodyMind: Array.isArray(rawProbes?.bodyMind)
-      ? rawProbes.bodyMind
-      : Array.isArray(rawProbes?.L4_bodyMind)
-      ? rawProbes.L4_bodyMind
+    bodyMind: Array.isArray(l4Pills?.bodyMind)
+      ? l4Pills.bodyMind
       : ['Tight chest', 'Racing thoughts', 'Shallow breathing', 'Low energy', 'Irritable'],
   };
 
@@ -50,6 +54,11 @@ export default function L4DeepenScreen({ navigation }) {
   const [stage, setStage] = useState(0); // 0: Triggers, 1: Body & Mind
   const [localTriggers, setLocalTriggers] = useState([]);
   const [localBM, setLocalBM] = useState([]);
+
+  // local state for custom pill modal
+  const [customModalVisible, setCustomModalVisible] = useState(false);
+  const [customType, setCustomType] = useState(null); // 'trigger' | 'bodyMind' | null
+  const [customText, setCustomText] = useState('');
 
   const theme = useThemeVars();
   const insets = useSafeAreaInsets();
@@ -109,6 +118,58 @@ export default function L4DeepenScreen({ navigation }) {
     navigation.navigate('L5Summary');
   };
 
+    const openCustomModal = (type) => {
+    setCustomType(type); // 'trigger' | 'bodyMind'
+    setCustomText('');
+    setCustomModalVisible(true);
+  };
+
+  const handleSaveCustomPill = () => {
+    const trimmed = customText.trim();
+
+    if (!trimmed) {
+      console.log('[L4] empty custom pill ignored');
+      return;
+    }
+
+    if (trimmed.length > 25) {
+      console.log('[L4] custom pill is longer than 25 chars, trimming');
+    }
+
+    if (customType === 'trigger') {
+      addCustomTrigger(trimmed);
+      setLocalTriggers((prev) =>
+        prev.includes(trimmed) ? prev : [...prev, trimmed],
+      );
+      logEvent(
+        'l4_custom_trigger_add',
+        { value: trimmed },
+        `L4 custom trigger "${trimmed}"`,
+      );
+    } else if (customType === 'bodyMind') {
+      addCustomBodyMind(trimmed);
+      setLocalBM((prev) =>
+        prev.includes(trimmed) ? prev : [...prev, trimmed],
+      );
+      logEvent(
+        'l4_custom_bodymind_add',
+        { value: trimmed },
+        `L4 custom bodyMind "${trimmed}"`,
+      );
+    }
+
+    setCustomModalVisible(false);
+    setCustomType(null);
+    setCustomText('');
+  };
+
+  const handleCancelCustomPill = () => {
+    setCustomModalVisible(false);
+    setCustomType(null);
+    setCustomText('');
+  };
+
+
   return (
     <ScreenWrapper
       useFlexHeight
@@ -127,11 +188,12 @@ export default function L4DeepenScreen({ navigation }) {
               <Text style={s.hint}>No triggers configured yet</Text>
             )}
 
-            {/* Pills block занимает всё оставшееся место */}
+            {/* Pills block takes the remaining space */}
             <View style={s.pillsContainer}>
               <Pills
                 theme={theme}
                 data={probes.triggers}
+                customData={customTriggers}
                 selected={localTriggers}
                 onChange={setLocalTriggers}
                 chips={chips}
@@ -155,6 +217,7 @@ export default function L4DeepenScreen({ navigation }) {
               <Pills
                 theme={theme}
                 data={probes.bodyMind}
+                customData={customBodyMind}
                 selected={localBM}
                 onChange={setLocalBM}
                 chips={chips}
@@ -163,10 +226,47 @@ export default function L4DeepenScreen({ navigation }) {
           </View>
         )}
 
-        {/* Bottom action bar: fixed, single CTA (Next/Continue) */}
+        {/* Bottom action bar: fixed, Custom + Next */}
         <View style={[sBar.bottomBar, { paddingBottom: BAR_SAFE }]}>
           <View style={sBar.bottomBarShadow} />
-          <View style={[sBar.bottomInner, { height: BAR_BASE_H }]}>
+          <View
+            style={[
+              sBar.bottomInner,
+              {
+                height: BAR_BASE_H,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              },
+            ]}
+          >
+            <TouchableOpacity
+              style={[
+                sBar.btn,
+                {
+                  height: BAR_BTN_H,
+                  paddingHorizontal: 16,
+                  backgroundColor: theme.cardBackground,
+                  borderRadius: 999,
+                  borderWidth: 1,
+                  borderColor: theme.borderSubtle ?? '#00000022',
+                },
+              ]}
+              onPress={() =>
+                openCustomModal(stage === 0 ? 'trigger' : 'bodyMind')
+              }
+            >
+              <Text
+                style={{
+                  fontSize: 15,
+                  fontWeight: '500',
+                  color: theme.textPrimary,
+                }}
+              >
+                Custom
+              </Text>
+            </TouchableOpacity>
+
             <TouchableOpacity
               style={[
                 sBar.btn,
@@ -182,11 +282,73 @@ export default function L4DeepenScreen({ navigation }) {
           </View>
         </View>
       </View>
+            <Modal
+        visible={customModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={handleCancelCustomPill}
+      >
+        <View style={s.modalBackdrop}>
+          <View style={s.modalContent}>
+            <Text style={s.modalTitle}>
+              {customType === 'trigger'
+                ? 'Add custom trigger'
+                : 'Add custom body & mind pattern'}
+            </Text>
+            <Text style={s.modalSubtitle}>
+              Enter your own wording (up to 25 characters). It will appear in
+              the Custom section below the basic pills.
+            </Text>
+
+            <View style={s.modalPillPreview}>
+              <Text style={s.modalPillPreviewText}>
+                {customText.trim().length > 0
+                  ? customText.trim()
+                  : customType === 'trigger'
+                  ? 'Example: Long commute home'
+                  : 'Example: Warm, relaxed body'}
+              </Text>
+            </View>
+
+            <TextInput
+              value={customText}
+              onChangeText={setCustomText}
+              maxLength={25}
+              placeholder="Type your custom pill"
+              placeholderTextColor={theme.textSecondary}
+              style={s.modalInput}
+            />
+
+            <View style={s.modalButtonsRow}>
+              <TouchableOpacity
+                style={[s.modalButton, s.modalButtonGhost]}
+                onPress={handleCancelCustomPill}
+              >
+                <Text style={s.modalButtonGhostText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[s.modalButton, s.modalButtonPrimary]}
+                onPress={handleSaveCustomPill}
+              >
+                <Text style={s.modalButtonPrimaryText}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScreenWrapper>
   );
 }
 
-function Pills({ theme, data = [], selected = [], onChange, chips }) {
+function Pills({
+  theme,
+  data = [],
+  customData = [],
+  selected = [],
+  onChange,
+  chips,
+}) {
   const [containerH, setContainerH] = React.useState(0);
   const [contentH, setContentH] = React.useState(0);
   const [hasScrolled, setHasScrolled] = React.useState(false);
@@ -210,7 +372,7 @@ function Pills({ theme, data = [], selected = [], onChange, chips }) {
           duration: 600,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     );
 
     anim.start();
@@ -220,6 +382,21 @@ function Pills({ theme, data = [], selected = [], onChange, chips }) {
       anim.stop();
     };
   }, [bounceAnim]);
+
+  const handleToggle = (label) => {
+    const active = selected.includes(label);
+    const next = active
+      ? selected.filter((x) => x !== label)
+      : [...selected, label];
+
+    logEvent(
+      'l4_pill_toggle',
+      { value: label, active: !active, count: next.length },
+      `L4 ${active ? 'remove' : 'add'} "${label}" (${next.length})`,
+    );
+
+    onChange(next);
+  };
 
   return (
     <View
@@ -231,9 +408,9 @@ function Pills({ theme, data = [], selected = [], onChange, chips }) {
           flexDirection: 'row',
           flexWrap: 'wrap',
           justifyContent: 'center',
-          paddingBottom: 80, // чтобы пилюли не уехали под бар
+          paddingBottom: 80, // keep pills above the bottom bar
         }}
-        showsVerticalScrollIndicator={false} // стрелка вместо стандартного индикатора
+        showsVerticalScrollIndicator={false}
         onContentSizeChange={(_, h) => setContentH(h)}
         onScrollBeginDrag={() => setHasScrolled(true)}
       >
@@ -241,26 +418,41 @@ function Pills({ theme, data = [], selected = [], onChange, chips }) {
           const active = selected.includes(t);
           return (
             <TouchableOpacity
-              key={t}
-              onPress={() => {
-                const next = active ? selected.filter((x) => x !== t) : [...selected, t];
-                logEvent(
-                  'l4_pill_toggle',
-                  { value: t, active: !active, count: next.length },
-                  `L4 ${active ? 'remove' : 'add'} "${t}" (${next.length})`,
-                );
-                onChange(next);
-              }}
+              key={`base-${t}`}
+              onPress={() => handleToggle(t)}
               style={[chips.pill, active && chips.pillActive]}
             >
               <Text style={chips.pillText}>{t}</Text>
             </TouchableOpacity>
           );
         })}
+
+        {customData.length > 0 && (
+          <>
+            <View style={chips.customDividerRow}>
+              <View style={chips.customDividerLine} />
+              <Text style={chips.customDividerLabel}>Custom</Text>
+              <View style={chips.customDividerLine} />
+            </View>
+
+            {customData.map((t) => {
+              const active = selected.includes(t);
+              return (
+                <TouchableOpacity
+                  key={`custom-${t}`}
+                  onPress={() => handleToggle(t)}
+                  style={[chips.pill, active && chips.pillActive]}
+                >
+                  <Text style={chips.pillText}>{t}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </>
+        )}
       </ScrollView>
 
       {/* subtle scroll hint, fades after first scroll */}
-    {overflow && !hasScrolled && (
+      {overflow && !hasScrolled && (
         <Animated.View
           pointerEvents="none"
           style={{
@@ -268,10 +460,16 @@ function Pills({ theme, data = [], selected = [], onChange, chips }) {
             bottom: 12,
             right: 0,
             padding: 2,
-            transform: [{ translateY: bounceAnim }], // ⬅️ тут магия
+            transform: [{ translateY: bounceAnim }],
           }}
         >
-          <Text style={{ color: theme.textSecondary, fontSize: 50, fontWeight: '600' }}>
+          <Text
+            style={{
+              color: theme.textSecondary,
+              fontSize: 50,
+              fontWeight: '600',
+            }}
+          >
             ↓
           </Text>
         </Animated.View>
@@ -328,12 +526,93 @@ const makeStyles = (t, BAR_BASE_H) =>
       alignItems: 'center',
       paddingVertical: 24,
     },
-    sliderWrap: {
+sliderWrap: {
       width: '86%',
       maxWidth: 500,
       alignSelf: 'center',
       marginTop: 8,
       marginBottom: 8,
+    },
+
+    modalBackdrop: {
+      flex: 1,
+      backgroundColor: '#00000066',
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: 24,
+    },
+    modalContent: {
+      width: '100%',
+      maxWidth: 420,
+      borderRadius: 16,
+      padding: 20,
+      backgroundColor: t.cardBackground,
+    },
+    modalTitle: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: t.textPrimary,
+      marginBottom: 6,
+    },
+    modalSubtitle: {
+      fontSize: 13,
+      color: t.textSecondary,
+      marginBottom: 12,
+    },
+    modalPillPreview: {
+      alignSelf: 'flex-start',
+      paddingVertical: 12,
+      paddingHorizontal: 18,
+      borderRadius: 999,
+      backgroundColor: t.cardBackgroundAlt ?? t.cardBackground,
+      borderWidth: 1,
+      borderColor: '#00000022',
+      marginBottom: 12,
+      transform: [{ scale: 1.1 }],
+    },
+    modalPillPreviewText: {
+      color: t.textPrimary,
+      fontSize: 14,
+    },
+    modalInput: {
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: '#00000033',
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      color: t.textPrimary,
+      fontSize: 14,
+      marginBottom: 16,
+      backgroundColor: t.background,
+    },
+    modalButtonsRow: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      alignItems: 'center',
+      gap: 12,
+    },
+    modalButton: {
+      height: 40,
+      paddingHorizontal: 18,
+      borderRadius: 999,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalButtonGhost: {
+      backgroundColor: 'transparent',
+      borderWidth: 1,
+      borderColor: '#00000033',
+    },
+    modalButtonGhostText: {
+      color: t.textPrimary,
+      fontWeight: '500',
+    },
+    modalButtonPrimary: {
+      backgroundColor: t.accent,
+    },
+    modalButtonPrimaryText: {
+      color: t.accentText ?? '#ffffff',
+      fontWeight: '600',
     },
   });
 
@@ -354,4 +633,26 @@ const pillStyles = (t) =>
     pillText: {
       color: t.textPrimary,
     },
+    customDividerRow: {
+      width: '100%',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 16,
+      marginBottom: 4,
+    },
+    customDividerLine: {
+      flex: 1,
+      height: StyleSheet.hairlineWidth,
+      borderStyle: 'dashed',
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: t.textSecondary + '55',
+    },
+    customDividerLabel: {
+      marginHorizontal: 8,
+      fontSize: 13,
+      fontWeight: '500',
+      color: t.textSecondary,
+    },
   });
+

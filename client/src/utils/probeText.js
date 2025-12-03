@@ -5,14 +5,19 @@ import { EMOTION_META } from '../data/emotionMeta';
 const getMeta = (input) => {
   if (!input) return null;
   if (typeof input === 'string') return EMOTION_META[input] ?? null;
+
   const key = input.emotionId ?? input.id ?? input.key ?? null;
   const meta = key ? EMOTION_META[key] : null;
+
   if (!meta) {
     return {
-      valence: 0, arousal: 0.5, control: 0.5,
+      valence: 0,
+      arousal: 0.5,
+      control: 0.5,
       label: input.label ?? 'Emotion',
     };
   }
+
   return { ...meta, label: input.label ?? meta.label };
 };
 
@@ -23,126 +28,182 @@ const chooseAxis = (m1, m2) => {
   return 'generic';
 };
 
+const PROBE_COPY = {
+  default: {
+    title: 'Pick what fits your vibe',
+    subtitle: 'No right or wrong, just a quick feel',
+    byAxis: {
+      valence: {
+        firstLabel: 'Feels heavier / more tense',
+        secondLabel: 'Feels lighter / more at ease',
+      },
+      arousal: {
+        firstLabel: 'More keyed-up',
+        secondLabel: 'More slowed-down',
+      },
+      control: {
+        firstLabel: 'Feels more in your hands',
+        secondLabel: 'Feels more out of your hands',
+      },
+      generic: {
+        firstLabel: 'First option fits better',
+        secondLabel: 'Second option fits better',
+      },
+    },
+  },
+
+  visual: {
+    title: 'Pick what fits your vibe',
+    subtitle: 'No right or wrong, just a quick feel',
+    byAxis: {
+      valence: {
+        firstLabel: 'Heavier / more tense vibe',
+        secondLabel: 'Lighter / more relief vibe',
+      },
+      arousal: {
+        firstLabel: 'More activated / on edge',
+        secondLabel: 'More slowed down / drained',
+      },
+      control: {
+        firstLabel: 'Feels more on you to solve',
+        secondLabel: 'Feels more outside your control',
+      },
+      generic: {
+        firstLabel: 'Option A fits more right now',
+        secondLabel: 'Option B fits more right now',
+      },
+    },
+  },
+
+  body: {
+    title: 'How does your body feel?',
+    subtitle: 'Go with the sensation that resonates more',
+    byAxis: {
+      valence: {
+        firstLabel: 'Feels heavy / dense in the body',
+        secondLabel: 'Feels softer / more relaxed in the body',
+      },
+      arousal: {
+        firstLabel: 'Body feels wired or jittery',
+        secondLabel: 'Body feels low or flat',
+      },
+      control: {
+        firstLabel: 'Body feels driven / compelled',
+        secondLabel: 'Body feels like it can ease a bit',
+      },
+      generic: {
+        firstLabel: 'First option fits your body more',
+        secondLabel: 'Second option fits your body more',
+      },
+    },
+  },
+
+  scenario: {
+    title: 'Which scenario matches better?',
+    subtitle: 'Quick pick — go with your first instinct',
+    byAxis: {
+      valence: {
+        firstLabel: 'Feels emotionally heavier overall',
+        secondLabel: 'Feels emotionally lighter overall',
+      },
+      arousal: {
+        firstLabel: 'More urgent / reactive',
+        secondLabel: 'More slow / low-pace',
+        firstDesc: 'High pace, quick reactions',
+        secondDesc: 'Slower pace, subdued',
+      },
+      control: {
+        firstLabel: 'You mainly drive the outcome',
+        secondLabel: 'Circumstances mainly drive it',
+        firstDesc: 'You likely affect the outcome',
+        secondDesc: 'Mostly situational forces',
+      },
+      generic: {
+        firstLabel: 'First option matches better',
+        secondLabel: 'Second option matches better',
+      },
+    },
+  },
+
+  thought: {
+    title: 'Pick what fits your vibe',
+    subtitle: 'No right or wrong — choose a few, then confirm',
+    byAxis: {
+      // Thought probe is more generic, we can lean on defaults:
+      valence: {
+        firstLabel: 'Feels heavier / more tense',
+        secondLabel: 'Feels lighter / more at ease',
+      },
+      arousal: {
+        firstLabel: 'More keyed-up',
+        secondLabel: 'More slowed-down',
+      },
+      control: {
+        firstLabel: 'Feels more in your hands',
+        secondLabel: 'Feels more out of your hands',
+      },
+      generic: {
+        firstLabel: 'First option fits better',
+        secondLabel: 'Second option fits better',
+      },
+    },
+  },
+};
+
 /**
  * Build copy for any probe type based on emotion pair.
  * @param {'visual'|'body'|'scenario'|'thought'|string} probeType
- * @param {{first:any, second:any}} context
+ * @param {{ first: any, second: any }} context
  * @returns {{ title:string, subtitle:string, axis:string, firstLabel?:string, secondLabel?:string, firstDesc?:string, secondDesc?:string }}
  */
 export function buildProbeCopy(probeType, context) {
-  const m1 = getMeta(context?.first) ?? { label: 'Option A', valence: 0, arousal: 0.5, control: 0.5 };
-  const m2 = getMeta(context?.second) ?? { label: 'Option B', valence: 0, arousal: 0.5, control: 0.5 };
+  const first = context?.first ?? null;
+  const second = context?.second ?? null;
 
-  const axis = chooseAxis(m1, m2);
-  const E1 = m1.label, E2 = m2.label;
+  const m1 = getMeta(first);
+  const m2 = getMeta(second);
 
-  // Titles and subtitles per probeType
-  const TITLES = {
-    visual:   'Pick what fits your vibe',
-    body:     'How does your body feel?',
-    scenario: 'Which scenario matches better?',
-    thought:  'Pick what fits your vibe',
-    default:  'Pick what fits your vibe',
-  };
-  const SUBS = {
-    visual:   'No right or wrong, just a quick feel',
-    body:     'Go with the sensation that resonates more',
-    scenario: 'Quick pick — go with your first instinct',
-    thought:  'No right or wrong — choose a few, then confirm',
-    default:  'No right or wrong, just a quick feel',
-  };
+  // Fallback to generic axis if we cannot compute a meaningful one
+  const axis =
+    m1 && m2
+      ? chooseAxis(m1, m2)
+      : 'generic';
 
-  const title = TITLES[probeType] ?? TITLES.default;
-  const subtitle = SUBS[probeType] ?? SUBS.default;
+  // If later you want emotion labels for templating:
+  // const E1 = m1?.label ?? 'Option A';
+  // const E2 = m2?.label ?? 'Option B';
 
-  // Labels by axis + probeType (keep tone aligned to screen)
-   const byAxis = {
-    valence: {
-      visual: [
-        'Heavier / more tense vibe',
-        'Lighter / more relief vibe',
-      ],
-      body: [
-        'Feels heavy / dense in the body',
-        'Feels softer / more relaxed in the body',
-      ],
-      scenario: [
-        'Feels emotionally heavier overall',
-        'Feels emotionally lighter overall',
-      ],
-      default: [
-        'Feels heavier / more tense',
-        'Feels lighter / more at ease',
-      ],
-    },
+  const baseConfig = PROBE_COPY.default;
+  const typeConfig = PROBE_COPY[probeType] ?? baseConfig;
 
-    arousal: {
-      visual: [
-        'More activated / on edge',
-        'More slowed down / drained',
-      ],
-      body: [
-        'Body feels wired or jittery',
-        'Body feels low or flat',
-      ],
-      scenario: [
-        'More urgent / reactive',
-        'More slow / low-pace',
-      ],
-      default: [
-        'More keyed-up',
-        'More slowed-down',
-      ],
-    },
+  const title = typeConfig.title ?? baseConfig.title;
+  const subtitle = typeConfig.subtitle ?? baseConfig.subtitle;
 
-    control: {
-      visual: [
-        'Feels more on you to solve',
-        'Feels more outside your control',
-      ],
-      body: [
-        'Body feels driven / compelled',
-        'Body feels like it can ease a bit',
-      ],
-      scenario: [
-        'You mainly drive the outcome',
-        'Circumstances mainly drive it',
-      ],
-      default: [
-        'Feels more in your hands',
-        'Feels more out of your hands',
-      ],
-    },
+  const axisConfig =
+    typeConfig.byAxis[axis] ??
+    baseConfig.byAxis[axis] ??
+    baseConfig.byAxis.generic;
 
-    generic: {
-      visual: [
-        'Option A fits more right now',
-        'Option B fits more right now',
-      ],
-      body: [
-        'First option fits your body more',
-        'Second option fits your body more',
-      ],
-      scenario: [
-        'First option matches better',
-        'Second option matches better',
-      ],
-      default: [
-        'First option fits better',
-        'Second option fits better',
-      ],
-    },
+  const {
+    firstLabel,
+    secondLabel,
+    firstDesc,
+    secondDesc,
+  } = axisConfig;
+
+  const result = {
+    title,
+    subtitle,
+    axis,
+    firstLabel,
+    secondLabel,
   };
 
-  const labels = (byAxis[axis][probeType] ?? byAxis[axis].default);
-  const [firstLabel, secondLabel] = labels;
+  // Only scenario probe uses extra descriptions
+  if (probeType === 'scenario' && (firstDesc || secondDesc)) {
+    result.firstDesc = firstDesc;
+    result.secondDesc = secondDesc;
+  }
 
-  // Scenario can also use descriptions (optional).
-  const scenarioDescs = axis === 'control'
-    ? { firstDesc: 'You likely affect the outcome', secondDesc: 'Mostly situational forces' }
-    : axis === 'arousal'
-    ? { firstDesc: 'High pace, quick reactions',    secondDesc: 'Slower pace, subdued' }
-    : undefined;
-
-  return { title, subtitle, axis, firstLabel, secondLabel, ...(probeType === 'scenario' ? scenarioDescs : {}) };
+  return result;
 }
