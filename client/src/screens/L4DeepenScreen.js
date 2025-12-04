@@ -227,52 +227,25 @@ export default function L4DeepenScreen({ navigation }) {
         )}
 
         {/* Bottom action bar: fixed, Custom + Next */}
-        <View style={[sBar.bottomBar, { paddingBottom: BAR_SAFE }]}>
+        <View
+          style={[sBar.bottomBar, { paddingBottom: BAR_SAFE }]}
+          pointerEvents="box-none"
+        >
           <View style={sBar.bottomBarShadow} />
-          <View
-            style={[
-              sBar.bottomInner,
-              {
-                height: BAR_BASE_H,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              },
-            ]}
-          >
+          <View style={[sBar.bottomInner, { height: BAR_BASE_H }]}>
             <TouchableOpacity
-              style={[
-                sBar.btn,
-                {
-                  height: BAR_BTN_H,
-                  paddingHorizontal: 16,
-                  backgroundColor: theme.cardBackground,
-                  borderRadius: 999,
-                  borderWidth: 1,
-                  borderColor: theme.borderSubtle ?? '#00000022',
-                },
-              ]}
+              style={[sBar.btn, sBar.btnSecondary, { height: BAR_BTN_H }]}
               onPress={() =>
                 openCustomModal(stage === 0 ? 'trigger' : 'bodyMind')
               }
             >
-              <Text
-                style={{
-                  fontSize: 15,
-                  fontWeight: '500',
-                  color: theme.textPrimary,
-                }}
-              >
-                Custom
-              </Text>
+              <Text style={sBar.btnSecondaryText}>Custom</Text>
             </TouchableOpacity>
 
+            <View style={{ width: 12 }} />
+
             <TouchableOpacity
-              style={[
-                sBar.btn,
-                sBar.btnPrimary,
-                { height: BAR_BTN_H, paddingHorizontal: 18 },
-              ]}
+              style={[sBar.btn, sBar.btnPrimary, { height: BAR_BTN_H }]}
               onPress={stage === 0 ? next : finish}
             >
               <Text style={sBar.btnPrimaryText}>

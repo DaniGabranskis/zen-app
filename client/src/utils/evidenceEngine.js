@@ -442,39 +442,37 @@ export function routeEmotionFromCards(acceptedCards) {
  * Get rich meta info for an emotion key (for UI).
  */
 export function getEmotionMeta(key) {
-  // Normalize lookup to be robust to key/name usage
-  const k = String(key || '').toLowerCase();
-  const found = emotions.find(
-    e => String(e.key || '').toLowerCase() === k || String(e.name || '').toLowerCase() === k
-  );
-
-  if (!found) {
-    // Unknown emotion: return safe meta with neutral polarity
-    return { key: k, name: key, color: '#ccc', emoji: '', polarity: 'neutral' };
+  if (!key || typeof key !== 'string') {
+    return {
+      key: '',
+      name: '',
+      color: ['#A78BFA'], // default L5 purple
+      emoji: '',
+      polarity: 'neutral', // kept for compatibility, but unused
+    };
   }
 
-  // Color can be array or string — take the first if array
-  const color = Array.isArray(found.color)
-    ? found.color
-    : [found.color || '#ccc', found.color || '#ccc'];
+  const k = key.toLowerCase();
 
-  // Resolve polarity:
-  // 1) try meta-driven valence → polarity,
-  // 2) fallback dictionary,
-  // 3) neutral.
-  const fromMeta =
-    getPolarityFromMeta(found.key) ||
-    getPolarityFromMeta(found.name);
-  const fallback =
-    POLARITY_FALLBACK[String(found.key || '').toLowerCase()] ||
-    POLARITY_FALLBACK[String(found.name || '').toLowerCase()];
-  const polarity = fromMeta || fallback || 'neutral';
+  // Existing meta lookup
+  const found = EMOTION_META[k] || EMOTION_META[key] || null;
+
+  if (!found) {
+    return {
+      key,
+      name: key,
+      color: ['#A78BFA'],
+      emoji: '',
+      polarity: 'neutral',
+    };
+  }
 
   return {
-    key: found.key,
-    name: found.name,
-    color,
+    key: found.key || key,
+    name: found.name || key,
+    color: Array.isArray(found.color) ? found.color : ['#A78BFA'],
     emoji: found.emoji || '',
-    polarity,
+    polarity: found.polarity || 'neutral', // legacy field, safe default
   };
 }
+
