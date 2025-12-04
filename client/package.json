@@ -52,6 +52,7 @@
     "@npmcli/package-json": "5.2.1",
     "babel-preset-expo": "54.0.3",
     "depcheck": "1.4.7",
+    "eas-cli": "^16.28.0",
     "metro-react-native-babel-transformer": "0.77.0",
     "react-native-svg-transformer": "1.5.1"
   },

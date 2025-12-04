@@ -1,21 +1,22 @@
 // utils/evidenceEngine.js
-// Pure functions only. All comments in English.
 
-// Use emotion meta only (works in app and in Node scripts)
-import { EMOTION_META } from '../data/emotionMeta';
-
-// Derive emotion keys and list from meta
-export const emotionKeys = Object.keys(EMOTION_META);
-
-export const emotions = emotionKeys.map((key) => ({
-  key,
-  ...EMOTION_META[key],
-}));
+// Use emotion data for UI (colors, labels, emoji)
+import emotions from '../data/emotions20.json';
 import {
   emptyState,
   clampState,
   rankEmotions,
 } from '../utils/emotionSpace.js';
+import { getPolarityFromMeta, POLARITY_FALLBACK } from '../data/emotionMeta';
+
+// Derive emotion keys from data file
+export const emotionKeys = Array.isArray(emotions)
+  ? emotions.map((e) => e.key)
+  : [];
+
+// Re-export full emotions list for consumers that need it
+export { emotions };
+
 
 // Thresholds for routing decisions
 const T_DOM = 0.20;      // confident dominant: strong peak
@@ -440,39 +441,70 @@ export function routeEmotionFromCards(acceptedCards) {
 
 /**
  * Get rich meta info for an emotion key (for UI).
+ * Always returns at least two colors for LinearGradient.
  */
+// Variant A — correct polarity for StatsScreen & EmotionalBalanceBar
 export function getEmotionMeta(key) {
   if (!key || typeof key !== 'string') {
     return {
       key: '',
       name: '',
-      color: ['#A78BFA'], // default L5 purple
-      emoji: '',
-      polarity: 'neutral', // kept for compatibility, but unused
-    };
-  }
-
-  const k = key.toLowerCase();
-
-  // Existing meta lookup
-  const found = EMOTION_META[k] || EMOTION_META[key] || null;
-
-  if (!found) {
-    return {
-      key,
-      name: key,
-      color: ['#A78BFA'],
+      color: ['#A78BFA', '#7C3AED'],
       emoji: '',
       polarity: 'neutral',
     };
   }
 
+  const k = String(key).toLowerCase();
+
+  // find emotion in emotions20.json
+  const found = Array.isArray(emotions)
+    ? emotions.find(
+        (e) =>
+          String(e.key || '').toLowerCase() === k ||
+          String(e.name || '').toLowerCase() === k
+      )
+    : null;
+
+  if (!found) {
+    return {
+      key,
+      name: key,
+      color: ['#A78BFA', '#7C3AED'],
+      emoji: '',
+      polarity: 'neutral',
+    };
+  }
+
+  // ensure valid gradient array
+  let colorArray;
+  if (Array.isArray(found.color)) {
+    colorArray =
+      found.color.length >= 2
+        ? found.color
+        : [found.color[0], found.color[0]];
+  } else if (typeof found.color === 'string') {
+    colorArray = [found.color, found.color];
+  } else {
+    colorArray = ['#A78BFA', '#7C3AED'];
+  }
+
+  // derive polarity from emotionMeta.js or fallback
+  const fromMeta =
+    getPolarityFromMeta(found.key) ||
+    getPolarityFromMeta(found.name);
+
+  const fallback =
+    POLARITY_FALLBACK[String(found.key || '').toLowerCase()] ||
+    POLARITY_FALLBACK[String(found.name || '').toLowerCase()];
+
+  const polarity = fromMeta || fallback || 'neutral';
+
   return {
-    key: found.key || key,
-    name: found.name || key,
-    color: Array.isArray(found.color) ? found.color : ['#A78BFA'],
+    key: found.key,
+    name: found.name,
+    color: colorArray,
     emoji: found.emoji || '',
-    polarity: found.polarity || 'neutral', // legacy field, safe default
+    polarity,
   };
 }
-

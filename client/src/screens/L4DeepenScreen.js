@@ -1,5 +1,5 @@
 // src/screens/L4DeepenScreen.js
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -40,15 +40,21 @@ export default function L4DeepenScreen({ navigation }) {
   const addCustomTrigger = useStore((s) => s.addL4CustomTrigger);
   const addCustomBodyMind = useStore((s) => s.addL4CustomBodyMind);
 
-  // L4 pills source
-  const probes = {
-    triggers: Array.isArray(l4Pills?.triggers)
+  // L4 pills source with length-balanced ordering
+  const probes = useMemo(() => {
+    const rawTriggers = Array.isArray(l4Pills?.triggers)
       ? l4Pills.triggers
-      : ['Work', 'Conflict', 'Uncertainty', 'Deadlines', 'Fatigue'],
-    bodyMind: Array.isArray(l4Pills?.bodyMind)
+      : ['Work', 'Conflict', 'Uncertainty', 'Deadlines', 'Fatigue'];
+
+    const rawBodyMind = Array.isArray(l4Pills?.bodyMind)
       ? l4Pills.bodyMind
-      : ['Tight chest', 'Racing thoughts', 'Shallow breathing', 'Low energy', 'Irritable'],
-  };
+      : ['Tight chest', 'Racing thoughts', 'Shallow breathing', 'Low energy', 'Irritable'];
+
+    return {
+      triggers: densifyPillsByLength(rawTriggers),
+      bodyMind: densifyPillsByLength(rawBodyMind),
+    };
+  }, []);
 
   // local UI state
   const [stage, setStage] = useState(0); // 0: Triggers, 1: Body & Mind
@@ -314,6 +320,67 @@ export default function L4DeepenScreen({ navigation }) {
   );
 }
 
+// Re-order pills into a "cloud": mix short / medium / long labels
+// without strict patterns, so rows look more like a dense tag cloud.
+function densifyPillsByLength(list) {
+  if (!Array.isArray(list)) return [];
+
+  const short = [];
+  const medium = [];
+  const long = [];
+
+  // 1) Split into buckets by length
+  list.forEach((label) => {
+    const len = String(label).length;
+    if (len <= 12) {
+      short.push(label);
+    } else if (len <= 20) {
+      medium.push(label);
+    } else {
+      long.push(label);
+    }
+  });
+
+  // 2) Simple in-place Fisher–Yates shuffle for each bucket
+  const shuffle = (arr) => {
+    for (let i = arr.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const tmp = arr[i];
+      arr[i] = arr[j];
+      arr[j] = tmp;
+    }
+  };
+
+  shuffle(short);
+  shuffle(medium);
+  shuffle(long);
+
+  // 3) Build result as a "cloud":
+  // randomly pick from non-empty buckets, so we naturally get
+  // patterns like: short + long, medium + medium, short + short + short, etc.
+  const result = [];
+  while (short.length || medium.length || long.length) {
+    const options = [];
+    if (short.length) options.push('short');
+    if (medium.length) options.push('medium');
+    if (long.length) options.push('long');
+
+    const bucketName = options[Math.floor(Math.random() * options.length)];
+
+    let bucket;
+    if (bucketName === 'short') bucket = short;
+    else if (bucketName === 'medium') bucket = medium;
+    else bucket = long;
+
+    const next = bucket.shift();
+    if (next != null) {
+      result.push(next);
+    }
+  }
+
+  return result;
+}
+
 function Pills({
   theme,
   data = [],
@@ -381,7 +448,7 @@ function Pills({
           flexDirection: 'row',
           flexWrap: 'wrap',
           justifyContent: 'center',
-          paddingBottom: 80, // keep pills above the bottom bar
+          paddingBottom: 40, // keep pills above the bottom bar
         }}
         showsVerticalScrollIndicator={false}
         onContentSizeChange={(_, h) => setContentH(h)}
@@ -468,6 +535,7 @@ const makeStyles = (t, BAR_BASE_H) =>
     pillsContainer: {
       flex: 1,
       marginTop: 6,
+      width: '100%', 
     },
     title: {
       fontSize: 30,
