@@ -34,53 +34,171 @@ function titleCase(s) {
     .trim();
 }
 
+const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+function getTimeOfDayBucket(hour) {
+  if (hour >= 5 && hour < 11) return 'mornings';
+  if (hour >= 11 && hour < 17) return 'afternoons';
+  if (hour >= 17 && hour < 22) return 'evenings';
+  return 'late nights';
+}
+
 function computeMiniInsightFromHistory(history = [], emotionKey = '') {
   if (!emotionKey) {
     return 'There is no pattern at the moment, your days are very varied.';
   }
 
-  const now = Date.now();
-  const ekTitle = titleCase(emotionKey);
+  const ekRaw = String(emotionKey);
+  const ekNorm = ekRaw.toLowerCase();
+  const ekTitle = titleCase(ekRaw);
 
-  const same = history.filter(it =>
-    (it?.dominantGroup || '').toLowerCase() === String(emotionKey).toLowerCase()
-  );
+  // Normalize history: keep only rows with a valid timestamp
+  const withTs = (history || [])
+    .map((it) => {
+      const ts = new Date(it.date || it.createdAt || 0).getTime();
+      return { ...it, _ts: ts };
+    })
+    .filter((it) => Number.isFinite(it._ts) && it._ts > 0);
 
-  if (same.length === 0) {
+  if (!withTs.length) {
     return 'There is no pattern at the moment, your days are very varied.';
   }
 
-  // last seen
+  const now = Date.now();
+
+  // Same-emotion slice
+  const same = withTs.filter((it) => {
+    const emo = (it?.dominantGroup || it?.session?.l3?.emotionKey || '').toLowerCase();
+    return emo === ekNorm;
+  });
+
+  if (!same.length) {
+    return 'There is no pattern at the moment, your days are very varied.';
+  }
+
+  // Basic stats for this emotion
   const latestTs = same
-    .map(it => new Date(it.date || it.createdAt || 0).getTime() || 0)
-    .sort((a,b) => b-a)[0];
+    .map((it) => it._ts)
+    .sort((a, b) => b - a)[0];
 
   const lastDays = Number.isFinite(latestTs) ? daysBetween(latestTs, now) : null;
 
-  // windows
-  const last7  = now - 7  * 24*60*60*1000;
-  const last30 = now - 30 * 24*60*60*1000;
-  const count7  = same.filter(it => new Date(it.date || it.createdAt || 0).getTime() >= last7).length;
-  const count30 = same.filter(it => new Date(it.date || it.createdAt || 0).getTime() >= last30).length;
+  const last7 = now - 7 * 24 * 60 * 60 * 1000;
+  const last30 = now - 30 * 24 * 60 * 60 * 1000;
+  const count7 = same.filter((it) => it._ts >= last7).length;
+  const count30 = same.filter((it) => it._ts >= last30).length;
 
-  // humanized message (1 sentence)
+  const sortedAll = [...withTs].sort((a, b) => a._ts - b._ts);
+  const earliestTs = sortedAll[0]._ts;
+  const horizonDays = daysBetween(earliestTs, now);
+
+  const totalSame = same.length;
+
+  // 1) Uniqueness: rare emotion or long gap since last occurrence
+  if (totalSame <= 2 && horizonDays >= 7) {
+    const span = Math.max(horizonDays, 1);
+    const label = totalSame === 1 ? 'entry' : 'entries';
+    return `This emotion is quite rare for you — you've logged ${totalSame} ${label} with ${ekTitle.toLowerCase()} in the last ${span} days.`;
+  }
+
+  if (lastDays !== null && lastDays >= 14) {
+    return `Today's ${ekTitle.toLowerCase()} stands out — you haven't logged it for about ${lastDays} days.`;
+  }
+
+  // 2) Time-of-day pattern
+  const timeBuckets = {
+    mornings: 0,
+    afternoons: 0,
+    evenings: 0,
+    'late nights': 0,
+  };
+
+  same.forEach((it) => {
+    const d = new Date(it.date || it.createdAt || 0);
+    if (!Number.isFinite(d.getTime())) return;
+    const bucket = getTimeOfDayBucket(d.getHours());
+    timeBuckets[bucket] += 1;
+  });
+
+  const bucketEntries = Object.entries(timeBuckets);
+  const [bestBucket, bestBucketCount] =
+    bucketEntries.reduce(
+      (acc, [name, count]) => (count > acc[1] ? [name, count] : acc),
+      ['', 0]
+    );
+
+  if (bestBucket && bestBucketCount >= 3 && bestBucketCount / totalSame >= 0.6) {
+    return `You tend to feel ${ekTitle.toLowerCase()} mostly in the ${bestBucket}.`;
+  }
+
+  // 3) Weekday pattern for this emotion
+  const weekdayCounts = new Array(7).fill(0);
+  same.forEach((it) => {
+    const d = new Date(it.date || it.createdAt || 0);
+    const idx = d.getDay();
+    if (Number.isNaN(idx)) return;
+    weekdayCounts[idx] += 1;
+  });
+
+  let maxDayIdx = -1;
+  let maxDayCount = 0;
+  weekdayCounts.forEach((count, idx) => {
+    if (count > maxDayCount) {
+      maxDayCount = count;
+      maxDayIdx = idx;
+    }
+  });
+
+  if (maxDayIdx >= 0 && maxDayCount >= 3 && maxDayCount / totalSame >= 0.6) {
+    const dayName = WEEKDAYS[maxDayIdx];
+    return `${ekTitle} often shows up on ${dayName}s — ${maxDayCount} of your last ${totalSame} entries with this emotion.`;
+  }
+
+  // 4) Context of the last few check-ins (micro-summary)
+  const recent = sortedAll.slice(-5);
+  if (recent.length >= 3) {
+    const freq = new Map();
+    recent.forEach((it) => {
+      const emo = (it?.dominantGroup || it?.session?.l3?.emotionKey || '').toLowerCase();
+      if (!emo) return;
+      freq.set(emo, (freq.get(emo) || 0) + 1);
+    });
+
+    const ranked = [...freq.entries()].sort((a, b) => b[1] - a[1]);
+    if (ranked.length === 1) {
+      const [k1, c1] = ranked[0];
+      const e1 = titleCase(k1);
+      return `Over your last ${recent.length} check-ins, ${e1.toLowerCase()} has been the main tone.`;
+    }
+    if (ranked.length >= 2) {
+      const [k1, c1] = ranked[0];
+      const [k2, c2] = ranked[1];
+      const e1 = titleCase(k1);
+      const e2 = titleCase(k2);
+      return `Over your last ${recent.length} check-ins, your emotional tone has moved mostly between ${e1.toLowerCase()} and ${e2.toLowerCase()}, with ${ekTitle.toLowerCase()} fitting into that same space.`;
+    }
+  }
+
+  // 5) Fallback: old frequency-based logic (7/30 days window)
   if (count7 >= 3) {
-    // Пример: "Lately you've been feeling Sadness often — 3 times in the last 7 days."
     return `Lately you've been feeling ${ekTitle.toLowerCase()} often — ${count7} times in the last 7 days.`;
   }
 
   if (lastDays !== null && lastDays <= 3) {
-    // Пример: "You've felt Sadness recently — yesterday."
-    const when = lastDays === 0 ? 'today' : lastDays === 1 ? 'yesterday' : `${lastDays} days ago`;
+    const when =
+      lastDays === 0
+        ? 'today'
+        : lastDays === 1
+        ? 'yesterday'
+        : `${lastDays} days ago`;
     return `You've felt ${ekTitle.toLowerCase()} recently — ${when}.`;
   }
 
   if (count30 >= 4) {
-    // Пример: "Sadness showed up 5 times in the last 30 days."
     return `${ekTitle} showed up ${count30} times in the last 30 days.`;
   }
 
-  // дефолт: нет выраженного паттерна
+  // Default: no strong pattern
   return 'There is no clear pattern yet — your days look varied.';
 }
 
