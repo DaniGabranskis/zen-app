@@ -1,17 +1,23 @@
 {
   "expo": {
-    "name": "zen-app",
+    "name": "Zen?",
     "slug": "zen-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "ios": {
-      "supportsTablet": true
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
     },
-    "web": {},
-    "plugins": [
-      "expo-asset"
-    ]
+    "android": {
+      "package": "com.yourname.zenapp",
+      "versionCode": 1
+    },
+    "extra": {
+      "eas": {
+        "projectId": "dad96874-625e-40c4-9f1f-98a6cf55286c"
+      }
+    }
   }
 }
