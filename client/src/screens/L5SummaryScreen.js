@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ScreenWrapper from '../components/ScreenWrapper';
+import DischargeReflectionControl from '../components/DischargeReflectionControl';
 import useStore from '../store/useStore';
 import useThemeVars from '../hooks/useThemeVars';
 import { estimateIntensity } from '../utils/intensity';
@@ -251,10 +252,11 @@ export default function L5SummaryScreen({ navigation, route }) {
     ? (histSess?.l4?.bodyMind ?? EMPTY_ARR)
     : (_storeBM ?? EMPTY_ARR);
 
-  const setL4Triggers     = useStore(s => s.setL4Triggers);
-  const setL4BodyMind     = useStore(s => s.setL4BodyMind);
-  const setL4Intensity    = useStore(s => s.setL4Intensity);
-  const setL5Fields = useStore(s => s.setL5Fields);
+  const setL4Triggers  = useStore(s => s.setL4Triggers);
+  const setL4BodyMind  = useStore(s => s.setL4BodyMind);
+  const setL4Intensity = useStore(s => s.setL4Intensity);
+  const setL5Fields    = useStore(s => s.setL5Fields);
+  const resetSession   = useStore(s => s.resetSession);
 
   // ---- локальные копии (сейчас read-only показ)
   const [editTrig] = useState(storeTriggers);
@@ -306,8 +308,14 @@ export default function L5SummaryScreen({ navigation, route }) {
     navigation.navigate('L6Actions');
   };
 
-   const onEdit = () => {
-   navigation.navigate('L4Deepen'); 
+  const onEdit = () => {
+   navigation.navigate('L4Deepen');
+ };
+
+ const handleDischarge = (reasonKey) => {
+   console.log('[L5] discharge reflection, reason:', reasonKey);
+   resetSession();
+   navigation.popToTop();
  };
 
  // Loading effect: we calculate a local mini-insight and request a short AI description
@@ -401,15 +409,27 @@ if (loading) {
 // === MAIN SCREEN ===
 return (
   <ScreenWrapper useFlexHeight noTopInset={fromHistory} style={{ backgroundColor: t.background }}>
-    <ScrollView style={{ flex: 1 }} contentContainerStyle={s.scroll} showsVerticalScrollIndicator>
+    <ScrollView
+      style={{ flex: 1 }}
+      contentContainerStyle={s.scroll}
+      showsVerticalScrollIndicator
+    >
       {!fromHistory && (
-        <>
-          <Text style={sHead.title}>Summary</Text>
-          <Text style={sHead.subtitle}>
-            Here’s a quick recap. Your recommendations will use this.
-          </Text>
-        </>
+        <View style={s.headerRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={sHead.title}>Summary</Text>
+            <Text style={sHead.subtitle}>
+              Here’s a quick recap. Your recommendations will use this.
+            </Text>
+          </View>
+
+          <DischargeReflectionControl
+            theme={t}
+            onDischarge={handleDischarge}
+          />
+        </View>
       )}
+
 
       {/* Emotion circle with thin progress ring */}
       <View style={s.circleWrap}>
@@ -611,4 +631,11 @@ const makeStyles = (t, insets, CIRCLE, BAR_BASE_H, BAR_VPAD) => StyleSheet.creat
   },
   aiCardTitle: { fontSize: 16, fontWeight: '800', marginBottom: 6 },
   aiCardText: { fontSize: 14, lineHeight: 20 },
+    headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+
 });
