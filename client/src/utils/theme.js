@@ -29,6 +29,8 @@ export const themes = {
 
     dangerBackground: '#FFEBEE',
     dangerText: '#C62828',
+    
+    surfaceSecondary:'#FFFFFF',
 
     // --- OLD names (backward compatibility) ---
     bgcolor: '#FAFAFB',
@@ -68,6 +70,8 @@ export const themes = {
 
     dangerBackground: '#3A191B',
     dangerText: '#FF9EA5',
+
+    surfaceSecondary:'#3d3d46ff',
 
     // --- OLD names (backward compatibility) ---
     bgcolor: '#222224',

@@ -1,17 +1,31 @@
 // src/screens/L5SummaryScreen.js
 import React, { useMemo, useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensions, Platform, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  useWindowDimensions,
+  Platform,
+  ActivityIndicator,
+  Modal,
+  TextInput,
+  StatusBar,
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ScreenWrapper from '../components/ScreenWrapper';
-import DischargeReflectionControl from '../components/DischargeReflectionControl';
 import useStore from '../store/useStore';
 import useThemeVars from '../hooks/useThemeVars';
 import { estimateIntensity } from '../utils/intensity';
 import { getEmotionMeta } from '../utils/evidenceEngine';
 import { makeHeaderStyles, makeBarStyles, computeBar, BAR_BTN_H } from '../ui/screenChrome';
 import { generateShortDescription } from '../utils/aiService';
+import MiniInsightCard from '../components/MiniInsightCard';
+import { Ionicons } from '@expo/vector-icons';
+
 
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 const EMPTY_ARR = Object.freeze([]);
@@ -203,12 +217,32 @@ function computeMiniInsightFromHistory(history = [], emotionKey = '') {
   return 'There is no clear pattern yet — your days look varied.';
 }
 
+function EditIcon({ theme }) {
+  const isDark = theme.themeName === 'dark';
+  const iconColor = isDark ? theme.textPrimary : theme.textSecondary;
+
+  return (
+    <View
+      style={{
+        width: 22,
+        height: 22,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'transparent',
+      }}
+    >
+      <Ionicons name="create-outline" size={16} color={iconColor} />
+    </View>
+  );
+}
+
 export default function L5SummaryScreen({ navigation, route }) {
   const params = route?.params || {};
   const fromHistory = params?.fromHistory === true;
   const item = params?.item || (fromHistory ? params : null);
   const histSess = (fromHistory && item) ? (item.session || {}) : null;
   const t = useThemeVars();
+  const isDarkTheme = t.themeName === 'dark';
   const insets = useSafeAreaInsets();
   const { width: WIN_W } = useWindowDimensions();
     // Bottom bar sizing: fixed height safe-area on iOS only.
@@ -240,6 +274,11 @@ export default function L5SummaryScreen({ navigation, route }) {
   const [aiDesc, setAiDesc] = useState('');
   const [miniInsight, setMiniInsight] = useState('');
   const [aiSource, setAiSource] = useState(''); // 'ai' | 'local'
+
+  // Feedback about mismatch (L5)
+  const [feedbackVisible, setFeedbackVisible] = useState(false);
+  const [feedbackOption, setFeedbackOption] = useState('');
+  const [feedbackCustom, setFeedbackCustom] = useState('');
   
   const _storeTriggers = useStore(s => s.sessionDraft?.l4?.triggers);
   const _storeBM       = useStore(s => s.sessionDraft?.l4?.bodyMind);
@@ -256,7 +295,6 @@ export default function L5SummaryScreen({ navigation, route }) {
   const setL4BodyMind  = useStore(s => s.setL4BodyMind);
   const setL4Intensity = useStore(s => s.setL4Intensity);
   const setL5Fields    = useStore(s => s.setL5Fields);
-  const resetSession   = useStore(s => s.resetSession);
 
   // ---- локальные копии (сейчас read-only показ)
   const [editTrig] = useState(storeTriggers);
@@ -308,15 +346,66 @@ export default function L5SummaryScreen({ navigation, route }) {
     navigation.navigate('L6Actions');
   };
 
-  const onEdit = () => {
-   navigation.navigate('L4Deepen');
- };
+  const openFeedback = () => {
+    // Open feedback modal, reset local state
+    setFeedbackVisible(true);
+    setFeedbackOption('');
+    setFeedbackCustom('');
+  };
 
- const handleDischarge = (reasonKey) => {
-   console.log('[L5] discharge reflection, reason:', reasonKey);
-   resetSession();
-   navigation.popToTop();
- };
+  const closeFeedback = () => {
+    setFeedbackVisible(false);
+  };
+
+  const submitFeedback = () => {
+    const payload = {
+      option: feedbackOption === 'custom' ? 'Other' : feedbackOption,
+      comment: feedbackCustom.trim(),
+      emotionKey,
+      intensity: previewIntensity,
+    };
+
+    console.log('[L5] feedback payload', payload);
+
+    // store feedback in draft (for future analytics)
+    setL5Fields({ feedback: payload });
+
+    // close modal and reset local state
+    setFeedbackVisible(false);
+    setFeedbackOption('');
+    setFeedbackCustom('');
+
+    // go back to main Home tab
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'MainTabs' }],
+    });
+  };
+
+  const FEEDBACK_PRESETS = [
+    {
+      value: 'emotion_inaccurate',
+      label: 'Emotion does not feel accurate',
+    },
+    {
+      value: 'intensity_off',
+      label: 'Intensity does not feel correct',
+    },
+    {
+      value: 'triggers_bodymind_off',
+      label: 'Triggers / body & mind do not feel right',
+    },
+    {
+      value: 'description_mismatch',
+      label: 'Reflection description does not match',
+    },
+  ];
+
+
+  const onEditSection = (section) => {
+    // section: 'triggers' | 'bodyMind'
+    navigation.navigate('L4Deepen', { editSection: section });
+  };
 
  // Loading effect: we calculate a local mini-insight and request a short AI description
 useEffect(() => {
@@ -422,14 +511,129 @@ return (
               Here’s a quick recap. Your recommendations will use this.
             </Text>
           </View>
-
-          <DischargeReflectionControl
-            theme={t}
-            onDischarge={handleDischarge}
-          />
         </View>
       )}
 
+          {/* Feedback modal: "something is wrong with this result" */}
+    <Modal
+      visible={feedbackVisible}
+      animationType="fade"
+      transparent
+      onRequestClose={closeFeedback}
+    >
+      {/* Force dark-content icons when feedback modal is open */}
+      <StatusBar barStyle="dark-content" />
+      <View style={s.modalBackdrop}>
+        <View style={[s.modalCard, { backgroundColor: t.cardBackground }]}>
+          <Text style={[s.modalTitle, { color: t.textPrimary }]}>
+            Something feels off?
+          </Text>
+          <Text style={[s.modalSubtitle, { color: t.textSecondary }]}>
+            Tell us what does not match your experience. This will help us improve future reflections.
+          </Text>
+
+          {FEEDBACK_PRESETS.map((opt) => {
+            const isActive = feedbackOption === opt.value;
+
+            return (
+              <TouchableOpacity
+                key={opt.value}
+                style={[
+                  s.modalOption,
+                  isActive && {
+                    // In dark theme the border matches Cancel text color,
+                    // in light theme we keep border as accent.
+                    borderColor: isDarkTheme ? t.textSecondary : t.accent,
+                    backgroundColor: t.accent,
+                  },
+                ]}
+                onPress={() => setFeedbackOption(opt.value)}
+              >
+                <Text
+                  style={[
+                    s.modalOptionText,
+                    isActive && {
+                      // Use high-contrast text color on accent background
+                      color: t.themeName === 'dark' ? '#000000' : '#FFFFFF',
+                    },
+                  ]}
+                  numberOfLines={1}
+                >
+                  {opt.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+
+          {/* Input for custom reason */}
+          <TextInput
+            style={[
+              s.modalInput,
+              {
+                color: t.textPrimary,
+                borderColor: t.dividerColor || '#00000033',
+              },
+            ]}
+            placeholder="Other (please specify)"
+            placeholderTextColor={t.textSecondary}
+            value={feedbackCustom}
+            onChangeText={(v) => {
+              setFeedbackCustom(v);
+              if (v.trim().length > 0) {
+                setFeedbackOption('custom');
+              } else if (feedbackOption === 'custom') {
+                setFeedbackOption('');
+              }
+            }}
+          />
+
+          <View style={s.modalActionsRow}>
+            <TouchableOpacity
+              onPress={closeFeedback}
+              style={[
+                s.modalBtn,
+                s.modalBtnSecondary,
+                // Add border in dark theme to match Cancel text color
+                isDarkTheme && {
+                  borderWidth: 1,
+                  borderColor: t.textSecondary,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  s.modalBtnSecondaryText,
+                  { color: t.textSecondary },
+                ]}
+              >
+                Cancel
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={submitFeedback}
+              disabled={!feedbackOption && !feedbackCustom.trim()}
+              style={[
+                s.modalBtn,
+                s.modalBtnPrimary,
+                (!feedbackOption && !feedbackCustom.trim()) && { opacity: 0.5 },
+              ]}
+            >
+              <Text
+                style={[
+                  s.modalBtnPrimaryText,
+                  {
+                    color: t.themeName === 'dark' ? '#000000' : '#FFFFFF',
+                  },
+                ]}
+              >
+                Send feedback
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
 
       {/* Emotion circle with thin progress ring */}
       <View style={s.circleWrap}>
@@ -483,14 +687,7 @@ return (
       </Text>
 
       {/* Mini Insight */}
-      <View style={[s.aiCard, { backgroundColor: t.cardBackground }]}>
-        <Text style={[s.aiCardText, { color: t.textPrimary, marginBottom: 4 }]}>
-          Mini insight
-        </Text>
-        <Text style={[s.aiCardText, { color: t.textSecondary }]}>
-          {miniInsight}
-        </Text>
-      </View>
+      <MiniInsightCard theme={t} text={miniInsight} />
 
       {/* AI Description */}
       <View style={[s.aiCard, { backgroundColor: t.cardBackground }]}>
@@ -505,17 +702,45 @@ return (
         </Text>
       </View>
 
-      {/* выбранные Triggers */}
       <View style={s.card}>
-        <Text style={s.cardLabel}>Triggers (selected)</Text>
-        <SelectedChips data={editTrig} emptyText="No triggers selected." theme={t} />
+        <View style={s.cardHeaderRow}>
+          <Text style={[s.aiCardText, { color: t.textPrimary, marginBottom: 4 }]}>
+            Triggers (selected)
+          </Text>
+          <TouchableOpacity
+            onPress={() => onEditSection('triggers')}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            style={s.editIconTouch}
+          >
+            <EditIcon theme={t} />
+          </TouchableOpacity>
+        </View>
+        <SelectedChips
+          data={editTrig}
+          emptyText="No triggers selected."
+          theme={t}
+        />
       </View>
 
-      {/* выбранные Body & Mind */}
-      <View style={s.card}>
-        <Text style={s.cardLabel}>Body & Mind (selected)</Text>
-        <SelectedChips data={editBM} emptyText="No body & mind patterns selected." theme={t} />
+    <View style={s.card}>
+      <View style={s.cardHeaderRow}>
+        <Text style={[s.aiCardText, { color: t.textPrimary, marginBottom: 4 }]}>
+          Body & Mind (selected)
+        </Text>
+        <TouchableOpacity
+          onPress={() => onEditSection('bodyMind')}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          style={s.editIconTouch}
+        >
+          <EditIcon theme={t} />
+        </TouchableOpacity>
       </View>
+      <SelectedChips
+        data={editBM}
+        emptyText="No body & mind patterns selected."
+        theme={t}
+      />
+    </View>
     </ScrollView>
 
     {/* Bottom action bar */}
@@ -528,9 +753,9 @@ return (
         <View style={[sBar.bottomInner, { height: BAR_BASE_H }]}>
           <TouchableOpacity
             style={[sBar.btn, sBar.btnSecondary, { height: BAR_BTN_H }]}
-            onPress={onEdit}
+            onPress={openFeedback}
           >
-            <Text style={sBar.btnSecondaryText}>Edit</Text>
+            <Text style={sBar.btnSecondaryText}>Discharge</Text>
           </TouchableOpacity>
           <View style={{ width: 12 }} />
           <TouchableOpacity
@@ -548,6 +773,15 @@ return (
 
 function SelectedChips({ data = EMPTY_ARR, emptyText = '—', theme }) {
   if (!data.length) return <Text style={{ color: theme.textSecondary }}>{emptyText}</Text>;
+
+  const isDark = theme.themeName === 'dark';
+
+  const pillBackgroundColor = isDark
+    ? (theme.pillSelectedBg || '#3d3d46ff')
+    : theme.cardBackground;
+
+  const pillBorderColor = isDark ? '#FFFFFF22' : '#00000022';
+
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 6 }}>
       {data.map((t) => (
@@ -557,10 +791,10 @@ function SelectedChips({ data = EMPTY_ARR, emptyText = '—', theme }) {
             paddingVertical: 8,
             paddingHorizontal: 12,
             borderRadius: 999,
-            backgroundColor: theme.cardBackground,
+            backgroundColor: pillBackgroundColor,
             margin: 6,
             borderWidth: 1,
-            borderColor: '#00000022',
+            borderColor: pillBorderColor,
           }}
         >
           <Text style={{ color: theme.textPrimary }}>{t}</Text>
@@ -621,6 +855,28 @@ const makeStyles = (t, insets, CIRCLE, BAR_BASE_H, BAR_VPAD) => StyleSheet.creat
     borderWidth: 1,
     borderColor: '#00000012',
   },
+  cardHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  editIconTouch: {
+    padding: 4,
+  },
+  editIconCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  editIconText: {
+    fontSize: 12,
+    includeFontPadding: false,
+    textAlignVertical: 'center',
+  },
   aiCard: {
     backgroundColor: t.cardBackground,
     borderRadius: 12,
@@ -631,11 +887,88 @@ const makeStyles = (t, insets, CIRCLE, BAR_BASE_H, BAR_VPAD) => StyleSheet.creat
   },
   aiCardTitle: { fontSize: 16, fontWeight: '800', marginBottom: 6 },
   aiCardText: { fontSize: 14, lineHeight: 20 },
-    headerRow: {
+
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 4,
   },
-
+  // Feedback modal
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalCard: {
+    width: '100%',
+    borderRadius: 16,
+    padding: 16,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 4,
+  },
+  modalSubtitle: {
+    fontSize: 13,
+    marginBottom: 12,
+  },
+  modalOption: {
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: t.dividerColor || '#00000022',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    minHeight: 40,
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  modalOptionText: {
+    fontSize: 14,
+    color: t.textPrimary,
+  },
+  modalSmallLabel: {
+    fontSize: 12,
+    marginTop: 4,
+    marginBottom: 4,
+  },
+  modalInput: {
+    minHeight: 40,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    fontSize: 14,
+    marginTop: 8,
+    marginBottom: 12,
+    textAlignVertical: 'top',
+  },
+  modalActionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 4,
+  },
+  modalBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999,
+  },
+  modalBtnSecondary: {
+    marginRight: 8,
+  },
+  modalBtnPrimary: {
+    backgroundColor: t.accent,
+  },
+  modalBtnSecondaryText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  modalBtnPrimaryText: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
 });
+

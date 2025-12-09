@@ -28,11 +28,15 @@ import {
 import { useBottomSystemBar } from '../hooks/useBottomSystemBar';
 
 
-export default function L4DeepenScreen({ navigation }) {
+export default function L4DeepenScreen({ navigation, route }) {
   // store actions
   const setTriggers = useStore((s) => s.setL4Triggers);
   const setBodyMind = useStore((s) => s.setL4BodyMind);
   const setIntensity = useStore((s) => s.setL4Intensity);
+
+  // existing selections from store (so edit = real edit)
+  const storedTriggers = useStore((s) => s.sessionDraft?.l4?.triggers ?? []);
+  const storedBodyMind = useStore((s) => s.sessionDraft?.l4?.bodyMind ?? []);
 
   // custom pills from store (global, user-defined)
   const customTriggers = useStore((s) => s.l4CustomTriggers ?? []);
@@ -56,10 +60,18 @@ export default function L4DeepenScreen({ navigation }) {
     };
   }, []);
 
+  // Which section are we editing? (null | 'triggers' | 'bodyMind')
+  const editSection = route?.params?.editSection ?? null;
+
   // local UI state
-  const [stage, setStage] = useState(0); // 0: Triggers, 1: Body & Mind
-  const [localTriggers, setLocalTriggers] = useState([]);
-  const [localBM, setLocalBM] = useState([]);
+  // 0: Triggers, 1: Body & Mind
+  const [stage, setStage] = useState(
+    editSection === 'bodyMind' ? 1 : 0
+  );
+
+  // local selections start from what is already saved in store
+  const [localTriggers, setLocalTriggers] = useState(storedTriggers);
+  const [localBM, setLocalBM] = useState(storedBodyMind);
 
   // local state for custom pill modal
   const [customModalVisible, setCustomModalVisible] = useState(false);
@@ -84,7 +96,14 @@ export default function L4DeepenScreen({ navigation }) {
 
   // stage navigation
   const next = () => {
-    console.log('[L4] next from stage', stage);
+    console.log('[L4] next from stage', stage, 'editSection', editSection);
+
+    // If we came here only to edit Triggers, finish immediately from stage 0
+    if (editSection === 'triggers') {
+      finish();
+      return;
+    }
+
     setStage((v) => {
       const to = v + 1;
       logEvent('l4_next', { from: v, to }, `L4 stage ${v} → ${to}`);

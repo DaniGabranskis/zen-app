@@ -1,64 +1,57 @@
-// Deterministic intensity estimation based on tags, body-mind patterns and triggers.
-// Comments are intentionally concise.
+// intensity/estimator.js
+// Deterministic intensity estimation based on L1 + L2 tags only.
 
-import { TAG_WEIGHTS, BM_WEIGHTS, TRIG_WEIGHTS } from './weights';
+import { TAG_WEIGHTS } from './weights';
 
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
-function scoreTags(tags = []) {
-  const sum = tags.reduce((acc, t) => acc + (TAG_WEIGHTS[t] ?? 0), 0);
-  // normalize so that ~3 strong tags ≈ 1.0
-  return clamp(sum / 3.0, 0, 1);
-}
+// Baseline "moderate" intensity. Tags will push this up or down.
+const BASE_INTENSITY = 4;
 
-function scoreBM(bm = []) {
-  const vals = bm.map(x => BM_WEIGHTS[x] ?? 0.5).sort((a, b) => b - a);
-  const top = vals.slice(0, 3);
-  const mean = top.length ? top.reduce((a, b) => a + b, 0) / top.length : 0;
-  return clamp(mean, 0, 1);
-}
+/**
+ * Sum weights for all known tags.
+ * Unknown tags contribute 0 (neutral).
+ */
+function sumTagWeights(tags = []) {
+  if (!Array.isArray(tags) || tags.length === 0) return 0;
 
-function scoreTrig(trigs = []) {
-  if (!trigs.length) return 0;
-  const vals = trigs.map(x => TRIG_WEIGHTS[x] ?? 0.5).sort((a, b) => b - a);
-  const base = (vals.length >= 2) ? (vals[0] + vals[1]) / 2 : vals[0];
-  return clamp(base, 0, 1);
-}
-
-function scoreRisk(tags = [], bm = []) {
-  const hasMR = tags.includes('mind_racing');
-  const hasHR = bm.includes('Heart racing');
-  if (hasMR && hasHR) return 0.8;
-
-  const hasGuilt = tags.includes('guilt');
-  const hasThreat = tags.includes('vigilant') || tags.includes('tension?');
-  if (hasGuilt && hasThreat) return 0.6;
-
-  return 0;
+  let sum = 0;
+  for (const raw of tags) {
+    if (!raw) continue;
+    const key = String(raw);
+    const w = TAG_WEIGHTS[key];
+    if (typeof w === 'number') {
+      sum += w;
+    }
+  }
+  return sum;
 }
 
 /**
- * Estimate intensity on a 0..10 scale + confidence 0..1.
+ * Estimate intensity on a 0..10 scale + confidence 0.5..0.98.
+ *
  * @param {Object} params
- * @param {string[]} params.tags - canonical evidence tags from L1/L2
- * @param {string[]} params.bodyMind - selected body & mind patterns
- * @param {string[]} params.triggers - selected triggers
+ * @param {string[]} params.tags     - L1/L2 tags collected in probes
+ * @param {string[]} params.bodyMind - kept for compatibility, ignored for now
+ * @param {string[]} params.triggers - kept for compatibility, ignored for now
  */
-export function estimateIntensity({ tags = [], bodyMind = [], triggers = [] }) {
-  const S_tags = scoreTags(tags);
-  const S_bm = scoreBM(bodyMind);
-  const S_trig = scoreTrig(triggers);
-  const S_risk = scoreRisk(tags, bodyMind);
+export function estimateIntensity({ tags = [], bodyMind, triggers } = {}) {
+  const safeTags = Array.isArray(tags) ? tags : [];
 
-  // weights are deliberately simple to reason about
-  const w_tags = 0.45, w_bm = 0.30, w_trig = 0.20, w_risk = 0.05;
-  const raw = w_tags * S_tags + w_bm * S_bm + w_trig * S_trig + w_risk * S_risk;
-  const intensity = Math.round(clamp(raw, 0, 1) * 10);
+  // 1) Raw score from tags: baseline + sum of tag weights
+  const tagScore = sumTagWeights(safeTags);
+  const raw = BASE_INTENSITY + tagScore;
 
-  // simple confidence heuristic
-  const contradictions = (tags.includes('energy_steady') && S_bm > 0.7) ? 1 : 0;
-  const sparse = ((tags.length + bodyMind.length + triggers.length) < 3) ? 1 : 0;
-  const conf = clamp(1 - 0.25 * contradictions - 0.20 * sparse, 0, 1);
+  // 2) Map to 0..10 range, keep one decimal for internal logic
+  const intensity = clamp(Math.round(raw * 10) / 10, 0, 10);
 
-  return { intensity, confidence: conf, breakdown: { S_tags, S_bm, S_trig, S_risk } };
+  // 3) Confidence: more tags -> higher confidence.
+  const tagCount = safeTags.length;
+  let confidence = 0.5 + Math.min(tagCount, 12) * 0.04; // up to ~0.98
+  confidence = clamp(confidence, 0.5, 0.98);
+
+  return {
+    intensity,
+    confidence,
+  };
 }
