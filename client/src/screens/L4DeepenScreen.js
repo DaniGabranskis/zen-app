@@ -27,13 +27,23 @@ import {
 } from '../ui/screenChrome';
 import { useBottomSystemBar } from '../hooks/useBottomSystemBar';
 
+// Compare arrays as sets (order-insensitive)
+function sameStringArrayAsSet(a, b) {
+  const aa = Array.isArray(a) ? a.slice().sort() : [];
+  const bb = Array.isArray(b) ? b.slice().sort() : [];
+  if (aa.length !== bb.length) return false;
+  for (let i = 0; i < aa.length; i += 1) {
+    if (aa[i] !== bb[i]) return false;
+  }
+  return true;
+}
 
 export default function L4DeepenScreen({ navigation, route }) {
   // store actions
   const setTriggers = useStore((s) => s.setL4Triggers);
   const setBodyMind = useStore((s) => s.setL4BodyMind);
   const setIntensity = useStore((s) => s.setL4Intensity);
-
+  const markL5EditUsed = useStore((s) => s.markL5EditUsed);
   // existing selections from store (so edit = real edit)
   const storedTriggers = useStore((s) => s.sessionDraft?.l4?.triggers ?? []);
   const storedBodyMind = useStore((s) => s.sessionDraft?.l4?.bodyMind ?? []);
@@ -113,10 +123,28 @@ export default function L4DeepenScreen({ navigation, route }) {
 
   // finalize and navigate to L5Summary
   const finish = () => {
+    const triggersChanged = !sameStringArrayAsSet(storedTriggers, localTriggers);
+    const bodyMindChanged = !sameStringArrayAsSet(storedBodyMind, localBM);
+    const anyChanged = triggersChanged || bodyMindChanged;
+
+    // If we are in edit mode and nothing actually changed, do not consume the edit attempt.
+    if (editSection && !anyChanged) {
+      console.log('[L4] edit finish: no changes → return to L5 without consuming edit');
+      navigation.navigate('L5Summary', { fromEdit: true, noChanges: true, forceAi: false });
+      return;
+    }
+
     // persist selections
     setTriggers(localTriggers);
     setBodyMind(localBM);
     console.log('[L4] finish with', { localTriggers, localBM });
+
+    // Consume edit attempt only when we truly applied changes from L5 edit flow
+    if (editSection === 'triggers') {
+      markL5EditUsed('triggers');
+    } else if (editSection === 'bodyMind') {
+      markL5EditUsed('bodyMind');
+    }
 
     // estimate intensity using evidence + selections
     const EMPTY_ARR = Object.freeze([]);
@@ -128,7 +156,6 @@ export default function L4DeepenScreen({ navigation, route }) {
       triggers: localTriggers,
     });
 
-    // smoke log
     console.log('[INTENSITY_SMOKE]', {
       intensity,
       confidence,
@@ -140,7 +167,9 @@ export default function L4DeepenScreen({ navigation, route }) {
 
     // store & go
     setIntensity(intensity);
-    navigation.navigate('L5Summary');
+
+    // IMPORTANT: tell L5 we came back from edit (so it must not call AI again)
+    navigation.navigate('L5Summary', { fromEdit: !!editSection, forceAi: !!editSection });
   };
 
     const openCustomModal = (type) => {

@@ -14,7 +14,14 @@ const initialDraft = () => ({
   decision: null,                         // { mode, top, probs }
   l3: { emotionKey: null },               // dominant emotion (auto-picked)
   l4: { triggers: [], bodyMind: [], intensity: 0 },
-  l5: { context: '', tinyActionKey: null, miniInsight: '', shortDescription: '' },
+l5: {
+  context: '',
+  tinyActionKey: null,
+  miniInsight: '',
+  shortDescription: '',
+  shortDescriptionKey: '', // NEW: cache key for AI regeneration decisions
+  editLocks: { triggersUsed: false, bodyMindUsed: false },
+},
   l6: { insight: '', tips: [], encouragement: '', accuracy: 3 },
 });
 
@@ -228,6 +235,38 @@ const useStore = create(
 
       // -------- L5
 
+      markL5EditUsed(kind) {
+        const draft = get().sessionDraft;
+
+        const prevLocks = draft?.l5?.editLocks || {
+          triggersUsed: false,
+          bodyMindUsed: false,
+        };
+
+        const nextLocks =
+          kind === 'triggers'
+            ? { ...prevLocks, triggersUsed: true }
+            : kind === 'bodyMind'
+            ? { ...prevLocks, bodyMindUsed: true }
+            : prevLocks;
+
+        logEvent(
+          'store_l5_edit_used',
+          { kind, ...nextLocks },
+          `Store: L5 edit used (${kind})`
+        );
+
+        set({
+          sessionDraft: {
+            ...draft,
+            l5: {
+              ...(draft.l5 || {}),
+              editLocks: nextLocks,
+            },
+          },
+        });
+      },
+
       setL5Context(text) {
         const val = String(text || '');
         logEvent('store_l5_context', { len: val.length }, `Store: L5 context len=${val.length}`);
@@ -242,12 +281,24 @@ const useStore = create(
       },
 
       setL5Fields(partial) {
-        // partial: { miniInsight?, shortDescription?, ... }
         const patch = partial || {};
         const draft = get().sessionDraft;
-        const next  = { ...draft, l5: { ...(draft.l5 || {}), ...patch } };
-        logEvent('store_l5_fields', { keys: Object.keys(patch) }, `Store: L5 merge fields`);
-        set({ sessionDraft: next });
+
+        const prevL5 = draft?.l5 || {};
+        const nextL5 = { ...prevL5, ...patch };
+
+        // Skip no-op updates to avoid redundant renders and event spam.
+        let changed = false;
+        for (const k of Object.keys(patch)) {
+          if (prevL5?.[k] !== nextL5?.[k]) {
+            changed = true;
+            break;
+          }
+        }
+        if (!changed) return;
+
+        logEvent('store_l5_fields', { keys: Object.keys(patch) }, 'Store: L5 merge fields');
+        set({ sessionDraft: { ...draft, l5: nextL5 } });
       },
 
       // -------- L6

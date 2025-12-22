@@ -236,8 +236,27 @@ function EditIcon({ theme }) {
   );
 }
 
+function buildShortDescKey({ emotionKey, intensity, triggers, bodyMind, evidenceTags }) {
+  // Stable serialization: order-insensitive for arrays
+  const normArr = (a) => (Array.isArray(a) ? a.slice().sort() : []);
+  return JSON.stringify({
+    emotionKey: String(emotionKey || ''),
+    intensity: Number(intensity || 0),
+    triggers: normArr(triggers),
+    bodyMind: normArr(bodyMind),
+    evidenceTags: normArr(evidenceTags),
+  });
+}
+
+
 export default function L5SummaryScreen({ navigation, route }) {
   const params = route?.params || {};
+  const skipAi = params?.skipAi === true;
+  const forceAi = params?.forceAi === true;
+  const prevKey = useStore(s => s.sessionDraft?.l5?.shortDescriptionKey) || '';
+  // Cached L5 AI fields from store (so we can avoid re-requesting AI)
+  const cachedMiniInsight = useStore(s => s.sessionDraft?.l5?.miniInsight) || '';
+  const cachedShortDesc   = useStore(s => s.sessionDraft?.l5?.shortDescription) || '';
   const fromHistory = params?.fromHistory === true;
   const item = params?.item || (fromHistory ? params : null);
   const histSess = (fromHistory && item) ? (item.session || {}) : null;
@@ -256,13 +275,12 @@ export default function L5SummaryScreen({ navigation, route }) {
   const evidenceTags      = (histSess?.evidenceTags) ?? (_evidenceTags ?? EMPTY_ARR);
 
   // 1) main source - router solution
-  const _dominant   = useStore(s => s.decision?.dominant);
   const _l3Emotion  = useStore(s => s.sessionDraft?.l3?.emotionKey);
-  const _picked     = useStore(s => s.emotion);
 
-    const emotionKey  = fromHistory
+  const emotionKey  = fromHistory
     ? (item?.dominantGroup || histSess?.l3?.emotionKey || EMPTY_STR)
-    : (_dominant || _l3Emotion || _picked || EMPTY_STR);
+    : (_l3Emotion || EMPTY_STR);
+
 
   const historyItems = useStore(s => {
     if (Array.isArray(s.history)) return s.history;
@@ -296,10 +314,15 @@ export default function L5SummaryScreen({ navigation, route }) {
   const setL4Intensity = useStore(s => s.setL4Intensity);
   const setL5Fields    = useStore(s => s.setL5Fields);
 
-  // ---- локальные копии (сейчас read-only показ)
-  const [editTrig] = useState(storeTriggers);
-  const [editBM]   = useState(storeBM);
-  const [intAdj]   = useState(0); // ручная подстройка будет позже в модалке
+    const editLocks = useStore(s => s.sessionDraft?.l5?.editLocks) || {
+    triggersUsed: false,
+    bodyMindUsed: false,
+  };
+
+  // Use store values directly to avoid stale data after editing in L4.
+  const editTrig = storeTriggers;
+  const editBM   = storeBM;
+  const [intAdj] = useState(0);
 
   const { intensity: autoIntensity, confidence } = estimateIntensity({
     tags: evidenceTags,
@@ -340,8 +363,7 @@ export default function L5SummaryScreen({ navigation, route }) {
   const s = makeStyles(t, insets, CIRCLE, BAR_BASE_H, BAR_VPAD);
 
   const onContinue = () => {
-    setL4Triggers(editTrig);
-    setL4BodyMind(editBM);
+    // L4 already persists triggers/bodyMind. Avoid overwriting with stale values.
     setL4Intensity(previewIntensity);
     navigation.navigate('L6Actions');
   };
@@ -404,6 +426,13 @@ export default function L5SummaryScreen({ navigation, route }) {
 
   const onEditSection = (section) => {
     // section: 'triggers' | 'bodyMind'
+
+    // No edits from History view
+    if (fromHistory) return;
+
+    if (section === 'triggers' && editLocks.triggersUsed) return;
+    if (section === 'bodyMind' && editLocks.bodyMindUsed) return;
+
     navigation.navigate('L4Deepen', { editSection: section });
   };
 
@@ -412,7 +441,6 @@ useEffect(() => {
   let isMounted = true;
 
   if (fromHistory) {
-    // If we open from history, we take the already saved data and turn off the download
     const histMini  = (histSess?.l5?.miniInsight ?? '');
     const histShort = (histSess?.l5?.shortDescription ?? '');
     setMiniInsight(histMini);
@@ -421,11 +449,10 @@ useEffect(() => {
     return () => { isMounted = false; };
   }
 
-  // 1) Mini-insight locally, immediately (works offline)
+  // Local mini-insight is always computed locally (no AI cost).
   const localMini = computeMiniInsightFromHistory(historyItems, emotionKey || 'Emotion');
   setMiniInsight(localMini);
 
-  // 2) Prepare input for AI
   const payload = {
     emotionKey,
     intensity: previewIntensity,
@@ -434,35 +461,68 @@ useEffect(() => {
     evidenceTags: Array.isArray(evidenceTags) ? evidenceTags : [],
   };
 
+  const nextKey = buildShortDescKey(payload);
+  const hasCached = String(cachedShortDesc || '').trim().length > 0;
+
+  // Decision rules:
+  // - Normal flow: call AI only if we have no cached description yet.
+  // - Edit flow (forceAi): call AI only if inputs changed (key differs).
+  // - If user returned with no changes, key will match and we won't call AI.
+  const shouldCallAi =
+    skipAi
+      ? false
+      : forceAi
+        ? (nextKey !== prevKey)
+        : (!hasCached);
+
+  if (!shouldCallAi) {
+    setAiDesc(hasCached ? String(cachedShortDesc).trim() : aiSummaryFromState(emotionKey));
+    setAiSource(hasCached ? 'cache' : 'local');
+    setLoading(false);
+
+    // Clear transient params so back/forward does not retrigger logic.
+    if (forceAi || skipAi) {
+      navigation.setParams({ forceAi: false, skipAi: false, noChanges: false });
+    }
+
+    return () => { isMounted = false; };
+  }
+
+  // We are going to call AI (one time per unique key).
+  setLoading(true);
+
   (async () => {
     try {
       const { result, source } = await generateShortDescription(payload);
       if (!isMounted) return;
-      setAiDesc(result?.shortDescription || aiSummaryFromState(emotionKey));
-      setAiSource(source || '');
-      // Save the draft to L6 so that HistoryResultModal can see these values
+
+      const short = (result?.shortDescription || '').trim();
+
+      setAiDesc(short || aiSummaryFromState(emotionKey));
+      setAiSource(source || 'ai');
+
       setL5Fields({
         miniInsight: localMini,
-        shortDescription: (result?.shortDescription || '').trim(),
+        shortDescription: short,
+        shortDescriptionKey: nextKey,
       });
+
+      navigation.setParams({ forceAi: false, skipAi: false, noChanges: false });
     } catch (e) {
       if (!isMounted) return;
       console.warn('[L5] shortDescription error', e?.message || e);
       setAiDesc(aiSummaryFromState(emotionKey));
       setAiSource('local');
-      setL5Fields({
-        miniInsight: localMini,
-        shortDescription: '',
-      });
+      setLoading(false);
     } finally {
       if (isMounted) setLoading(false);
     }
   })();
 
   return () => { isMounted = false; };
-  // Important: Only monitor key dependencies
   // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [fromHistory, emotionKey]);
+}, [fromHistory, forceAi, skipAi, emotionKey, historyItems, previewIntensity, storeTriggers, storeBM, evidenceTags, prevKey]);
+
 
   useEffect(() => {
     console.log('[L5] loading:', loading);
@@ -709,8 +769,12 @@ return (
           </Text>
           <TouchableOpacity
             onPress={() => onEditSection('triggers')}
+            disabled={fromHistory || editLocks.triggersUsed}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            style={s.editIconTouch}
+            style={[
+              s.editIconTouch,
+              (fromHistory || editLocks.triggersUsed) && s.editIconTouchDisabled,
+            ]}
           >
             <EditIcon theme={t} />
           </TouchableOpacity>
@@ -729,8 +793,12 @@ return (
         </Text>
         <TouchableOpacity
           onPress={() => onEditSection('bodyMind')}
+          disabled={fromHistory || editLocks.bodyMindUsed}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          style={s.editIconTouch}
+          style={[
+            s.editIconTouch,
+            (fromHistory || editLocks.bodyMindUsed) && s.editIconTouchDisabled,
+          ]}
         >
           <EditIcon theme={t} />
         </TouchableOpacity>
@@ -863,6 +931,9 @@ const makeStyles = (t, insets, CIRCLE, BAR_BASE_H, BAR_VPAD) => StyleSheet.creat
   },
   editIconTouch: {
     padding: 4,
+  },
+  editIconTouchDisabled: {
+    opacity: 0.35,
   },
   editIconCircle: {
     width: 20,

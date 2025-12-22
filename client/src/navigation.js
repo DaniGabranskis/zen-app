@@ -7,7 +7,7 @@ import useStore from './store/useStore';
 import L4DeepenScreen from './screens/L4DeepenScreen';
 import L5SummaryScreen from './screens/L5SummaryScreen';
 import L6ActionsScreen from './screens/L6ActionsScreen';
-import ExercisePlaceholder from './screens/ExercisePlaceholder';
+import RecommendationScreen from './screens/RecommendationScreen';
 import NavigationLogger from '../scripts/NavigationLogger';
 import HistoryResultModal from './screens/HistoryResultModal';
 
@@ -45,7 +45,11 @@ export default function AppNavigator() {
           <Stack.Screen name="L4Deepen" component={L4DeepenScreen} options={{ headerShown: false }} />
           <Stack.Screen name="L5Summary" component={L5SummaryScreen} options={{ headerShown: false }} />
           <Stack.Screen name="L6Actions" component={L6ActionsScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="ExercisePlaceholder" component={ExercisePlaceholder} options={{ headerShown: false }} />
+          <Stack.Screen
+            name="Recommendation"
+            component={RecommendationScreen}
+            options={{ headerShown: false, gestureEnabled: false }}
+          />
 
           {/* История: модалка только для просмотра */}
           <Stack.Screen
