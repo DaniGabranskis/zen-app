@@ -31,7 +31,16 @@ export default function RecommendationScreen({ navigation, route }) {
 
   const recKey = recommendation?.key || recommendation?.id || null;
 
-  const flow = useMemo(() => buildRecommendationFlow(recommendation), [recKey]);
+  // Rebuild flow when duration changes (and generally when recommendation payload changes).
+  const recSig = `${recKey}:${recommendation?.kind || ''}:${recommendation?.durationSec ?? ''}`;
+
+  const flow = useMemo(() => buildRecommendationFlow(recommendation), [recSig]);
+  useEffect(() => {
+  console.log('[Recommendation] recSig=', recSig, 'initialState=', flow.initialState);
+  }, [recSig]);
+
+  const [stepIndex, setStepIndex] = useState(0);
+  const [flowState, setFlowState] = useState(() => flow.initialState);
 
   useEffect(() => {
     setStepIndex(0);
@@ -67,13 +76,19 @@ export default function RecommendationScreen({ navigation, route }) {
 
     Promise.resolve(finishSession({ skip: false, recommendation }))
       .finally(() => {
-        navigation.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
+        navigation.reset({ index: 0, routes: [{ name: 'MainTabs', params: { screen: 'Home' } }] });
       });
   };
 
   const sHead = makeHeaderStyles(t);
   const sBar = makeBarStyles(t, BAR_BASE_H);
   const s = makeStyles(t);
+
+  // English-only comment: Many recommendation flows expect theme.border; provide a safe token to avoid default black borders.
+  const recTheme = useMemo(() => {
+    const border = t.dividerColor || t.navBorder || t.divider || '#00000022';
+    return { ...t, border };
+  }, [t]);
 
   const step = flow.steps[stepIndex] || null;
   const StepComponent = step?.Component || null;
@@ -100,22 +115,22 @@ export default function RecommendationScreen({ navigation, route }) {
             </View>
 
             {StepComponent ? (
-              <StepComponent
-                step={step}
-                recommendation={recommendation}
-                theme={t}
-                state={flowState}
-                setState={setFlowState}
-                stepIndex={stepIndex}
-                stepsCount={flow.steps.length}
-              />
+                <StepComponent
+                  step={step}
+                  recommendation={recommendation}
+                  theme={recTheme}
+                  state={flowState}
+                  setState={setFlowState}
+                  stepIndex={stepIndex}
+                  stepsCount={flow.steps.length}
+                />
             ) : (
               <Text style={[s.body, { color: t.textSub }]}>No step content.</Text>
             )}
           </View>
         </ScrollView>
           
-          <View style={[s.disclaimerDock, { backgroundColor: t.bg, borderTopColor: t.border }]}>
+          <View style={[s.disclaimerDock, { backgroundColor: t.bg }]}>
             <Text style={[s.disclaimerDockText, { color: t.textSub }]}>
               This is a general recommendation and not medical advice.
             </Text>
@@ -123,7 +138,7 @@ export default function RecommendationScreen({ navigation, route }) {
 
         {/* Bottom bar: only primary, no skip/back */}
         <View style={[sBar.bottomBar, { paddingBottom: BAR_SAFE }]} pointerEvents="box-none">
-          <View style={sBar.bottomBarShadow} />
+          {/* no shadow divider in Zen style */}
           <View style={[sBar.bottomInner, { height: BAR_BASE_H }]}>
             <TouchableOpacity
               style={[
@@ -155,8 +170,6 @@ function makeStyles(t) {
     card: {
       borderRadius: 18,
       padding: 14,
-      borderWidth: 1,
-      borderColor: t.border,
     },
     stepHeader: {
       marginBottom: 10,
@@ -177,7 +190,6 @@ function makeStyles(t) {
       height: 44,
       alignItems: 'center',
       justifyContent: 'center',
-      borderTopWidth: 1,
       paddingHorizontal: 14,
     },
     disclaimerDockText: {

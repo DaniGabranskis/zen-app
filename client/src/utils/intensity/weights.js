@@ -71,6 +71,14 @@ export const TAG_WEIGHTS = {
   // Guilt / shame
   L2_GUILT: 1.0,
   L2_SHAME: 1.5,
+  
+  L2_GUILT_NO: -0.1,
+  L2_SHAME_NO: -0.1,
+
+  L2_PRESENT: -0.3,
+  L2_FEELS_FINE: -0.4,
+  L2_SELF_BLAME_YES: +0.6,
+  L2_SELF_BLAME_NO: -0.2,
 
   // Positive moments
   L2_POS_GRATITUDE: -0.7,
@@ -88,6 +96,7 @@ export const TAG_WEIGHTS = {
   // Meaning
   L2_MEANING_LOW: 1.2,
   L2_MEANING_HIGH: -0.6,
+
 };
 
 // Kept for backward compatibility; not used by the new estimator.

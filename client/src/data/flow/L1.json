@@ -1,73 +1,73 @@
 [
   {
     "id": "L1_mood",
-    "title": "Mood now",
+    "title": "What is your mood",
     "type": "swipe",
     "options": [
-      { "label": "Heavy / uneasy",      "tags": ["L1_MOOD_NEG"] },
-      { "label": "Light / positive",    "tags": ["L1_MOOD_POS"] }
+      { "label": "Low / Heavy",      "tags": ["L1_MOOD_NEG"] },
+      { "label": "Uplifted / Light",    "tags": ["L1_MOOD_POS"] }
     ]
   },
   {
     "id": "L1_body",
-    "title": "Body state",
+    "title": "How does your body feel",
     "type": "swipe",
     "options": [
-      { "label": "Tension / tight",     "tags": ["L1_BODY_TENSION"] },
-      { "label": "Light / relaxed",     "tags": ["L1_BODY_RELAXED"] }
+      { "label": "Physically tense",     "tags": ["L1_BODY_TENSION"] },
+      { "label": "At ease",     "tags": ["L1_BODY_RELAXED"] }
     ]
   },
   {
     "id": "L1_energy",
-    "title": "Energy level",
+    "title": "What is your energy level",
     "type": "swipe",
     "options": [
-      { "label": "Low",                 "tags": ["L1_ENERGY_LOW"] },
-      { "label": "High / wired",        "tags": ["L1_ENERGY_HIGH"] }
+      { "label": "Low energy", "tags": ["L1_ENERGY_LOW"] },
+      { "label": "High, wired energy", "tags": ["L1_ENERGY_HIGH"] }
     ]
   },
   {
     "id": "L1_social",
-    "title": "Social connection",
+    "title": "What do you want socially",
     "type": "swipe",
     "options": [
-      { "label": "Avoiding people",     "tags": ["L1_SOCIAL_THREAT"] },
-      { "label": "Drawn to people",     "tags": ["L1_SOCIAL_SUPPORT"] }
+      { "label": "Withdraw from people",     "tags": ["L1_SOCIAL_THREAT"] },
+      { "label": "Missing connection",     "tags": ["L1_SOCIAL_SUPPORT"] }
     ]
   },
   {
     "id": "L1_control",
-    "title": "Sense of control",
+    "title": "How in control do you feel",
     "type": "swipe",
     "options": [
-      { "label": "Losing control",      "tags": ["L1_CONTROL_LOW"] },
-      { "label": "In control",          "tags": ["L1_CONTROL_HIGH"] }
+      { "label": "Out of control", "tags": ["L1_CONTROL_LOW"] },
+      { "label": "In control", "tags": ["L1_CONTROL_HIGH"] }
     ]
   },
 
   {
     "id": "L1_safety",
-    "title": "Sense of safety",
+    "title": "How safe do you feel",
     "type": "swipe",
     "options": [
-      { "label": "Unsafe / threatened", "tags": ["L1_SAFETY_LOW"] },
-      { "label": "Safe enough",         "tags": ["L1_SAFETY_HIGH"] }
+      { "label": "Unsafe or threatened", "tags": ["L1_SAFETY_LOW"] },
+      { "label": "Safe enough", "tags": ["L1_SAFETY_HIGH"] }
     ]
   },
 
   {
     "id": "L1_self_worth",
-    "title": "Self-worth now",
+    "title": "How is your self-worth",
     "type": "swipe",
     "options": [
       { "label": "Not good enough",     "tags": ["L1_WORTH_LOW"] },
-      { "label": "Capable enough",      "tags": ["L1_WORTH_HIGH"] }
+      { "label": "I trust myself",      "tags": ["L1_WORTH_HIGH"] }
     ]
   },
 
   {
     "id": "L1_expectations",
-    "title": "Expectations",
+    "title": "Is this going as expected?",
     "type": "swipe",
     "options": [
       { "label": "Worse than expected", "tags": ["L1_EXPECT_LOW"] },
@@ -77,21 +77,21 @@
 
   {
     "id": "L1_pressure",
-    "title": "Time pressure",
+    "title": "Do you feel under pressure",
     "type": "swipe",
     "options": [
-      { "label": "Rushed / pressured",  "tags": ["L1_PRESSURE_HIGH"] },
-      { "label": "Slow / spacious",     "tags": ["L1_PRESSURE_LOW"] }
+      { "label": "High pressure",  "tags": ["L1_PRESSURE_HIGH"] },
+      { "label": "Low pressure",     "tags": ["L1_PRESSURE_LOW"] }
     ]
   },
 
   {
     "id": "L1_clarity",
-    "title": "Clarity of mind",
+    "title": "How clear are your thoughts",
     "type": "swipe",
     "options": [
-      { "label": "Foggy / unclear",     "tags": ["L1_CLARITY_LOW"] },
-      { "label": "Clear enough",        "tags": ["L1_CLARITY_HIGH"] }
+      { "label": "Foggy mind", "tags": ["L1_CLARITY_LOW"] },
+      { "label": "Clear mind", "tags": ["L1_CLARITY_HIGH"] }
     ]
   }
 ]

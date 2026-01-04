@@ -19,7 +19,7 @@ function sumTagWeights(tags = []) {
   for (const raw of tags) {
     if (!raw) continue;
     const key = String(raw);
-    const w = TAG_WEIGHTS[key];
+    const w = TAG_WEIGHTS[key] ?? TAG_WEIGHTS[key.toUpperCase()];
     if (typeof w === 'number') {
       sum += w;
     }

@@ -27,41 +27,15 @@
 
 const fs = require('fs');
 const path = require('path');
-// Resolve from client/src/utils/*
 let classifyTags;
-try {
-  // Try the Node-friendly shim first
-  ({ classifyTags } = require('../src/utils/evidenceEngine.node.cjs'));
-} catch (_) {}
-if (!classifyTags) {
-  // Fallback to original (may be ESM; can still fail on JSON import in Node)
-  const evidenceMod = require('../src/utils/evidenceEngine');
-  classifyTags =
-    evidenceMod.classifyTags || (evidenceMod.default && evidenceMod.default.classifyTags);
-}
+const { loadEvidenceEngine } = require('../src/utils/evidenceEngine.node.v2.cjs');
+const { canonicalizeTags } = require('../src/utils/canonicalizeTags.node.cjs');
 
-// --- canonicalizeTags loader (prefer Node-friendly shim first)
-let canonicalizeTags;
-try {
-  // 1) Node/CJS shim avoids ESM JSON import issues on Node 22+
-  ({ canonicalizeTags } = require('../src/utils/canonicalizeTags.node.cjs'));
-} catch (_) {}
-
-if (!canonicalizeTags) {
-  // 2) Fallback to original module (may be ESM)
-  const tagCanonMod = require('../src/utils/canonicalizeTags');
-  canonicalizeTags =
-    tagCanonMod.canonicalizeTags ||
-    (tagCanonMod.default && tagCanonMod.default.canonicalizeTags);
-}
 
 if (typeof canonicalizeTags !== 'function') {
   throw new Error('Failed to load canonicalizeTags from utils. Check shim/exports.');
 }
 
-if (typeof classifyTags !== 'function' || typeof canonicalizeTags !== 'function') {
-  throw new Error('Failed to load classifyTags/canonicalizeTags from src/utils. Check exports.');
-}
 
 // --- debug flags & helpers ---
 let DEBUG = false;
@@ -796,12 +770,17 @@ function writeOutputs(outDir, sim) {
   try { WS_UNKNOWN && WS_UNKNOWN.end(); } catch (_) {}
 }
 
-(function main() {
+(async function main() {
   const cfg = parseArgs();
   DEBUG = DEBUG || false;
   DEBUG_DIR = DEBUG_DIR || path.join(cfg.outDir, '_debug');
   ensureDir(cfg.outDir);
+  const engine = await loadEvidenceEngine();
+  classifyTags = engine.classifyTags;
   const layers = loadLayers(cfg.inDir);
   const sim = simulate(cfg, layers);
   writeOutputs(cfg.outDir, sim);
-})();
+})().catch((err) => {
+  console.error(err);
+  process.exitCode = 1;
+});

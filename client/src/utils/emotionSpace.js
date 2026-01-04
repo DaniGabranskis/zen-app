@@ -10,7 +10,8 @@ export const DIMENSIONS = [
   "other_blame", // 0 .. 2
   "certainty",   // 0 .. 2 (clarity / understanding)
   "socialness",  // 0 .. 2 (social context weight)
-  "fatigue"      // 0 .. 2 (tired / drained)
+  "fatigue",     // 0 .. 2 (tired / drained)
+  "fear_bias"    // 0 .. 3 (threat / fear weighting)
 ];
 
 // ---------- Base state helpers ----------
@@ -26,7 +27,8 @@ export function emptyState() {
     other_blame: 0,
     certainty: 1, // light baseline clarity
     socialness: 0,
-    fatigue: 0
+    fatigue: 0,
+    fear_bias: 0,
   };
 }
 
@@ -40,15 +42,16 @@ export function clampState(state) {
   const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
 
   return {
-    valence:    clamp(state.valence    ?? 0, -3, 3),
-    arousal:    clamp(state.arousal    ?? 0,  0, 3),
-    tension:    clamp(state.tension    ?? 0,  0, 3),
-    agency:     clamp(state.agency     ?? 0,  0, 2),
-    self_blame: clamp(state.self_blame ?? 0,  0, 2),
-    other_blame:clamp(state.other_blame?? 0,  0, 2),
-    certainty:  clamp(state.certainty  ?? 1,  0, 2),
-    socialness: clamp(state.socialness ?? 0,  0, 2),
-    fatigue:    clamp(state.fatigue    ?? 0,  0, 2)
+    valence: clamp(state.valence ?? 0, -3, 3),
+    arousal: clamp(state.arousal ?? 0, 0, 3),
+    tension: clamp(state.tension ?? 0, 0, 3),
+    agency: clamp(state.agency ?? 0, 0, 2),
+    self_blame: clamp(state.self_blame ?? 0, 0, 2),
+    other_blame: clamp(state.other_blame ?? 0, 0, 2),
+    certainty: clamp(state.certainty ?? 1, 0, 2),
+    socialness: clamp(state.socialness ?? 0, 0, 2),
+    fatigue: clamp(state.fatigue ?? 0, 0, 2),
+    fear_bias: clamp(state.fear_bias ?? 0, 0, 3),
   };
 }
 
@@ -73,7 +76,9 @@ const EMOTION_CENTROIDS = {
   anxiety: {
     valence: -2, arousal: 3, tension: 3, agency: 0,
     self_blame: 1, other_blame: 0, certainty: 0,
-    socialness: 1, fatigue: 0
+    socialness: 1, fatigue: 0,
+    fear_bias: 2.3,
+
   },
   tension: {
     valence: -1.1,
@@ -84,7 +89,9 @@ const EMOTION_CENTROIDS = {
     other_blame: 0,
     certainty: 0.8,
     socialness: 0,
-    fatigue: 0.2
+    fatigue: 0.2,
+    fear_bias: 1.3,
+
   },
   // ослабили fear_bias с 2 → 1.5
   fear: {
@@ -168,7 +175,7 @@ const EMOTION_CENTROIDS = {
     other_blame: 0,
     certainty: 0.1, // still low sense of clarity/meaning
     socialness: 0.0,
-    fatigue: 2.3    // stronger exhaustion, closer to "shut down"
+    fatigue: 2.3,    // stronger exhaustion, closer to "shut down"
   },
   confusion: {
     valence: -0.7,   // было -0.8
@@ -179,12 +186,16 @@ const EMOTION_CENTROIDS = {
     other_blame: 0,
     certainty: -0.3, // new: matches low clarity states
     socialness: 0,
-    fatigue: 1.2     // was 1
+    fatigue: 1.2,     // was 1
+    fear_bias: 0.9,
+
   },
   overwhelm: {
     valence: -2, arousal: 3, tension: 3, agency: 0,
     self_blame: 0, other_blame: 0, certainty: 0,
-    socialness: 0, fatigue: 2
+    socialness: 0, fatigue: 2,
+    fear_bias: 2.1,
+
   },
   tiredness: {
     valence: -1.0,
@@ -195,7 +206,7 @@ const EMOTION_CENTROIDS = {
     other_blame: 0,
     certainty: 0.9,
     socialness: 0,
-    fatigue: 2.6
+    fatigue: 2.6,
   },
   guilt: {
     valence: -2.3,   // was -2.1
@@ -206,7 +217,7 @@ const EMOTION_CENTROIDS = {
     other_blame: 0,
     certainty: 2.1,  // was 2.0
     socialness: 1,
-    fatigue: 1
+    fatigue: 1,
   },
   shame: {
     valence: -3, arousal: 2, tension: 2, agency: 0,
@@ -225,7 +236,7 @@ const EMOTION_CENTROIDS = {
     other_blame: 0,
     certainty: 1.4,
     socialness: 0.2,
-    fatigue: 0.4
+    fatigue: 0.4,
   },
   clarity: {
     valence: 1.5,

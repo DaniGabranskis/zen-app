@@ -1,5 +1,5 @@
 // src/screens/L6ActionsScreen.js
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -21,13 +21,22 @@ export default function L6ActionsScreen({ navigation }) {
   const sBar = makeBarStyles(t, BAR_BASE_H);
   const s = makeStyles(t);
 
+  // Use Zen theme tokens instead of a non-existing `t.border`.
+  const borderColor = t.dividerColor || t.navBorder;
+
   const finishSession = useStore((st) => st.finishSession);
 
-  const dominant = useStore((st) => st.sessionDraft?.decision?.top?.[0] || st.sessionDraft?.l3?.emotionKey || '');
+  // Prefer the explicitly picked emotion (L3) over the engine's top guess.
+  // In probe mode decision.top[0] can differ from the final picked emotion.
+  const dominant = useStore((st) => st.sessionDraft?.l3?.emotionKey || st.sessionDraft?.decision?.top?.[0] || '');
   const intensity = useStore((st) => Number(st.sessionDraft?.l4?.intensity || 0));
   const evidenceTags = useStore((st) => st.sessionDraft?.evidenceTags || EMPTY_ARR);
   const triggers = useStore((st) => st.sessionDraft?.l4?.triggers || EMPTY_ARR);
   const bodyMind = useStore((st) => st.sessionDraft?.l4?.bodyMind || EMPTY_ARR);
+
+  // Prevents double-tap navigation and race conditions (Start/Skip pressed multiple times).
+  const navLockRef = useRef(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   const recs = useMemo(() => {
     return selectRecommendations({
@@ -39,16 +48,40 @@ export default function L6ActionsScreen({ navigation }) {
     });
   }, [dominant, intensity, evidenceTags, triggers, bodyMind]);
 
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const selectedRec = recs[selectedIndex] || recs[0] || null;
+  useEffect(() => {
+    // English-only comment: When recommendations change, reset selection to the first item.
+    setSelectedIndex(0);
+  }, [recs]);
+
+  useEffect(() => {
+    // When user returns to this screen, unlock navigation again.
+    const unsub = navigation.addListener('focus', () => {
+      navLockRef.current = false;
+    });
+    return unsub;
+  }, [navigation]);
+  const hasRecs = recs.length > 0;
+  const safeIndex = hasRecs ? Math.min(selectedIndex, recs.length - 1) : 0;
+  const selectedRec = hasRecs ? recs[safeIndex] : null;
 
   const onStart = () => {
     if (!selectedRec) return;
-    // If you already added Recommendation screen, navigate there. Otherwise keep as L6-only MVP.
-    navigation.navigate('Recommendation', { recommendation: selectedRec, dominant });
+    if (navLockRef.current) return;
+    navLockRef.current = true;
+
+    const params = { recommendation: selectedRec, dominant };
+
+    if (typeof navigation.push === 'function') {
+      navigation.push('Recommendation', params);
+    } else {
+      navigation.navigate('Recommendation', params);
+    }
   };
 
   const onSkip = () => {
+    if (navLockRef.current) return;
+    navLockRef.current = true;
+
     Promise.resolve(finishSession({ skip: true, recommendation: selectedRec }))
       .finally(() => navigation.reset({ index: 0, routes: [{ name: 'MainTabs' }] }));
   };
@@ -70,9 +103,11 @@ export default function L6ActionsScreen({ navigation }) {
             <Text style={[s.cardTitle, { color: t.textMain }]}>Recommended</Text>
 
             {selectedRec ? (
-              <View style={[s.recItem, s.recItemSelected, { borderColor: t.border }]}>
+              <View style={[s.recItem, s.recItemSelected, { borderColor }]}>
                 <Text style={[s.recTitle, { color: t.textMain }]}>{selectedRec.title}</Text>
-                <Text style={[s.recDetail, { color: t.textSub }]}>{selectedRec.detail}</Text>
+                <Text style={[s.recDetail, { color: t.textSub }]}>
+                  {selectedRec.description || selectedRec.detail}
+                </Text>
 
                 {typeof selectedRec.durationSec === 'number' ? (
                   <Text style={[s.recMeta, { color: t.textSub }]}>
@@ -93,17 +128,19 @@ export default function L6ActionsScreen({ navigation }) {
                 const active = idx === selectedIndex;
                 return (
                   <TouchableOpacity
-                    key={r.key}
+                    key={`${r.key}-${idx}`}
                     style={[
                       s.recItem,
-                      { borderColor: t.border },
+                      { borderColor },
                       active ? s.recItemSelected : null,
                     ]}
                     activeOpacity={0.85}
                     onPress={() => setSelectedIndex(idx)}
                   >
                     <Text style={[s.recTitle, { color: t.textMain }]}>{r.title}</Text>
-                    <Text style={[s.recDetail, { color: t.textSub }]}>{r.detail}</Text>
+                    <Text style={[s.recDetail, { color: t.textSub }]}>
+                      {r.description || r.detail}
+                    </Text>
                   </TouchableOpacity>
                 );
               })}
@@ -150,7 +187,7 @@ function makeStyles(t) {
       borderRadius: 18,
       padding: 14,
       borderWidth: 1,
-      borderColor: t.border,
+      borderColor: t.dividerColor || t.navBorder,
     },
     cardTitle: {
       fontSize: 14,

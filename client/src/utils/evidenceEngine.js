@@ -186,6 +186,30 @@ const TAG_RULES = {
     arousal: -0.4 
   },
 
+    L2_PRESENT: {
+    certainty: +0.4,
+    tension: -0.3,
+    agency: +0.3
+  },
+
+  L2_FEELS_FINE: {
+    fatigue: -0.4,
+    valence: +0.3,
+    tension: -0.2
+  },
+
+  L2_SELF_BLAME_YES: {
+    self_blame: +0.8,
+    valence: -0.4,
+    tension: +0.3
+  },
+
+  L2_SELF_BLAME_NO: {
+    self_blame: -0.6,
+    valence: +0.2,
+    tension: -0.2
+  },
+
   L2_FLOODING: { arousal: +0.8, tension: +0.8 },
 
   L2_GUILT: { 
@@ -280,7 +304,9 @@ const TAG_RULES = {
     arousal: +0.3,
     tension: -0.7,
     certainty: +0.4
-  }
+  },
+  L2_GUILT_NO: {},
+  L2_SHAME_NO: {},
 };
 
 // ============================================================================

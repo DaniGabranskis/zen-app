@@ -1,119 +1,110 @@
 [
   {
     "id": "L2_focus",
-    "title": "What does your mind focus on more?",
+    "title": "Where do your thoughts go",
     "type": "swipe",
     "options": [
-      { "label": "Mostly future worries", "tags": ["L2_FOCUS_FUTURE"] },
-      { "label": "Mostly past events",    "tags": ["L2_FOCUS_PAST"] }
+      { "label": "Future worries", "tags": ["L2_FOCUS_FUTURE"] },
+      { "label": "Past replay", "tags": ["L2_FOCUS_PAST"] }
     ]
   },
   {
     "id": "L2_source",
-    "title": "Where does the biggest tension come from?",
+    "title": "What's causing the tension",
     "type": "swipe",
     "options": [
-      { "label": "People / unfairness",   "tags": ["L2_SOURCE_PEOPLE"] },
-      { "label": "Tasks / workload",      "tags": ["L2_SOURCE_TASKS"] }
+      { "label": "People & unfairness", "tags": ["L2_SOURCE_PEOPLE"] },
+      { "label": "Tasks & workload", "tags": ["L2_SOURCE_TASKS"] }
     ]
   },
   {
     "id": "L2_uncertainty",
-    "title": "How uncertain does this situation feel?",
+    "title": "Is this hard to figure out",
     "type": "swipe",
     "options": [
-      { "label": "Clear enough",          "tags": ["L2_UNCERT_LOW"] },
-      {
-        "label": "High / outcome unclear",
-        "tags": ["L2_UNCERT_HIGH", "L2_FEAR_SPIKE"]
-      }
+      { "label": "It's clear enough",          "tags": ["L2_UNCERT_LOW"] },
+      { "label": "It's confusing",  "tags": ["L2_UNCERT_HIGH", "L2_FEAR_SPIKE"] }
     ]
   },
   {
     "id": "L2_social_pain",
-    "title": "Is there social pain here?",
+    "title": "Is there social pain?",
     "type": "swipe",
     "options": [
-      {
-        "label": "Rejected / ignored",
-        "tags": ["L2_SOCIAL_PAIN_YES", "L2_LET_DOWN"]
-      },
-      {
-        "label": "Generally okay with others",
-        "tags": ["L2_SOCIAL_PAIN_NO"]
-      }
+      { "label": "Rejected or ignored", "tags": ["L2_SOCIAL_PAIN_YES", "L2_LET_DOWN"] },
+      { "label": "No social side to it", "tags": ["L2_SOCIAL_PAIN_NO"] }
     ]
   },
   {
-    "id": "L2_shutdown",
-    "title": "How does your system react?",
+    "id": "L2_numb",
+    "title": "Do you feel numb?",
     "type": "swipe",
     "options": [
-      {
-        "label": "Numb / shut down",
-        "tags": ["L2_SHUTDOWN", "L2_DISCONNECT_NUMB"]
-      },
-      {
-        "label": "Tired but still feeling",
-        "tags": ["L2_SAD_HEAVY"]
-      }
+      { "label": "Numb / shut down", "tags": ["L2_SHUTDOWN", "L2_DISCONNECT_NUMB"] },
+      { "label": "I'm present", "tags": ["L2_PRESENT"] }
     ]
   },
   {
-    "id": "L2_guilt_shame",
-    "title": "How do you see yourself in this?",
+    "id": "L2_heavy",
+    "title": "Do you feel heavy or tired?",
     "type": "swipe",
     "options": [
-      { "label": "I did something wrong (guilt)",          "tags": ["L2_GUILT"] },
-      { "label": "There is something wrong with me (shame)","tags": ["L2_SHAME"] }
+      { "label": "Tired / heavy", "tags": ["L2_SAD_HEAVY"] },
+      { "label": "Feels fine", "tags": ["L2_FEELS_FINE"] }
+    ]
+  },
+  {
+    "id": "L2_guilt",
+    "title": "Do you feel guilty?",
+    "type": "swipe",
+    "options": [
+      { "label": "Guilt", "tags": ["L2_GUILT"] },
+      { "label": "No guilt", "tags": ["L2_GUILT_NO"] }
+    ]
+  },
+  {
+    "id": "L2_shame",
+    "title": "Do you feel shame?",
+    "type": "swipe",
+    "options": [
+      { "label": "Shame", "tags": ["L2_SHAME"] },
+      { "label": "No shame", "tags": ["L2_SHAME_NO"] }
     ]
   },
   {
     "id": "L2_positive_moments",
-    "title": "Any positive moments during this?",
+    "title": "Any positive moments?",
     "type": "swipe",
     "options": [
-      {
-        "label": "Moments of gratitude / appreciation",
-        "tags": ["L2_POS_GRATITUDE", "L2_CONTENT_WARM"]
-      },
-      {
-        "label": "Almost no positive moments",
-        "tags": ["L2_NO_POSITIVE"]
-      }
+      { "label": "Almost none", "tags": ["L2_NO_POSITIVE"] },
+      { "label": "Some warmth", "tags": ["L2_POS_GRATITUDE", "L2_CONTENT_WARM"] }
     ]
   },
   {
     "id": "L2_regulation",
-    "title": "How is your ability to regulate right now?",
+    "title": "Can you calm yourself?",
     "type": "swipe",
     "options": [
-      {
-        "label": "I can come back to calm",
-        "tags": ["L2_REGULATION_GOOD", "L2_CONTENT_WARM"]
-      },
-      {
-        "label": "Still on edge even in good moments",
-        "tags": ["L2_REGULATION_BAD"]
-      }
+      { "label": "Staying on edge", "tags": ["L2_REGULATION_BAD"] },
+      { "label": "Return to calm", "tags": ["L2_REGULATION_GOOD", "L2_CONTENT_WARM"] }
     ]
   },
   {
     "id": "L2_clarity",
-    "title": "Do you understand what you feel?",
+    "title": "Do you know what you feel?",
     "type": "swipe",
     "options": [
-      { "label": "I understand what I feel", "tags": ["L2_CLARITY_HIGH"] },
-      { "label": "Still confused about it",  "tags": ["L2_CLARITY_LOW"] }
+      { "label": "Still confused", "tags": ["L2_CLARITY_LOW"] },
+      { "label": "I get what I feel", "tags": ["L2_CLARITY_HIGH"] }
     ]
   },
   {
     "id": "L2_meaning",
-    "title": "Sense of meaning",
+    "title": "Does it feel meaningful?",
     "type": "swipe",
     "options": [
-      { "label": "Meaningless / empty",      "tags": ["L2_MEANING_LOW"] },
-      { "label": "Some sense of meaning",    "tags": ["L2_MEANING_HIGH"] }
+      { "label": "Meaningless", "tags": ["L2_MEANING_LOW"] },
+      { "label": "Some meaning", "tags": ["L2_MEANING_HIGH"] }
     ]
   }
 ]

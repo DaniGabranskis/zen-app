@@ -20,9 +20,9 @@ function formatMMSS(totalSec) {
 function BreezeCircle({
   theme,
   isActive,
-  inhaleMs = 3400,
-  exhaleMs = 3400,
-  pauseMs = 200,
+  inhaleMs = 3500,
+  exhaleMs = 3500,
+  pauseMs = 250,
 }) {
   const { width } = useWindowDimensions();
 
@@ -140,6 +140,11 @@ function BreezeCircle({
             height: innerSize,
             borderRadius: innerSize / 2,
             backgroundColor: innerColor,
+
+            // Anchor the inner circle to the ring's inner bounds so scaling stays centered.
+            top: borderW,
+            left: borderW,
+
             transform: [{ scale }],
           },
         ]}
@@ -169,29 +174,45 @@ export function BreezeTimerStep({ theme, state, setState }) {
   const done = !!state?.done;
 
   // Decrement timer only after Start and until done.
-  useEffect(() => {
-    if (!started || done) return;
+useEffect(() => {
+  if (!started || done) return;
 
-    const id = setInterval(() => {
-      if (typeof setState !== 'function') return;
+  const startAt = Date.now();
+  const endAt = startAt + totalSec * 1000;
 
-      setState((prev) => {
-        const prevSec = Math.max(0, Number(prev?.remainingSec ?? 0));
-        if (prevSec <= 1) {
-          return {
-            ...(prev || {}),
-            remainingSec: 0,
-            done: true,
-            completed: true,
-            breezeDone: true,
-          };
-        }
-        return { ...(prev || {}), remainingSec: prevSec - 1 };
-      });
-    }, 1000);
+  const finish = () => {
+    setState((prev) => ({
+      ...(prev || {}),
+      remainingSec: 0,
+      done: true,
+      completed: true,
+      breezeDone: true,
+    }));
+  };
 
-    return () => clearInterval(id);
-  }, [started, done, setState]);
+  const tick = () => {
+    const msLeft = endAt - Date.now();
+    const nextSec = Math.max(0, Math.ceil(msLeft / 1000));
+
+    setState((prev) => {
+      const prevSec = Number(prev?.remainingSec ?? totalSec);
+      if (prevSec === nextSec) return prev;
+      return { ...(prev || {}), remainingSec: nextSec };
+    });
+
+    if (nextSec === 0) finish();
+  };
+
+  tick();
+
+  const id = setInterval(tick, 250);
+  const timeoutId = setTimeout(finish, endAt - Date.now());
+
+  return () => {
+    clearInterval(id);
+    clearTimeout(timeoutId);
+  };
+}, [started, done, totalSec, setState]);
 
   const showSec = started ? remainingSec : totalSec;
 
@@ -202,9 +223,9 @@ export function BreezeTimerStep({ theme, state, setState }) {
       <BreezeCircle
         theme={t}
         isActive={started && !done}
-        inhaleMs={3400}
-        exhaleMs={3400}
-        pauseMs={200}
+        inhaleMs={3500}
+        exhaleMs={3500}
+        pauseMs={250}
       />
 
       <Text style={[styles.helper, { color: t.textSub || 'rgba(255,255,255,0.75)' }]}>
@@ -230,6 +251,9 @@ const styles = StyleSheet.create({
   centerWrap: {
     alignItems: 'center',
     justifyContent: 'center',
+
+    // Ensure absolutely positioned children (inner circle) are laid out relative to this container.
+    position: 'relative',
   },
   ring: {
     backgroundColor: 'transparent', // Hollow center

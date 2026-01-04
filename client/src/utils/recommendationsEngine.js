@@ -5,9 +5,10 @@ export const RECOMMENDATIONS = [
     key: "breathe",
     title: "Breeze",
     kind: "breath",
+    durationSec: 45, // Default fallback; actual value is overridden by getBreezeDurationSec(intensity).
     description: "A short breathing reset to lower activation and regain control.",
     signals: {
-      emotions: ["anxiety", "anxious", "tension", "anger", "frustration", "overwhelm", "panic"],
+      emotions: ["anxiety", "anxious", "tension", "anger", "frustration", "irritation", "overwhelm", "overload", "panic"],
       tagsAny: ["l1_body_tension", "l1_pressure_high", "l2_uncert_high", "l2_social_threat"],
       bodyMindAny: ["shallow breathing", "heart racing", "tight chest", "butterflies", "restless"],
       intensityMin: 2,
@@ -31,7 +32,7 @@ export const RECOMMENDATIONS = [
     kind: "plan",
     description: "Turn the day into 1–3 tiny steps to reduce overwhelm.",
     signals: {
-      emotions: ["overload", "sadness", "confusion", "anxiety", "anxious"],
+      emotions: ["overwhelm", "overload", "sadness", "confusion", "anxiety", "anxious"],
       tagsAny: ["l1_pressure_high", "l2_focus_future", "l2_uncert_high", "l2_meaning_low"],
       intensityMin: 2,
     },
@@ -75,7 +76,7 @@ export const RECOMMENDATIONS = [
     kind: "rest",
     description: "A brief recovery plan for low energy and fatigue.",
     signals: {
-      emotions: ["overload", "sadness", "tiredness"],
+      emotions: ["overwhelm", "overload", "sadness", "tiredness"],
       tagsAny: ["l1_energy_low"],
       intensityMin: 1,
     },
@@ -171,11 +172,12 @@ export function isHighArousal(input) {
     "irritation",
     "tension",
     "overwhelm",
+    "overload",
     "panic",
     "fear",
   ]);
 
-  if (intensity >= 4) return true;
+  if (intensity >= 7) return true;
   if (HIGH_AROUSAL_EMOTIONS.has(emotion)) return true;
 
   if (hasAnyTag(evidenceTags, ["l1_body_tension", "l1_pressure_high", "l2_uncert_high", "l2_social_threat"])) {
@@ -283,10 +285,28 @@ function pickTopWithDiversity(scored, limit = 3) {
   return chosen.slice(0, limit).map((x) => x.rec);
 }
 
+function getBreezeDurationSec(intensity) {
+  const i = Number(intensity || 0);
+  if (!Number.isFinite(i)) return 45;
+
+  // Intensity is 0..10 (see intensity/estimator.js). Use 60s only for very high intensity.
+  if (i >= 8) return 60;
+  if (i >= 5) return 45;
+  return 30;
+}
+
 export function selectRecommendations(input, limit = 3) {
   const scored = RECOMMENDATIONS
     .map((rec) => ({ rec, score: scoreRecommendation(rec, input) }))
     .sort((a, b) => b.score - a.score);
 
-  return pickTopWithDiversity(scored, limit);
+  const picked = pickTopWithDiversity(scored, limit);
+  const breezeDurationSec = getBreezeDurationSec(input?.intensity);
+
+  console.log('[recEngine] intensity=', input?.intensity, 'breezeSec=', breezeDurationSec);
+
+  return picked.map((rec) => {
+    if (rec.key !== 'breathe') return rec;
+    return { ...rec, durationSec: breezeDurationSec };
+  });
 }
