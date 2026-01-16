@@ -13,7 +13,7 @@ function getWeekActivity(history) {
     const d = new Date(weekStart);
     d.setDate(weekStart.getDate() + idx);
     const key = d.toISOString().split('T')[0];
-    const active = history.some(item => item.date.split('T')[0] === key);
+    const active = history.some(item => (item.createdAt || item.date || '').split('T')[0] === key);
     return { day: label, active };
   });
 }
@@ -21,7 +21,7 @@ function getWeekActivity(history) {
   function calcStreak(history) {
     // Приводим все даты к ISO формату yyyy-mm-dd
     const days = history
-      .map(item => item && item.date && item.date.split('T')[0])
+      .map(item => item && item.date && (item.createdAt || item.date || '').split('T')[0])
       .filter(Boolean)
       .sort();
 

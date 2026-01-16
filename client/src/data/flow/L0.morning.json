@@ -1,0 +1,68 @@
+[
+  {
+    "id": "L0_M_ENERGY",
+    "type": "question",
+    "title": "How is your energy right now?",
+    "options": [
+      { "label": "Low — I feel drained", "tags": ["L0_ENERGY_LOW"] },
+      { "label": "Okay — stable enough", "tags": ["L0_ENERGY_OK"] },
+      { "label": "High — I feel energized", "tags": ["L0_ENERGY_HIGH"] }
+    ],
+    "meta": { "group": "l0", "covers": ["arousal"], "minAskedAfter": 0 }
+  },
+  {
+    "id": "L0_M_SLEEP",
+    "type": "question",
+    "title": "How was your sleep?",
+    "options": [
+      { "label": "Poor — not restorative", "tags": ["L0_SLEEP_POOR"] },
+      { "label": "Average — could be better", "tags": ["L0_SLEEP_OK"] },
+      { "label": "Great — I feel rested", "tags": ["L0_SLEEP_GOOD"] }
+    ],
+    "meta": { "group": "l0", "covers": ["clarity"], "minAskedAfter": 0 }
+  },
+  {
+    "id": "L0_M_LOAD",
+    "type": "question",
+    "title": "How demanding does today feel?",
+    "options": [
+      { "label": "Light — manageable", "tags": ["L0_PLAN_LOAD_LOW"] },
+      { "label": "Medium — normal day", "tags": ["L0_PLAN_LOAD_MED"] },
+      { "label": "Heavy — too much on my plate", "tags": ["L0_PLAN_LOAD_HIGH"] }
+    ],
+    "meta": { "group": "l0", "covers": ["safety"], "minAskedAfter": 0 }
+  },
+  {
+    "id": "L0_M_CONTROL",
+    "type": "question",
+    "title": "How much control do you feel you have over your day?",
+    "options": [
+      { "label": "Low — it controls me", "tags": ["L0_CONTROL_LOW"] },
+      { "label": "Some — mixed", "tags": ["L0_CONTROL_MED"] },
+      { "label": "High — I can steer it", "tags": ["L0_CONTROL_HIGH"] }
+    ],
+    "meta": { "group": "l0", "covers": ["agency"], "minAskedAfter": 0 }
+  },
+  {
+    "id": "L0_M_CLARITY",
+    "type": "question",
+    "title": "How clear does your mind feel?",
+    "options": [
+      { "label": "Foggy — hard to think", "tags": ["L0_CLARITY_FOGGY"] },
+      { "label": "Okay — functional", "tags": ["L0_CLARITY_OK"] },
+      { "label": "Clear — focused", "tags": ["L0_CLARITY_CLEAR"] }
+    ],
+    "meta": { "group": "l0", "covers": ["clarity"], "minAskedAfter": 0 }
+  },
+  {
+    "id": "L0_M_SOCIAL",
+    "type": "question",
+    "title": "What do you need socially today?",
+    "options": [
+      { "label": "Space — I want to be left alone", "tags": ["L0_SOCIAL_AVOID"] },
+      { "label": "Neutral — either is fine", "tags": ["L0_SOCIAL_NEUTRAL"] },
+      { "label": "Connection — I want interaction", "tags": ["L0_SOCIAL_SEEK"] }
+    ],
+    "meta": { "group": "l0", "covers": ["social"], "minAskedAfter": 0 }
+  }
+]

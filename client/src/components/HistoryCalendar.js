@@ -6,7 +6,8 @@ import React, { useMemo, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import useThemeVars from '../hooks/useThemeVars';
-import { getEmotionMeta } from '../utils/evidenceEngine';
+import { getStateMeta } from '../data/stateMeta';
+import { resolveStateKeyFromEntry } from '../utils/resolveStateKeyFromEntry';
 
 /**
  * Props:
@@ -55,7 +56,8 @@ export default function HistoryCalendar({ history, value, onChange }) {
     history?.forEach((item) => {
       const dateKey = toDateKey(item?.date);
       if (!dateKey) return;
-      const m = getEmotionMeta(item?.dominantGroup);
+      const stateKey = resolveStateKeyFromEntry(item);
+      const m = getStateMeta(stateKey);
       const color = Array.isArray(m?.color) ? m.color[0] : '#A78BFA';
       if (!acc[dateKey]) acc[dateKey] = [];
       // Avoid duplicates; cap visible dots by 3 for layout safety

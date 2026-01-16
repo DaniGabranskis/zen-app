@@ -73,215 +73,129 @@ export function accumulate(base, delta, weight = 1) {
 // ---------- Emotion centroids ----------
 
 const EMOTION_CENTROIDS = {
-  anxiety: {
-    valence: -2, arousal: 3, tension: 3, agency: 0,
-    self_blame: 1, other_blame: 0, certainty: 0,
-    socialness: 1, fatigue: 0,
-    fear_bias: 2.3,
-
-  },
-  tension: {
-    valence: -1.1,
-    arousal: 2.1,
-    tension: 3,
-    agency: 0.7,
-    self_blame: 0,
-    other_blame: 0,
-    certainty: 0.8,
-    socialness: 0,
-    fatigue: 0.2,
-    fear_bias: 1.3,
-
-  },
-  // ослабили fear_bias с 2 → 1.5
-  fear: {
-    // смещаем страх в ещё более "специальную" зону:
-    // чуть более негативный + сильно повышаем fear_bias,
-    // чтобы к нему тянулись только конфигурации с реально большим страховым сдвигом
-    valence: -2.6,
-    arousal: 3,
-    tension: 3,
-    agency: 0,
-    self_blame: 0.5,
-    other_blame: 0,
-    certainty: -0.2,
-    socialness: 0.5,
-    fatigue: 0,
-    fear_bias: 2.2   // было 1.5
-  },
-  anger:  { 
-    valence: -2.4,   // чуть более экстремально негативная
-    arousal: 3.2,    // еще более "заведённое" состояние
-    tension: 3.2,    // максимум напряжения
-    agency: 2,
-    self_blame: 0,
-    other_blame: 2.3, // сильный внешний обвинительный вектор
-    certainty: 2.0,   // "я на 200% уверен, что прав"
-    socialness: 1.4,
-    fatigue: 0
-  },
-  frustration:{
-    valence: -1.5,
-    arousal: 1.8,
-    tension: 1.8,
-    agency: 1.5,
-    self_blame: 0,
-    other_blame: 1.4,
-    certainty: 1.2,
-    socialness: 0,
-    fatigue: 0
-  },
-  irritation: {
-    valence: -1, arousal: 2, tension: 2, agency: 1,
-    self_blame: 0, other_blame: 1, certainty: 1,
-    socialness: 0, fatigue: 0
-  },
-  sadness:{ 
-    valence: -2.3,
-    arousal: 0.5,
-    tension: 1.3,
-    agency: 0,
-    self_blame: 1,
-    other_blame: 0,
-    certainty: 1,
-    socialness: 0,
-    fatigue: 2.3
-  },
-  disappointment: {
-    valence: -2, arousal: 1, tension: 1, agency: 0,
-    self_blame: 1, other_blame: 1, certainty: 1,
-    socialness: 0, fatigue: 1
-  },
-  loneliness: {
-    // делаем более "крайний" и более социально-насыщенный одиночный профиль,
-    // чтобы к нему прилипали только реально сильные состояния
-    valence: -2.8,
-    arousal: 0.8,
-    tension: 0.9,
-    agency: 0,
-    self_blame: 1.2,
-    other_blame: 0,
-    certainty: 1.2,
-    socialness: 2.4,
-    fatigue: 2.0
-  },
-  disconnection: {
-    // emotionally: flat / empty / distant
-    valence: -1.4,  // slightly less negative than sadness/loneliness
-    arousal: 0.7,   // almost no activation
-    tension: 0.2,   // very low tension
-    agency: 0.0,    // almost no sense of influence
-    self_blame: 1.2,
-    other_blame: 0,
-    certainty: 0.1, // still low sense of clarity/meaning
-    socialness: 0.0,
-    fatigue: 2.3,    // stronger exhaustion, closer to "shut down"
-  },
-  confusion: {
-    valence: -0.7,   // было -0.8
-    arousal: 1.1,    // было 1.2
-    tension: 1.2,    // было 1.3
-    agency: 0,
-    self_blame: 0,
-    other_blame: 0,
-    certainty: -0.3, // new: matches low clarity states
-    socialness: 0,
-    fatigue: 1.2,     // was 1
-    fear_bias: 0.9,
-
-  },
-  overwhelm: {
-    valence: -2, arousal: 3, tension: 3, agency: 0,
-    self_blame: 0, other_blame: 0, certainty: 0,
-    socialness: 0, fatigue: 2,
-    fear_bias: 2.1,
-
-  },
-  tiredness: {
-    valence: -1.0,
-    arousal: 0,
-    tension: 0.4,
-    agency: 0,
-    self_blame: 0,
-    other_blame: 0,
-    certainty: 0.9,
-    socialness: 0,
-    fatigue: 2.6,
-  },
-  guilt: {
-    valence: -2.3,   // was -2.1
-    arousal: 2,
-    tension: 2,
-    agency: 0,
-    self_blame: 2.2, // was 2.1
-    other_blame: 0,
-    certainty: 2.1,  // was 2.0
-    socialness: 1,
-    fatigue: 1,
-  },
-  shame: {
-    valence: -3, arousal: 2, tension: 2, agency: 0,
-    self_blame: 2, other_blame: 0, certainty: 2,
-    socialness: 2, fatigue: 1
+  // Positive
+  joy: {
+    valence: 2.5, arousal: 2.0, tension: 0.4, agency: 1.6,
+    self_blame: 0, other_blame: 0, certainty: 1.4,
+    socialness: 1.1, fatigue: 0.0, fear_bias: 0.0,
   },
   calm: {
-    // приближаем calm к более реалистичному "чуть лучше, чем ок":
-    // умеренно позитивный тон, очень низкое напряжение,
-    // нормальная уверенность и небольшая усталость
-    valence: 1.4,
-    arousal: 0.1,
-    tension: -0.8,
-    agency: 1.2,
-    self_blame: 0,
-    other_blame: 0,
-    certainty: 1.4,
-    socialness: 0.2,
-    fatigue: 0.4,
-  },
-  clarity: {
-    valence: 1.5,
-    arousal: 0.7,
-    tension: 0,
-    agency: 1.8,
-    self_blame: 0,
-    other_blame: 0,
-    certainty: 1.8,
-    socialness: 0,
-    fatigue: 0
+    valence: 1.4, arousal: 0.6, tension: 0.3, agency: 1.3,
+    self_blame: 0, other_blame: 0, certainty: 1.5,
+    socialness: 0.8, fatigue: 0.2, fear_bias: 0.0,
   },
   gratitude: {
-    valence: 3.0,
-    arousal: 0.8,
-    tension: 0,
-    agency: 2,
-    self_blame: 0,
-    other_blame: 0,
-    certainty: 2.2,
-    socialness: 2.2,
-    fatigue: 0
+    valence: 2.0, arousal: 1.0, tension: 0.4, agency: 1.2,
+    self_blame: 0, other_blame: 0, certainty: 1.6,
+    socialness: 1.6, fatigue: 0.0, fear_bias: 0.0,
   },
-  joy: {
-    valence: 3.1,  // was 3.0
-    arousal: 3.2,
-    tension: 0,
-    agency: 2,
-    self_blame: 0,
-    other_blame: 0,
-    certainty: 2,
-    socialness: 2.4,
-    fatigue: 0
+  interest: {
+    valence: 1.2, arousal: 2.2, tension: 0.6, agency: 1.5,
+    self_blame: 0, other_blame: 0, certainty: 1.7,
+    socialness: 0.9, fatigue: 0.0, fear_bias: 0.0,
   },
-  contentment: {
-    valence: 1.6,    // +0.1
-    arousal: 0,
-    tension: -1,
-    agency: 1,
-    self_blame: 0,
-    other_blame: 0,
-    certainty: 1.1,  // +0.1
-    socialness: 1.1, // +0.1
-    fatigue: 0
-  }
+  confidence: {
+    valence: 2.2, arousal: 1.6, tension: 0.5, agency: 2.0,
+    self_blame: 0, other_blame: 0.2, certainty: 2.0,
+    socialness: 0.9, fatigue: 0.0, fear_bias: 0.0,
+  },
+  connection: {
+    valence: 1.8, arousal: 1.0, tension: 0.4, agency: 1.2,
+    self_blame: 0, other_blame: 0, certainty: 1.5,
+    socialness: 2.0, fatigue: 0.0, fear_bias: 0.0,
+  },
+
+  // Negative / Threat / Activation
+  anxiety: {
+    valence: -2.2, arousal: 3.0, tension: 3.0, agency: 0.2,
+    self_blame: 1.0, other_blame: 0, certainty: 0.4,
+    socialness: 1.0, fatigue: 0.2, fear_bias: 2.4,
+  },
+  fear: {
+    valence: -2.5, arousal: 3.0, tension: 2.6, agency: 0.1,
+    self_blame: 0.2, other_blame: 0, certainty: 0.6,
+    socialness: 0.6, fatigue: 0.0, fear_bias: 3.0,
+  },
+  anger: {
+    valence: -2.6, arousal: 3.0, tension: 3.0, agency: 1.9,
+    self_blame: 0.0, other_blame: 2.0, certainty: 1.9,
+    socialness: 0.8, fatigue: 0.1, fear_bias: 0.2,
+  },
+  frustration: {
+    valence: -2.0, arousal: 2.6, tension: 2.5, agency: 1.3,
+    self_blame: 0.4, other_blame: 1.2, certainty: 1.3,
+    socialness: 0.6, fatigue: 0.5, fear_bias: 0.3,
+  },
+  tension: {
+    valence: -1.2, arousal: 2.0, tension: 3.0, agency: 0.7,
+    self_blame: 0.2, other_blame: 0.2, certainty: 1.2,
+    socialness: 0.4, fatigue: 0.4, fear_bias: 0.8,
+  },
+  overload: {
+    valence: -2.1, arousal: 2.8, tension: 2.8, agency: 0.2,
+    self_blame: 0.6, other_blame: 0.3, certainty: 0.6,
+    socialness: 0.6, fatigue: 1.3, fear_bias: 1.2,
+  },
+
+  // Low energy / shutdown
+  fatigue: {
+    valence: -1.8, arousal: 0.2, tension: 1.0, agency: 0.2,
+    self_blame: 0.3, other_blame: 0.0, certainty: 0.9,
+    socialness: 0.3, fatigue: 2.0, fear_bias: 0.3,
+  },
+  numbness: {
+    valence: -1.8, arousal: 0.1, tension: 0.6, agency: 0.1,
+    self_blame: 0.2, other_blame: 0.0, certainty: 0.6,
+    socialness: 0.2, fatigue: 1.4, fear_bias: 0.2,
+  },
+  disconnected: {
+    valence: -1.6, arousal: 0.4, tension: 0.8, agency: 0.2,
+    self_blame: 0.2, other_blame: 0.1, certainty: 0.8,
+    socialness: 0.1, fatigue: 0.9, fear_bias: 0.3,
+  },
+  sadness: {
+    valence: -2.5, arousal: 0.8, tension: 1.0, agency: 0.2,
+    self_blame: 0.8, other_blame: 0.1, certainty: 1.0,
+    socialness: 0.8, fatigue: 1.0, fear_bias: 0.6,
+  },
+
+  // Self-evaluative
+  shame: {
+    valence: -2.4, arousal: 1.2, tension: 2.0, agency: 0.1,
+    self_blame: 2.0, other_blame: 0.0, certainty: 1.2,
+    socialness: 1.0, fatigue: 0.9, fear_bias: 1.0,
+  },
+  guilt: {
+    valence: -2.0, arousal: 1.5, tension: 1.7, agency: 0.6,
+    self_blame: 1.8, other_blame: 0.0, certainty: 1.5,
+    socialness: 1.2, fatigue: 0.8, fear_bias: 0.7,
+  },
+
+  // Disgust
+  disgust: {
+    valence: -2.2, arousal: 1.6, tension: 1.4, agency: 1.1,
+    self_blame: 0.0, other_blame: 1.0, certainty: 1.7,
+    socialness: 0.7, fatigue: 0.2, fear_bias: 0.2,
+  },
+
+  // Cognitive
+  confusion: {
+    valence: -1.2, arousal: 1.6, tension: 1.5, agency: 0.3,
+    self_blame: 0.3, other_blame: 0.1, certainty: 0.2,
+    socialness: 0.5, fatigue: 0.4, fear_bias: 0.4,
+  },
+  clarity: {
+    valence: 1.0, arousal: 1.0, tension: 0.4, agency: 1.6,
+    self_blame: 0.0, other_blame: 0.0, certainty: 2.0,
+    socialness: 0.7, fatigue: 0.0, fear_bias: 0.0,
+  },
+
+  // Fallback
+  mixed: {
+    valence: 0.0, arousal: 1.2, tension: 1.2, agency: 0.9,
+    self_blame: 0.5, other_blame: 0.5, certainty: 1.0,
+    socialness: 0.8, fatigue: 0.6, fear_bias: 0.6,
+  },
 };
 
 // ---------- Distance & ranking ----------
@@ -306,10 +220,13 @@ function similarityToEmotion(stateVec, centroid) {
 
 // Main: rank emotions by similarity to given state
 export function rankEmotions(stateVec) {
-  const scores = Object.entries(EMOTION_CENTROIDS).map(([key, centroid]) => ({
-    key,
-    score: similarityToEmotion(stateVec, centroid),
-  }));
+  // Exclude 'mixed' from ranking - it's a fallback only, not a real candidate
+  const scores = Object.entries(EMOTION_CENTROIDS)
+    .filter(([key]) => key !== 'mixed') // Exclude mixed from candidates
+    .map(([key, centroid]) => ({
+      key,
+      score: similarityToEmotion(stateVec, centroid),
+    }));
   scores.sort((a, b) => b.score - a.score);
   return scores;
 }

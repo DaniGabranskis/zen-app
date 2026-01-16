@@ -1,97 +1,102 @@
 [
   {
     "id": "L1_mood",
-    "title": "What is your mood",
+    "title": "Overall tone right now",
     "type": "swipe",
     "options": [
-      { "label": "Low / Heavy",      "tags": ["L1_MOOD_NEG"] },
-      { "label": "Uplifted / Light",    "tags": ["L1_MOOD_POS"] }
-    ]
+      { "label": "Heavy / low", "tags": ["L1_MOOD_NEG"] },
+      { "label": "Light / upbeat", "tags": ["L1_MOOD_POS"] }
+    ],
+    "meta": { "group": "core", "covers": ["valence"], "minAskedAfter": 0 }
   },
   {
     "id": "L1_body",
-    "title": "How does your body feel",
+    "title": "Body signal right now",
     "type": "swipe",
     "options": [
-      { "label": "Physically tense",     "tags": ["L1_BODY_TENSION"] },
-      { "label": "At ease",     "tags": ["L1_BODY_RELAXED"] }
-    ]
+      { "label": "Tight / tense", "tags": ["L1_BODY_TENSION"] },
+      { "label": "Loose / relaxed", "tags": ["L1_BODY_RELAXED"] }
+    ],
+    "meta": { "group": "core", "covers": ["tension"], "minAskedAfter": 0 }
   },
   {
     "id": "L1_energy",
-    "title": "What is your energy level",
+    "title": "Energy level right now",
     "type": "swipe",
     "options": [
-      { "label": "Low energy", "tags": ["L1_ENERGY_LOW"] },
-      { "label": "High, wired energy", "tags": ["L1_ENERGY_HIGH"] }
-    ]
+      { "label": "Low — drained", "tags": ["L1_ENERGY_LOW"] },
+      { "label": "High — wired", "tags": ["L1_ENERGY_HIGH"] }
+    ],
+    "meta": { "group": "core", "covers": ["arousal"], "minAskedAfter": 0 }
   },
   {
     "id": "L1_social",
-    "title": "What do you want socially",
+    "title": "Social energy right now",
     "type": "swipe",
     "options": [
-      { "label": "Withdraw from people",     "tags": ["L1_SOCIAL_THREAT"] },
-      { "label": "Missing connection",     "tags": ["L1_SOCIAL_SUPPORT"] }
-    ]
+      { "label": "Need space", "tags": ["L1_SOCIAL_THREAT"] },
+      { "label": "Open to people", "tags": ["L1_SOCIAL_SUPPORT"] }
+    ],
+    "meta": { "group": "core", "covers": ["social"], "minAskedAfter": 0 }
   },
   {
     "id": "L1_control",
-    "title": "How in control do you feel",
+    "title": "Sense of control",
     "type": "swipe",
     "options": [
-      { "label": "Out of control", "tags": ["L1_CONTROL_LOW"] },
-      { "label": "In control", "tags": ["L1_CONTROL_HIGH"] }
-    ]
+      { "label": "Scattered / reactive", "tags": ["L1_CONTROL_LOW"] },
+      { "label": "Steady / in charge", "tags": ["L1_CONTROL_HIGH"] }
+    ],
+    "meta": { "group": "core", "covers": ["agency"], "minAskedAfter": 0 }
   },
-
   {
     "id": "L1_safety",
-    "title": "How safe do you feel",
+    "title": "Internal safety",
     "type": "swipe",
     "options": [
-      { "label": "Unsafe or threatened", "tags": ["L1_SAFETY_LOW"] },
-      { "label": "Safe enough", "tags": ["L1_SAFETY_HIGH"] }
-    ]
+      { "label": "On edge / unsafe", "tags": ["L1_SAFETY_LOW"] },
+      { "label": "Safe / grounded", "tags": ["L1_SAFETY_HIGH"] }
+    ],
+    "meta": { "group": "core", "covers": ["safety"], "minAskedAfter": 0 }
   },
-
   {
     "id": "L1_self_worth",
-    "title": "How is your self-worth",
+    "title": "Self-talk",
     "type": "swipe",
     "options": [
-      { "label": "Not good enough",     "tags": ["L1_WORTH_LOW"] },
-      { "label": "I trust myself",      "tags": ["L1_WORTH_HIGH"] }
-    ]
+      { "label": "Harsh / critical", "tags": ["L1_WORTH_LOW"] },
+      { "label": "Kind / supportive", "tags": ["L1_WORTH_HIGH"] }
+    ],
+    "meta": { "group": "core", "covers": ["valence", "agency"], "minAskedAfter": 0 }
   },
-
   {
     "id": "L1_expectations",
-    "title": "Is this going as expected?",
+    "title": "The day ahead feels…",
     "type": "swipe",
     "options": [
-      { "label": "Worse than expected", "tags": ["L1_EXPECT_LOW"] },
-      { "label": "As expected",         "tags": ["L1_EXPECT_OK"] }
-    ]
+      { "label": "Hard / uncertain", "tags": ["L1_EXPECT_LOW"] },
+      { "label": "Manageable", "tags": ["L1_EXPECT_OK"] }
+    ],
+    "meta": { "group": "core", "covers": ["clarity"], "minAskedAfter": 0 }
   },
-
   {
     "id": "L1_pressure",
-    "title": "Do you feel under pressure",
+    "title": "Pressure level",
     "type": "swipe",
     "options": [
-      { "label": "High pressure",  "tags": ["L1_PRESSURE_HIGH"] },
-      { "label": "Low pressure",     "tags": ["L1_PRESSURE_LOW"] }
-    ]
+      { "label": "High pressure", "tags": ["L1_PRESSURE_HIGH"] },
+      { "label": "Low pressure", "tags": ["L1_PRESSURE_LOW"] }
+    ],
+    "meta": { "group": "core", "covers": ["arousal", "safety"], "minAskedAfter": 0 }
   },
-
   {
     "id": "L1_clarity",
-    "title": "How clear are your thoughts",
+    "title": "Mental clarity",
     "type": "swipe",
     "options": [
-      { "label": "Foggy mind", "tags": ["L1_CLARITY_LOW"] },
-      { "label": "Clear mind", "tags": ["L1_CLARITY_HIGH"] }
-    ]
+      { "label": "Foggy", "tags": ["L1_CLARITY_LOW"] },
+      { "label": "Clear", "tags": ["L1_CLARITY_HIGH"] }
+    ],
+    "meta": { "group": "core", "covers": ["clarity"], "minAskedAfter": 0 }
   }
 ]

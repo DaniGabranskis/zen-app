@@ -26,9 +26,14 @@ export default function L6ActionsScreen({ navigation }) {
 
   const finishSession = useStore((st) => st.finishSession);
 
-  // Prefer the explicitly picked emotion (L3) over the engine's top guess.
   // In probe mode decision.top[0] can differ from the final picked emotion.
-  const dominant = useStore((st) => st.sessionDraft?.l3?.emotionKey || st.sessionDraft?.decision?.top?.[0] || '');
+  // Prefer the explicitly picked state (L3) over the engine's top guess.
+  const stateKey = useStore((st) =>
+    st.sessionDraft?.l3?.stateKey ||
+    st.sessionDraft?.decision?.stateKey ||
+    st.sessionDraft?.decision?.dominant ||
+    'mixed'
+  );
   const intensity = useStore((st) => Number(st.sessionDraft?.l4?.intensity || 0));
   const evidenceTags = useStore((st) => st.sessionDraft?.evidenceTags || EMPTY_ARR);
   const triggers = useStore((st) => st.sessionDraft?.l4?.triggers || EMPTY_ARR);
@@ -39,14 +44,14 @@ export default function L6ActionsScreen({ navigation }) {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const recs = useMemo(() => {
-    return selectRecommendations({
-      dominant,
-      intensity,
-      evidenceTags,
-      triggers,
-      bodyMind,
-    });
-  }, [dominant, intensity, evidenceTags, triggers, bodyMind]);
+  return selectRecommendations({
+    stateKey,
+    intensity,
+    evidenceTags,
+    triggers,
+    bodyMind,
+  });
+  }, [stateKey, intensity, evidenceTags, triggers, bodyMind]);
 
   useEffect(() => {
     // English-only comment: When recommendations change, reset selection to the first item.
@@ -69,7 +74,7 @@ export default function L6ActionsScreen({ navigation }) {
     if (navLockRef.current) return;
     navLockRef.current = true;
 
-    const params = { recommendation: selectedRec, dominant };
+    const params = { recommendation: selectedRec, stateKey };
 
     if (typeof navigation.push === 'function') {
       navigation.push('Recommendation', params);

@@ -27,16 +27,18 @@ function safeParseJson(text) {
  * payload = { emotionKey, intensity, triggers:[], bodyMind:[], evidenceTags:[] }
  * returns: { result: { shortDescription }, source: 'ai' | 'local' }
  */
-export async function generateShortDescription(payload = {}) {
+export async function generateShortDescription(payload) {
   const {
-    emotionKey = '',
+    stateKey: stateKeyRaw = '',
     intensity = null,
     triggers = [],
     bodyMind = [],
     evidenceTags = [],
   } = payload;
 
-  const prompt = buildShortDescPrompt({ emotionKey, intensity, triggers, bodyMind, evidenceTags });
+  const stateKey = String(stateKeyRaw || payload?.emotionKey || 'unknown');
+
+  const prompt = buildShortDescPrompt({ stateKey, intensity, triggers, bodyMind, evidenceTags });
 
   const online = async () => {
     const completion = await withTimeout(
@@ -67,7 +69,7 @@ export async function generateShortDescription(payload = {}) {
     console.warn('[AI shortDescription fallback]', e?.message || e);
     // offline/local fallback (простая сборка из входа, чтобы не оставить пустым поле)
     const parts = [];
-    if (emotionKey) parts.push(`State leans toward “${emotionKey}”.`);
+    if (stateKey) parts.push(`State leans toward “${stateKey}”.`);
     if (Number.isFinite(intensity)) parts.push(`Intensity about ${intensity}/10.`);
     const pieces = [];
     if (triggers?.length) pieces.push(`triggers: ${triggers.slice(0,3).join(', ')}`);

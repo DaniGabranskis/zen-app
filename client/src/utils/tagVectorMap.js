@@ -1,8 +1,8 @@
 // All comments in English only.
-import { zeroVector, accumulate } from './emotionSpace';
+import { zeroVector, accumulate } from './stateSpace';
 
 /**
- * Map a single canonical tag from L1/L2 to an emotion-space delta.
+ * Map a single canonical tag from L1/L2 to an state-space delta.
  * Tweak these weights over time with data.
  */
 export function tagDeltaFromCanonical(tag) {

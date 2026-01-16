@@ -1,0 +1,1373 @@
+﻿Starting simplified flow balance check...
+
+
+=== Simulating MORNING Simplified Flow ===
+
+Total baseline combinations: 15625
+node : [baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+At C:\Users\admin\AppData\Local\Temp\ps-script-6d637989-715d-46fa-8598-634bffe11a5d.ps1:77 char:35
++ ... n\zen-app\client; node scripts/checkSimplifiedBalance.js 2>&1 | Out-F ...
++                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([baselineEngine...austed instead.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+
+­ƒôè PATH GENERATION vs COUNTING (Task T1)
+--------------------------------------------------------------------------------
+Morning: Generated=15625, Counted=15625
+Evening: Generated=0, Counted=0
+
+=== Simulating EVENING Simplified Flow ===
+
+Total baseline combinations: 15625
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using exhausted instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+[baselineEngine] W3: Winner grounded blocked by semantic hard-blocks, using blocked instead.
+
+­ƒôè PATH GENERATION vs COUNTING (Task T1)
+--------------------------------------------------------------------------------
+Morning: Generated=0, Counted=0
+Evening: Generated=15625, Counted=15625
+
+================================================================================
+STATE BALANCE REPORT - Simplified Flows
+================================================================================
+
+­ƒôè OVERALL STATISTICS
+- Morning paths: 15,625
+- Evening paths: 15,625
+- Total paths: 31,250
+
+­ƒôê STATE DISTRIBUTION (All Paths)
+--------------------------------------------------------------------------------
+State                |    Morning |    Evening |      Total |        %
+--------------------------------------------------------------------------------
+exhausted            |       4101 |       4101 |       8202 |   26.25%
+pressured            |       2616 |       2616 |       5232 |   16.74%
+averse               |       2186 |       2186 |       4372 |   13.99%
+engaged              |       1625 |       1625 |       3250 |   10.40%
+connected            |       1230 |       1230 |       2460 |    7.87%
+blocked              |       1054 |       1054 |       2108 |    6.75%
+down                 |        926 |        926 |       1852 |    5.93%
+detached             |        722 |        722 |       1444 |    4.62%
+grounded             |        609 |        609 |       1218 |    3.90%
+capable              |        496 |        496 |        992 |    3.17%
+overloaded           |         60 |         60 |        120 |    0.38%
+
+­ƒÄ» TOP STATES (Easiest to reach)
+--------------------------------------------------------------------------------
+  exhausted            - 26.25% (8,202 paths)
+  pressured            - 16.74% (5,232 paths)
+  averse               - 13.99% (4,372 paths)
+  engaged              - 10.40% (3,250 paths)
+  connected            - 7.87% (2,460 paths)
+
+­ƒö╗ BOTTOM STATES (Hardest to reach)
+--------------------------------------------------------------------------------
+  overloaded           - 0.38% (120 paths)
+  capable              - 3.17% (992 paths)
+  grounded             - 3.90% (1,218 paths)
+  detached             - 4.62% (1,444 paths)
+  down                 - 5.93% (1,852 paths)
+
+ÔÜá´©Å  UNREACHABLE STATES
+--------------------------------------------------------------------------------
+  threatened - cannot be reached in simplified flows
+  confrontational - cannot be reached in simplified flows
+  self_critical - cannot be reached in simplified flows
+  uncertain - cannot be reached in simplified flows
+
+­ƒîà MORNING vs ­ƒîå EVENING COMPARISON
+--------------------------------------------------------------------------------
+State                |    Morning % |    Evening % |       Diff
+--------------------------------------------------------------------------------
+exhausted            |       26.25% |       26.25% |     +0.00%
+pressured            |       16.74% |       16.74% |     +0.00%
+averse               |       13.99% |       13.99% |     +0.00%
+engaged              |       10.40% |       10.40% |     +0.00%
+connected            |        7.87% |        7.87% |     +0.00%
+blocked              |        6.75% |        6.75% |     +0.00%
+down                 |        5.93% |        5.93% |     +0.00%
+detached             |        4.62% |        4.62% |     +0.00%
+grounded             |        3.90% |        3.90% |     +0.00%
+capable              |        3.17% |        3.17% |     +0.00%
+
+­ƒöì ELIGIBILITY GATING DIAGNOSTICS
+--------------------------------------------------------------------------------
+
+Average eligible states per vector:
+  Morning: 0.00
+  Evening: 0.00
+
+Eligible count distribution (Morning):
+  0 eligible: 0 (0%)
+  1 eligible: 0 (0%)
+  2 eligible: 0 (0%)
+  3 eligible: 0 (0%)
+  4+ eligible: 0 (0%)
+
+Top 10 ineligibility reasons (Morning):
+
+Top 10 ineligibility reasons (Evening):
+
+­ƒÜ½ ALL-FILTERED DIAGNOSTICS (Task F2 + F3)
+--------------------------------------------------------------------------------
+
+Morning:
+  All-filtered count: 0
+
+Evening:
+  All-filtered count: 0
+
+­ƒôè FORCED UNCERTAIN QUALITY METRICS (Task H1)
+--------------------------------------------------------------------------------
+
+Morning:
+  Forced uncertain rate: 0.00% (0 cases)
+
+Evening:
+  Forced uncertain rate: 0.00% (0 cases)
+
+­ƒôê CONFIDENCE BAND DISTRIBUTION (Task I4)
+--------------------------------------------------------------------------------
+
+Morning:
+  High confidence: 10691 (68.4%)
+  Medium confidence: 3144 (20.1%)
+  Low confidence: 1790 (11.5%)
+  Low confidence rate: 11.46%
+
+  Top states with low confidence:
+    engaged: 458 (25.6%)
+    detached: 336 (18.8%)
+    exhausted: 294 (16.4%)
+    connected: 150 (8.4%)
+    pressured: 130 (7.3%)
+    blocked: 110 (6.1%)
+    grounded: 108 (6.0%)
+    down: 75 (4.2%)
+    averse: 71 (4.0%)
+    capable: 58 (3.2%)
+
+Evening:
+  High confidence: 10691 (68.4%)
+  Medium confidence: 3144 (20.1%)
+  Low confidence: 1790 (11.5%)
+  Low confidence rate: 11.46%
+
+  Top states with low confidence:
+    engaged: 458 (25.6%)
+    detached: 336 (18.8%)
+    exhausted: 294 (16.4%)
+    connected: 150 (8.4%)
+    pressured: 130 (7.3%)
+    blocked: 110 (6.1%)
+    grounded: 108 (6.0%)
+    down: 75 (4.2%)
+    averse: 71 (4.0%)
+    capable: 58 (3.2%)
+
+­ƒö¼ SCORE DIAGNOSTICS (Task C2)
+--------------------------------------------------------------------------------
+
+Morning:
+  Non-finite scores: 0
+  Exact ties (top-2): 0
+  Exact ties (top-3): 0
+  Min score1: 0.1533
+  p05 score1: 0.1661
+
+Evening:
+  Non-finite scores: 0
+  Exact ties (top-2): 0
+  Exact ties (top-3): 0
+  Min score1: 0.1533
+  p05 score1: 0.1661
+
+­ƒôè SCORE1 QUANTILE ANALYSIS (Task I1.1)
+--------------------------------------------------------------------------------
+
+Morning:
+
+  Overall score1 quantiles:
+    p01: 0.1583
+    p05: 0.1661
+    p10: 0.1734
+    p25: 0.2322
+    p50: 0.2913
+    min: 0.1533
+
+  Low confidence score1 quantiles:
+    p01: 0.1580
+    p05: 0.2240
+    p10: 0.2333
+    p25: 0.2603
+    p50: 0.3025
+    min: 0.1542
+
+  Forced uncertain score1 quantiles:
+    p01: N/A
+    p05: N/A
+    p10: N/A
+    p25: N/A
+    p50: N/A
+    min: N/A
+
+  Score1 below thresholds:
+    < 0.04: 0
+    < 0.05: 0
+    < 0.06: 0
+    < 0.08: 0
+
+Evening:
+
+  Overall score1 quantiles:
+    p01: 0.1583
+    p05: 0.1661
+    p10: 0.1734
+    p25: 0.2322
+    p50: 0.2913
+    min: 0.1533
+
+  Low confidence score1 quantiles:
+    p01: 0.1580
+    p05: 0.2240
+    p10: 0.2333
+    p25: 0.2603
+    p50: 0.3025
+    min: 0.1542
+
+  Forced uncertain score1 quantiles:
+    p01: N/A
+    p05: N/A
+    p10: N/A
+    p25: N/A
+    p50: N/A
+    min: N/A
+
+  Score1 below thresholds:
+    < 0.04: 0
+    < 0.05: 0
+    < 0.06: 0
+    < 0.08: 0
+
+­ƒöù TIE HANDLING DIAGNOSTICS (Task D2.4)
+--------------------------------------------------------------------------------
+
+Morning:
+  Total ties: 0
+  Ties resolved: 0
+  Ties unresolved: 0
+  Tie resolution rate: 0.0%
+
+Evening:
+  Total ties: 0
+  Ties resolved: 0
+  Ties forced uncertain: undefined
+  Tie resolution rate: 0.0%
+
+­ƒôè UNCERTAIN STATE BREAKDOWN (Task I5.2 + L1)
+--------------------------------------------------------------------------------
+
+Ô£à No uncertain states detected.
+
+­ƒöä FINAL FALLBACK METRICS (Task U3)
+--------------------------------------------------------------------------------
+
+Morning:
+  Final fallback count: 0 (0.00%)
+  Last resort count: 0 (0.00%)
+  Total fallback rate: 0.00%
+
+Evening:
+  Final fallback count: 0 (0.00%)
+  Last resort count: 0 (0.00%)
+  Total fallback rate: 0.00%
+
+ÔÜá´©Å  TASK O2 DIAGNOSTIC: Uncertain state vs forced uncertain discrepancy
+  Morning: uncertain count = 0, forced uncertain = 0, diff = 0
+  Evening: uncertain count = 0, forced uncertain = 0, diff = 0
+
+­ƒôè NEEDS REFINE SUMMARY (Task L1)
+--------------------------------------------------------------------------------
+
+­ƒôè QUALITY METRICS (Task P(B).4)
+--------------------------------------------------------------------------------
+
+Morning:
+  Uncertain state rate: 0.00% (0 cases)
+  Forced uncertain rate: 0.00% (0 cases)
+  Low clarity rate: 0.31% (48 cases)
+  Medium clarity rate: 0.15% (24 cases)
+  Needs refine rate: 11.46% (1790 cases)
+  Low confidence rate: 11.46% (1790 cases)
+  Match warning rate: 0.00% (0 cases)
+
+  Intersections:
+    Low clarity AND needs refine: 48
+    Low clarity AND low confidence: 48
+    Uncertain state AND low clarity: 0
+
+  Top states among needsRefine:
+    engaged: 458 (25.6%)
+    detached: 336 (18.8%)
+    exhausted: 294 (16.4%)
+    connected: 150 (8.4%)
+    pressured: 130 (7.3%)
+
+Evening:
+  Uncertain state rate: 0.00% (0 cases)
+  Forced uncertain rate: 0.00% (0 cases)
+  Low clarity rate: 0.00% (0 cases)
+  Medium clarity rate: 0.00% (0 cases)
+  Needs refine rate: 0.00% (0 cases)
+  Low confidence rate: 0.00% (0 cases)
+  Match warning rate: 0.00% (0 cases)
+
+  Intersections:
+    Low clarity AND needs refine: 0
+    Low clarity AND low confidence: 0
+    Uncertain state AND low clarity: 0
+
+  Confidence band distribution:
+    Morning:
+      High: 10691 (68.42%)
+      Medium: 3144 (20.12%)
+      Low: 1790 (11.46%)
+    Evening:
+      High: 10691 (68.42%)
+      Medium: 3144 (20.12%)
+      Low: 1790 (11.46%)
+
+­ƒôè SELECTION PATH DISTRIBUTION (Task W0.4)
+
+ÔØî SANITY CHECK ERRORS (Task I5.1):
+--------------------------------------------------------------------------------
+  ERROR: Morning: eveningGenerated === 0. This indicates a problem in path generation.
+  ERROR: Morning: Found 10 baseline vectors with 0 eligible states (strict and hard passes). This violates coverage 
+guarantee.
+  ERROR: Evening: Found 10 baseline vectors with 0 eligible states (strict and hard passes). This violates coverage 
+guarantee.
+--------------------------------------------------------------------------------
+
+ÔÜá´©Å  SANITY CHECK WARNINGS (Task I5.1):
+--------------------------------------------------------------------------------
+  WARNING: Morning: connected appears 1230 times (should be 0 if F_high/T_high/Vneg)
+  WARNING: Evening: connected appears 1230 times (should be 0 if F_high/T_high/Vneg)
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+Morning:
+  strict              :      0 (0.00%)
+  hard                :      0 (0.00%)
+  final_fallback      :      0 (0.00%)
+  last_resort         :      0 (0.00%)
+  none                :      0 (0.00%)
+  Final fallback rate: 0.00%
+  Last resort rate: 0.00%
+
+Evening:
+  strict              :      0 (0.00%)
+  hard                :      0 (0.00%)
+  final_fallback      :      0 (0.00%)
+  last_resort         :      0 (0.00%)
+  none                :      0 (0.00%)
+  Final fallback rate: 0.00%
+  Last resort rate: 0.00%
+
+­ƒôè CONFIDENCE DISTRIBUTION SUMMARY (Task I5.2)
+--------------------------------------------------------------------------------
+
+Morning:
+  High: 10691 (68.4%)
+  Medium: 3144 (20.1%)
+  Low: 1790 (11.5%)
+
+  Top states with low confidence:
+    engaged: 458 (25.6%)
+    detached: 336 (18.8%)
+    exhausted: 294 (16.4%)
+    connected: 150 (8.4%)
+    pressured: 130 (7.3%)
+
+Evening:
+  High: 10691 (68.4%)
+  Medium: 3144 (20.1%)
+  Low: 1790 (11.5%)
+
+  Top states with low confidence:
+    engaged: 458 (25.6%)
+    detached: 336 (18.8%)
+    exhausted: 294 (16.4%)
+    connected: 150 (8.4%)
+    pressured: 130 (7.3%)
+
+================================================================================

@@ -1,0 +1,68 @@
+[
+  {
+    "id": "L0_E_LOAD",
+    "type": "question",
+    "title": "How demanding was your day overall?",
+    "options": [
+      { "label": "Light — mostly easy", "tags": ["L0_DAY_LOAD_LIGHT"] },
+      { "label": "Okay — manageable", "tags": ["L0_DAY_LOAD_OK"] },
+      { "label": "Too much — overwhelming", "tags": ["L0_DAY_LOAD_TOO_MUCH"] }
+    ],
+    "meta": { "group": "l0", "covers": ["safety"], "minAskedAfter": 0 }
+  },
+  {
+    "id": "L0_E_RECOVERY",
+    "type": "question",
+    "title": "How do you feel now?",
+    "options": [
+      { "label": "Drained — I have nothing left", "tags": ["L0_RECOVERY_DRAINED"] },
+      { "label": "Okay — holding steady", "tags": ["L0_RECOVERY_OK"] },
+      { "label": "Recharged — I recovered well", "tags": ["L0_RECOVERY_RECHARGED"] }
+    ],
+    "meta": { "group": "l0", "covers": ["arousal"], "minAskedAfter": 0 }
+  },
+  {
+    "id": "L0_E_SOCIAL",
+    "type": "question",
+    "title": "How was your social contact today?",
+    "options": [
+      { "label": "Too little — felt isolated", "tags": ["L0_SOCIAL_ISOLATED"] },
+      { "label": "Enough — balanced", "tags": ["L0_SOCIAL_ADEQUATE"] },
+      { "label": "Too much — socially exhausted", "tags": ["L0_SOCIAL_OVERDONE"] }
+    ],
+    "meta": { "group": "l0", "covers": ["social"], "minAskedAfter": 0 }
+  },
+  {
+    "id": "L0_E_STRESS",
+    "type": "question",
+    "title": "What was your stress level today?",
+    "options": [
+      { "label": "Low — calm", "tags": ["L0_STRESS_LOW"] },
+      { "label": "Medium — some pressure", "tags": ["L0_STRESS_MED"] },
+      { "label": "High — intense", "tags": ["L0_STRESS_HIGH"] }
+    ],
+    "meta": { "group": "l0", "covers": ["safety"], "minAskedAfter": 0 }
+  },
+  {
+    "id": "L0_E_PROGRESS",
+    "type": "question",
+    "title": "How did you move through your day?",
+    "options": [
+      { "label": "Stuck — I couldn't move forward", "tags": ["L0_PROGRESS_STUCK"] },
+      { "label": "Okay — some progress", "tags": ["L0_PROGRESS_OK"] },
+      { "label": "Proud — I handled it well", "tags": ["L0_PROGRESS_PROUD"] }
+    ],
+    "meta": { "group": "l0", "covers": ["agency"], "minAskedAfter": 0 }
+  },
+  {
+    "id": "L0_E_MIND",
+    "type": "question",
+    "title": "How noisy is your mind right now?",
+    "options": [
+      { "label": "Noisy — rumination / loops", "tags": ["L0_MIND_NOISY"] },
+      { "label": "Okay — mixed", "tags": ["L0_MIND_OK"] },
+      { "label": "Calm — settled", "tags": ["L0_MIND_CALM"] }
+    ],
+    "meta": { "group": "l0", "covers": ["clarity"], "minAskedAfter": 0 }
+  }
+]

@@ -2,13 +2,15 @@ import React from 'react';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import MainTabNavigator from './MainTabNavigator';
-import ReflectionFlowScreen from './screens/ReflectionFlowScreen';
+import ReflectionModeChoiceScreen from './screens/ReflectionModeChoiceScreen';
 import useStore from './store/useStore';
 import L4DeepenScreen from './screens/L4DeepenScreen';
 import L5SummaryScreen from './screens/L5SummaryScreen';
-import L6ActionsScreen from './screens/L6ActionsScreen';
-import RecommendationScreen from './screens/RecommendationScreen';
+import BaselineCheckInScreen from './screens/BaselineCheckInScreen';
+import DiagnosticFlowScreen from './screens/DiagnosticFlowScreen';
 import NavigationLogger from '../scripts/NavigationLogger';
+import SessionTypeChoiceScreen from './screens/SessionTypeChoiceScreen';
+import PlansForDayScreen from './screens/PlansForDayScreen';
 import HistoryResultModal from './screens/HistoryResultModal';
 
 const Stack = createNativeStackNavigator();
@@ -41,16 +43,13 @@ export default function AppNavigator() {
           <Stack.Screen name="MainTabs" component={MainTabNavigator} />
 
           {/* Экраны вне табов */}
-          <Stack.Screen name="ReflectionFlow" component={ReflectionFlowScreen} />
+          <Stack.Screen name="ReflectionFlow" component={ReflectionModeChoiceScreen} />
+          <Stack.Screen name="SessionTypeChoice" component={SessionTypeChoiceScreen} />
+          <Stack.Screen name="BaselineCheckIn" component={BaselineCheckInScreen} />
+          <Stack.Screen name="PlansForDay" component={PlansForDayScreen} />
+          <Stack.Screen name="DiagnosticFlow" component={DiagnosticFlowScreen} />
           <Stack.Screen name="L4Deepen" component={L4DeepenScreen} options={{ headerShown: false }} />
           <Stack.Screen name="L5Summary" component={L5SummaryScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="L6Actions" component={L6ActionsScreen} options={{ headerShown: false }} />
-          <Stack.Screen
-            name="Recommendation"
-            component={RecommendationScreen}
-            options={{ headerShown: false, gestureEnabled: false }}
-          />
-
           {/* История: модалка только для просмотра */}
           <Stack.Screen
             name="ResultModal"

@@ -6,7 +6,9 @@ import {
   emptyState,
   clampState,
   rankEmotions,
-} from '../utils/emotionSpace.js';
+} from "../utils/emotionSpace.js";
+import { rankStates } from "../utils/stateSpace.js";
+import { levelizeStateVec } from "../utils/stateEligibility.js";
 import { getPolarityFromMeta, POLARITY_FALLBACK } from '../data/emotionMeta';
 
 // Derive emotion keys from data file
@@ -19,10 +21,16 @@ export { emotions };
 
 
 // Thresholds for routing decisions
-const T_DOM = 0.20;      // confident dominant: strong peak
-const T_MIX = 0.08;      // allow mix if top emotion is at least 8%
-const DELTA_MIX = 0.03;  // if p1 - p2 < 3% → treat as mix (when p1 is high enough)
-const DELTA_PROBE = 0.0002; // if p1 - p2 < 1% → ask for probe
+const T_DOM = 0.20;      // confident dominant: strong peak (>= 20%)
+const T_MIX_MIN = 0.12;  // minimum probability for both top-2 to be considered for "mix" (>= 12% each)
+const DELTA_MIX = 0.025; // if p1 - p2 < 2.5% AND both p1, p2 >= T_MIX_MIN → treat as mix
+const DELTA_PROBE = 0.04; // if p1 - p2 < 4% OR confidence low → probe for clarification
+const CONFIDENCE_LOW = 0.35; // if confidence < 35% → probe (regardless of delta)
+
+// Helper: clamp value to range
+function clamp(v, min, max) {
+  return Math.max(min, Math.min(max, v));
+}
 
 // ============================================================================
 // TAG → DIMENSION RULES
@@ -31,6 +39,58 @@ const DELTA_PROBE = 0.0002; // if p1 - p2 < 1% → ask for probe
 // ============================================================================
 
 const TAG_RULES = {
+    // ───────────────────────────────
+  // L0 — state check-in (morning/evening baseline)
+  // ───────────────────────────────
+
+  L0_ENERGY_LOW:  { arousal: -0.3, fatigue: +1.4, tension: +0.2 },
+  L0_ENERGY_OK:   { arousal: +0.6, fatigue: +0.2 },
+  L0_ENERGY_HIGH: { arousal: +1.6, fatigue: -0.2, valence: +0.2 },
+
+  L0_SLEEP_POOR: { fatigue: +1.3, certainty: -0.4, tension: +0.2, valence: -0.2 },
+  L0_SLEEP_OK:   { fatigue: +0.5, certainty: +0.1 },
+  L0_SLEEP_GOOD: { fatigue: -0.4, certainty: +0.4, valence: +0.4 },
+
+  L0_PLAN_LOAD_LOW:  { tension: -0.2, certainty: +0.2, valence: +0.2 },
+  L0_PLAN_LOAD_MED:  { tension: +0.2, arousal: +0.3 },
+  L0_PLAN_LOAD_HIGH: { tension: +0.8, arousal: +0.5, fatigue: +0.6, agency: -0.3 },
+
+  L0_CONTROL_LOW:  { agency: -0.6, tension: +0.5, certainty: -0.2 },
+  L0_CONTROL_MED:  { agency: +0.2, tension: +0.2 },
+  L0_CONTROL_HIGH: { agency: +0.7, tension: -0.1, certainty: +0.3, valence: +0.2 },
+
+  L0_CLARITY_FOGGY: { certainty: -0.7, fatigue: +0.4, tension: +0.2 },
+  L0_CLARITY_OK:    { certainty: +0.2 },
+  L0_CLARITY_CLEAR: { certainty: +0.7, valence: +0.2 },
+
+  L0_SOCIAL_AVOID:   { socialness: -0.2, valence: -0.2 },
+  L0_SOCIAL_NEUTRAL: { socialness: +0.2 },
+  L0_SOCIAL_SEEK:    { socialness: +0.8, valence: +0.3, agency: +0.2 },
+
+  L0_DAY_LOAD_LIGHT:     { tension: -0.2, valence: +0.2 },
+  L0_DAY_LOAD_OK:        { tension: +0.2 },
+  L0_DAY_LOAD_TOO_MUCH:  { tension: +0.9, fatigue: +0.6, agency: -0.2, valence: -0.3 },
+
+  L0_RECOVERY_DRAINED:   { fatigue: +1.5, valence: -0.4, arousal: -0.2 },
+  L0_RECOVERY_OK:        { fatigue: +0.4, arousal: +0.3 },
+  L0_RECOVERY_RECHARGED: { fatigue: -0.4, valence: +0.3, arousal: +0.6 },
+
+  L0_SOCIAL_ISOLATED: { socialness: -0.2, valence: -0.6, fatigue: +0.2 },
+  L0_SOCIAL_ADEQUATE: { socialness: +0.5, valence: +0.2 },
+  L0_SOCIAL_OVERDONE: { socialness: +1.0, fatigue: +0.6, tension: +0.2 },
+
+  L0_STRESS_LOW:  { tension: -0.2, fear_bias: -0.2, valence: +0.2 },
+  L0_STRESS_MED:  { tension: +0.4, fear_bias: +0.3 },
+  L0_STRESS_HIGH: { tension: +0.9, fear_bias: +0.9, valence: -0.3 },
+
+  L0_PROGRESS_STUCK: { agency: -0.4, certainty: -0.2, valence: -0.3, tension: +0.2 },
+  L0_PROGRESS_OK:    { agency: +0.2, valence: +0.1 },
+  L0_PROGRESS_PROUD: { agency: +0.7, certainty: +0.3, valence: +0.6 },
+
+  L0_MIND_NOISY: { certainty: -0.6, tension: +0.5, fear_bias: +0.2 },
+  L0_MIND_OK:    { certainty: +0.1 },
+  L0_MIND_CALM:  { certainty: +0.6, tension: -0.2, valence: +0.2 },
+  
   // ───────────────────────────────
   // L1 — базовые эмоциональные оси
   // ───────────────────────────────
@@ -167,7 +227,9 @@ const TAG_RULES = {
   L2_SOURCE_PEOPLE: { other_blame: +0.8, socialness: +1 },
   L2_SOURCE_TASKS:  { other_blame: +0.3, tension: +0.4 },
 
+  L2_UNCERTAINTY_HIGH: { certainty: -1.1, arousal: 0.3, tension: 0.4 }, // Alias for L2_UNCERT_HIGH
   L2_UNCERT_HIGH: { certainty: -1.1, arousal: 0.3, tension: 0.4 },
+  L2_UNCERTAINTY_LOW: { certainty: 0.7, tension: -0.4 }, // Alias for L2_UNCERT_LOW
   L2_UNCERT_LOW:  { certainty: 0.7, tension: -0.4 },
 
   L2_SOCIAL_PAIN_YES: {
@@ -186,7 +248,23 @@ const TAG_RULES = {
     arousal: -0.4 
   },
 
-    L2_PRESENT: {
+  // L2_numb card tags
+  L2_NUMB_YES: { 
+    arousal: -0.9,
+    certainty: -1.0,
+    agency: -1.0,
+    fatigue: +1.8,
+    tension: -0.3,
+    socialness: -0.5,
+  },
+  L2_NUMB_NO: {
+    certainty: +0.4,
+    tension: -0.3,
+    agency: +0.3,
+    socialness: +0.5,
+  },
+
+  L2_PRESENT: {
     certainty: +0.4,
     tension: -0.3,
     agency: +0.3
@@ -196,6 +274,19 @@ const TAG_RULES = {
     fatigue: -0.4,
     valence: +0.3,
     tension: -0.2
+  },
+
+  // L2_heavy card tags
+  L2_HEAVY_YES: {
+    fatigue: +1.8,
+    tension: +0.5,
+    valence: -0.5,
+    arousal: -0.3,
+  },
+  L2_HEAVY_NO: {
+    fatigue: -0.3,
+    tension: -0.2,
+    valence: +0.2,
   },
 
   L2_SELF_BLAME_YES: {
@@ -348,46 +439,50 @@ function softmaxFromScores(pairs, temperature = 0.9, eps = 1e-6) {
 
 /**
  * Decide between single / mix / probe based on sorted probabilities.
- * pairs: [ [emotionKey, prob], ... ] sorted desc by prob.
+ * New logic: "mix" only for genuinely strong dual candidates, low confidence → probe/leaning.
+ * pairs: [ [stateKey, prob], ... ] sorted desc by prob.
  */
 function decideMixOrSingle(pairs) {
   const [first, second] = pairs;
   const [e1, p1] = first || [];
   const [e2, p2] = second || [];
   const delta = (p1 ?? 0) - (p2 ?? 0);
+  const confidence = clamp((delta / 0.06), 0, 1); // Convert delta to confidence score
 
   const base = {
-    dominant: e1 || 'unknown',
-    secondary: e2 || null, // <- сразу кладём вторую эмоцию, если есть
-    confidence: p1 ?? 0,
+    dominant: e1 || 'uncertain',
+    secondary: e2 || null,
+    confidence,
     delta,
     mode: 'single',
+    isUncertain: false,
   };
 
   console.log('[evidenceEngine] decideMixOrSingle', {
-    e1, p1, e2, p2, delta,
-    T_DOM, T_MIX, DELTA_PROBE, DELTA_MIX,
+    e1, p1, e2, p2, delta, confidence,
+    T_DOM, T_MIX_MIN, DELTA_PROBE, DELTA_MIX, CONFIDENCE_LOW,
   });
 
-  // 1) Супер-уверенная одна эмоция
+  // 1) Very confident single state (strong peak >= 20%)
   if (p1 >= T_DOM) {
-    return { ...base, mode: 'single' };
+    return { ...base, mode: 'single', isUncertain: false };
   }
 
-  // 2) Смесь двух, gap маленький
-  if (p1 >= T_MIX && delta < DELTA_MIX && e2) {
-    return { ...base, mode: 'mix' };
+  // 2) True "mix": both top-2 are strong (>= T_MIX_MIN each) AND delta is small
+  // This means we have genuinely two significant states, not just uncertainty
+  if (p1 >= T_MIX_MIN && p2 >= T_MIX_MIN && delta < DELTA_MIX && e2) {
+    return { ...base, mode: 'mix', isUncertain: false };
   }
 
-  // 3) Need extra disambiguation through probe
-  // We only trigger probe when top-2 emotions are almost equal.
-  // We DO NOT use "p1 < T_MIX" anymore, otherwise we always fall into probe.
-  if (delta < DELTA_PROBE && e2) {
-    return { ...base, mode: 'probe' };
+  // 3) Low confidence or close scores → probe for clarification
+  // This handles cases where signals are weak or ambiguous
+  if (confidence < CONFIDENCE_LOW || (delta < DELTA_PROBE && e2)) {
+    return { ...base, mode: 'probe', isUncertain: true };
   }
 
-  // 4) Дефолт: одна эмоция, но secondary всё равно остаётся как второй кандидат
-  return { ...base, mode: 'single' };
+  // 4) Default: single state with secondary candidate (leaning)
+  // Even if not highly confident, we pick the top candidate but flag uncertainty
+  return { ...base, mode: 'single', isUncertain: confidence < 0.5 };
 }
 
 
@@ -413,7 +508,7 @@ export function accumulateTagsFromCards(cards = []) {
  * Classify canonical tags into emotions and decide routing.
  * @returns {{ decision: {dominant, secondary, confidence, delta, mode}, probsSorted: [ [key, p], ... ] }}
  */
-export function classifyTags(tags = []) {
+export function classifyTags(tags = [], opts = {}) {
   // 1) Build dimensional state
   const state = buildStateFromTags(tags);
 
@@ -421,7 +516,8 @@ export function classifyTags(tags = []) {
   const similarityRank = rankEmotions(state); // [{ key, score }, ...]
 
   // 3) Convert similarity scores to probabilities
-  const withProb = softmaxFromScores(similarityRank); // [{ key, p }, ...]
+  const temperature = Number.isFinite(opts?.temperature) ? opts.temperature : undefined;
+  const withProb = softmaxFromScores(similarityRank, temperature ?? 0.9); // [{ key, p }, ...]
   const pairs = withProb.map(({ key, p }) => [key, p]);
 
   // 4) Decide mode (single/mix/probe)
@@ -436,7 +532,25 @@ export function classifyTags(tags = []) {
  * Main entry for routing from cards (L1/L2/Probe).
  * Keeps the same shape as the old version.
  */
-export function routeEmotionFromCards(acceptedCards) {
+
+/**
+ * Compute a softmax temperature based on evidence quality.
+ * More "notSure" answers => flatter distribution => lower confidence.
+ * This does NOT change the state vector (only confidence).
+ */
+function computeEvidenceTemperature(cards, base = 0.9) {
+  const arr = Array.isArray(cards) ? cards : [];
+  if (!arr.length) return base;
+
+  const notSureCount = arr.filter((c) => c?.answer === 'notSure' || c?.selectedOption === 'Not sure').length;
+  const ratio = notSureCount / Math.max(arr.length, 1);
+
+  // Increase temperature up to +0.6 at 100% notSure.
+  const temp = base + ratio * 0.6;
+  return Math.min(Math.max(temp, 0.6), 1.6);
+}
+
+export function routeEmotionFromCards(acceptedCards, opts = {}) {
   const tags = accumulateTagsFromCards(acceptedCards || []);
 
   const tagFreq = {};
@@ -445,7 +559,8 @@ export function routeEmotionFromCards(acceptedCards) {
   }
 
   // ❗ Теперь забираем ещё и state
-  const { decision, probsSorted, state } = classifyTags(tags);
+  const temperature = Number.isFinite(opts?.temperature) ? opts.temperature : computeEvidenceTemperature(acceptedCards);
+  const { decision, probsSorted, state } = classifyTags(tags, { temperature });
 
   const probs = {};
   for (const [k, p] of probsSorted) {
@@ -476,8 +591,7 @@ export function getEmotionMeta(key) {
       key: '',
       name: '',
       color: ['#A78BFA', '#7C3AED'],
-      emoji: '',
-      polarity: 'neutral',
+polarity: 'neutral',
     };
   }
 
@@ -497,8 +611,7 @@ export function getEmotionMeta(key) {
       key,
       name: key,
       color: ['#A78BFA', '#7C3AED'],
-      emoji: '',
-      polarity: 'neutral',
+polarity: 'neutral',
     };
   }
 
@@ -530,7 +643,280 @@ export function getEmotionMeta(key) {
     key: found.key,
     name: found.name,
     color: colorArray,
-    emoji: found.emoji || '',
-    polarity,
+polarity,
+  };
+}
+// ============================================================================
+// STATE ROUTING (NEW)
+// Primary routing target: "state" (broader than emotion).
+// Emotion remains available as a secondary lens (top emotion for the same vector).
+// ============================================================================
+
+/**
+ * Classify canonical tags into states and decide routing.
+ * @returns {{ decision: {dominant, secondary, confidence, delta, mode}, probsSorted: [ [key, p], ... ], state }}
+ */
+/**
+ * Checks if a state represents a strong signal pattern that should override uncertainty.
+ * @param {string} topKey - Top-ranked state key
+ * @param {Object} levels - Levelized state vector
+ * @returns {boolean} true if state matches a strong pattern
+ */
+function isStrongSignalStateEvidence(topKey, levels) {
+  switch (topKey) {
+    case 'exhausted':
+      return levels.F_high && levels.Ar_low;
+    case 'overloaded':
+      return levels.T_high && levels.F_high && (!levels.Ar_low || (levels.Ag_low && levels.Vneg));
+    case 'blocked':
+      return levels.T_high && levels.Ag_low && !levels.Ar_low;
+    case 'engaged':
+      return levels.Vpos && levels.Ar_high && !levels.T_high && !levels.F_high && !levels.Ag_low;
+    case 'grounded':
+      return levels.T_low && levels.Ag_high && !levels.Ar_high && !levels.F_high && !levels.Vneg && levels.C_high;
+    default:
+      return false;
+  }
+}
+
+/**
+ * Decides when to force uncertain as the output state for evidence-based classification.
+ * Task D4: Updated to match baseline logic (score floor + delta pattern).
+ * @param {Object} params - { levels, delta, score1, score2, topKey }
+ * @returns {{ force: boolean, reason: string | null }} Object with force flag and reason
+ */
+function shouldReturnUncertainEvidence({ levels, delta, score1, score2, topKey }) {
+  const DELTA_SMALL = 0.03;
+  const DELTA_TINY = 0.015;
+  const SCORE_WEAK = 0.22;  // below this: top match is weak
+  const SCORE_OK = 0.28;    // above this: accept even if delta small
+
+  // 0) If top score is strong, do NOT force uncertain just because delta is small
+  if (score1 >= SCORE_OK) {
+    return { force: false, reason: null };
+  }
+
+  // 1) Strong-signal override: do NOT force uncertain if top-1 matches a strong pattern
+  if (topKey && isStrongSignalStateEvidence(topKey, levels)) {
+    // still allow uncertain only if race is extremely tight
+    if (delta < 0.008) return { force: true, reason: 'strong_signal_race' };
+    return { force: false, reason: null };
+  }
+
+  // 2) Absolute confidence override: if top score is very high, accept it even with small delta
+  if (score1 >= 0.78 && delta >= 0.01) return { force: false, reason: null };
+
+  // 3) Clarity-low ambiguity: only if score is also weak-ish
+  if (levels.C_low && delta < DELTA_SMALL && score1 < SCORE_OK) {
+    return { force: true, reason: 'clarity_low' };
+  }
+
+  // 4) Pure delta rule: only when both delta tiny AND score weak
+  if (delta < DELTA_TINY && score1 < SCORE_WEAK) {
+    return { force: true, reason: 'delta_too_small' };
+  }
+
+  return { force: false, reason: null };
+}
+
+export function classifyStates(tags = [], opts = {}) {
+  // 1) Build dimensional state vector (same as for emotions)
+  const state = buildStateFromTags(tags);
+
+  // 2) Rank states by similarity with eligibility gates
+  // Use 'cards' mode for evidence-based classification (allows deep-only states)
+  // Note: uncertain is no longer in candidates (excluded in rankStates)
+  const similarityRank = rankStates(state, {
+    eligibility: {
+      enabled: true,
+      mode: 'cards', // Allows deep-only states (threatened, self_critical, confrontational)
+      debug: opts?.eligibilityDebug || false,
+    },
+  }); // [{ key, score }, ...]
+
+  // Handle empty ranked list (all states filtered out)
+  if (!similarityRank || similarityRank.length === 0) {
+    return {
+      decision: {
+        dominant: 'uncertain',
+        secondary: null,
+        confidence: 0,
+        delta: 0,
+        isUncertain: true,
+        mode: 'probe',
+      },
+      probsSorted: [['uncertain', 1.0]],
+      state,
+    };
+  }
+
+  // 3) Task D4: Handle ties BEFORE forcing uncertain (same as baseline)
+  const top1 = similarityRank[0];
+  const top2 = similarityRank[1];
+  const top3 = similarityRank[2];
+  const score1 = top1?.score || 0;
+  const score2 = top2?.score || 0;
+  const score3 = top3?.score || 0;
+  const delta = score1 - score2;
+  
+  const levels = levelizeStateVec(state);
+  
+  // Task D4: Tie-breaker function (mirror of baseline)
+  function breakTieBySignalsEvidence({ topKeys, levels }) {
+    if (!topKeys || topKeys.length === 0) return null;
+    
+    const priority = [
+      'overloaded',
+      'blocked',
+      'pressured',
+      'exhausted',
+      'down',
+      'averse',
+      'engaged',
+      'grounded',
+      'capable',
+      'connected',
+      'detached',
+    ];
+
+    for (const key of priority) {
+      if (!topKeys.includes(key)) continue;
+      if (key === 'exhausted') {
+        if (isStrongSignalStateEvidence(key, levels)) return key;
+        continue;
+      }
+      if (isStrongSignalStateEvidence(key, levels)) return key;
+    }
+
+    for (const key of priority) {
+      if (topKeys.includes(key)) return key;
+    }
+    
+    return topKeys[0] || null;
+  }
+  
+  // Task D4: Handle ties BEFORE forcing uncertain
+  let dominant;
+  let secondary;
+  let forceUncertain = false;
+  let uncertainReason = null;
+  
+  const EPS = 1e-9;
+  const isTie = Math.abs(delta) <= EPS;
+  
+  if (isTie && score1 >= 0.22) {
+    // Multi-way tie: collect all candidates with score === score1
+    const tied = similarityRank.filter(r => Math.abs((r.score ?? 0) - score1) <= EPS);
+    const tiedKeys = tied.map(r => r.key).filter(Boolean);
+    
+    if (tiedKeys.length > 0) {
+      const tieWinner = breakTieBySignalsEvidence({ topKeys: tiedKeys, levels });
+      if (tieWinner) {
+        dominant = tieWinner;
+        secondary = tiedKeys.find(k => k !== tieWinner) || null;
+        forceUncertain = false;
+      } else {
+        dominant = tiedKeys[0] || 'uncertain';
+        secondary = tiedKeys[1] || null;
+        forceUncertain = false;
+      }
+    } else {
+      dominant = top1?.key || 'uncertain';
+      secondary = top2?.key || null;
+      forceUncertain = false;
+    }
+  } else {
+    // Normal case (no tie): apply uncertainty rule
+    const result = shouldReturnUncertainEvidence({
+      levels,
+      delta,
+      score1,
+      score2,
+      topKey: top1?.key,
+    });
+
+    forceUncertain = result.force;
+    uncertainReason = result.reason;
+
+    dominant = forceUncertain ? 'uncertain' : (top1?.key || 'uncertain');
+    secondary = forceUncertain ? (top1?.key || null) : (top2?.key || null);
+  }
+
+  // 4) Convert similarity scores to probabilities
+  const temperature = Number.isFinite(opts?.temperature) ? opts.temperature : undefined;
+  const withProb = softmaxFromScores(similarityRank, temperature ?? 0.9);
+  const pairs = withProb.map(({ key, p }) => [key, p]);
+
+  // 5) Decide mode (single/mix/probe)
+  const decision = decideMixOrSingle(pairs);
+  
+  // 6) Override decision with tie/uncertain handling
+  decision.dominant = dominant;
+  decision.secondary = secondary;
+  if (forceUncertain) {
+    decision.isUncertain = true;
+    decision.mode = decision.mode || 'probe';
+    decision.forcedUncertain = true;
+    decision.uncertainReason = uncertainReason;
+    // Insert uncertain at top of pairs for probsSorted
+    pairs.unshift(['uncertain', 0.5]);
+  }
+
+  return { decision, probsSorted: pairs, state };
+}
+
+/**
+ * Main entry for routing from cards (L1/L2/Probe) into PRIMARY STATE.
+ * Shape is intentionally compatible with routeEmotionFromCards.
+ */
+export function routeStateFromCards(acceptedCards, opts = {}) {
+  const tags = accumulateTagsFromCards(acceptedCards || []);
+
+  const tagFreq = {};
+  for (const t of tags) {
+    tagFreq[t] = (tagFreq[t] || 0) + 1;
+  }
+
+  const temperature = Number.isFinite(opts?.temperature)
+    ? opts.temperature
+    : computeEvidenceTemperature(acceptedCards);
+
+  const { decision, probsSorted, state } = classifyStates(tags, { temperature });
+
+  const probs = {};
+  for (const [k, p] of probsSorted) {
+    probs[k] = p;
+  }
+
+  // Secondary lens: derive top emotions for the same state vector
+  const emoWithProb = softmaxFromScores(rankEmotions(state), temperature ?? 0.9);
+  const emoPairs = emoWithProb.map(({ key, p }) => [key, p]);
+  const topEmotions = emoPairs.slice(0, 3).map(([k]) => k);
+
+  // Fallback: if dominant is invalid, use 'uncertain' (not 'mixed')
+  const finalDominant = decision.dominant || 'uncertain';
+  const finalTop = [finalDominant, decision.secondary || null].filter(Boolean);
+
+  return {
+    // Primary
+    stateKey: finalDominant,
+    top: finalTop.length > 0 ? finalTop : [finalDominant],
+
+    // Backward-compatible fields (used by flow code)
+    dominant: finalDominant,
+    secondary: decision.secondary || null,
+    confidence: decision.confidence || 0,
+    delta: decision.delta || 0,
+    isUncertain: decision.isUncertain || false, // Flag for probe/refinement needed
+    probs,
+    tagFreq,
+    mode: decision.mode,
+
+    // Raw vector used for explainability and future tuning
+    vector: state,
+
+    // Secondary emotion lens (emotions can still be 'mixed' as fallback)
+    emotionKey: topEmotions[0] || 'mixed',
+    emotionTop: topEmotions,
   };
 }

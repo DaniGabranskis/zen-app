@@ -36,8 +36,8 @@ Constraints:
 
 // --- NEW: buildShortDescPrompt ---
 // Strict-JSON prompt for L5 shortDescription (1–3 short sentences).
-export function buildShortDescPrompt({ emotionKey, intensity, triggers, bodyMind, evidenceTags }) {
-  const ek = String(emotionKey || 'unknown');
+export function buildShortDescPrompt({ stateKey, intensity, triggers, bodyMind, evidenceTags }) {
+  const ek = String(stateKey || 'unknown');
   const it = Number.isFinite(intensity) ? Number(intensity) : null;
 
   const trig = Array.isArray(triggers) && triggers.length ? triggers.slice(0, 8) : [];

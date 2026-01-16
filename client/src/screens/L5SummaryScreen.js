@@ -21,10 +21,14 @@ import useStore from '../store/useStore';
 import useThemeVars from '../hooks/useThemeVars';
 import { estimateIntensity } from '../utils/intensity';
 import { getEmotionMeta } from '../utils/evidenceEngine';
+import { getStateMeta, emotionToStateKey } from "../data/stateMeta";
+
 import { makeHeaderStyles, makeBarStyles, computeBar, BAR_BTN_H } from '../ui/screenChrome';
 import { generateShortDescription } from '../utils/aiService';
 import MiniInsightCard from '../components/MiniInsightCard';
+import FeedbackModal from '../components/FeedbackModal'; // Task AJ2: Ground truth lite
 import { Ionicons } from '@expo/vector-icons';
+import { logDecisionPayload } from '../utils/sessionTelemetry.js'; // Task AJ1: Telemetry
 
 
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
@@ -261,6 +265,13 @@ export default function L5SummaryScreen({ navigation, route }) {
   const item = params?.item || (fromHistory ? params : null);
   const histSess = (fromHistory && item) ? (item.session || {}) : null;
   const t = useThemeVars();
+  const flowMode = useStore(s => s.sessionDraft?.flowMode || null);
+  const finishSession = useStore(s => s.finishSession);
+  // Simplified only applies for a live session, not when viewing History
+  const simplified = !fromHistory && (params?.mode === 'simplified' || flowMode === 'simplified');
+  const isSimplifiedSession =
+  simplified ||
+  (fromHistory && ((histSess?.flowMode || item?.session?.flowMode) === 'simplified'));
   const isDarkTheme = t.themeName === 'dark';
   const insets = useSafeAreaInsets();
   const { width: WIN_W } = useWindowDimensions();
@@ -274,12 +285,54 @@ export default function L5SummaryScreen({ navigation, route }) {
   const _evidenceTags     = useStore(s => s.sessionDraft?.evidenceTags);
   const evidenceTags      = (histSess?.evidenceTags) ?? (_evidenceTags ?? EMPTY_ARR);
 
+  // Task I3.1: Get decision with confidenceBand and matchWarning
+  const _decision = useStore(s => s.sessionDraft?.decision);
+  const decision = fromHistory
+    ? (histSess?.decision || null)
+    : (_decision || null);
+  
+  const confidenceBand = decision?.confidenceBand || null; // 'high' | 'medium' | 'low'
+  const matchWarning = decision?.matchWarning || null; // 'weak_match_extreme' | null
+  const forcedUncertain = decision?.forcedUncertain || false;
+  const uncertainReason = decision?.uncertainReason || null; // 'extreme_uncertainty' | 'all_filtered' | null (no longer 'clarity_low')
+  const clarityFlag = decision?.clarityFlag || null; // Task P(B).2: 'low' | 'medium' | null — indicates clarity quality without forcing uncertain
+  const needsRefine = decision?.needsRefine || false; // Task P(B).2: Semantic flag for refinement recommendation
+  
+  // Task AE6: Deep dive results (micro state and macro flip)
+  const microKey = decision?.microKey || null; // Deep-only micro state (e.g., 'pressured.rushed')
+  const macroFlipApplied = decision?.macroFlipApplied || false; // True if macro was flipped from baseline
+  const macroFlipReason = decision?.macroFlipReason || null; // Reason for macro flip (if applied)
+  
+  // Task Q3: Product rule for Deep Dive recommendation
+  // Rule: Show Deep Dive CTA if needsRefine === true AND (clarityFlag === 'low' OR confidenceBand === 'low')
+  // Cooldown: Show always if 2 consecutive sessions have low confidence, otherwise respect cooldown
+  const history = useStore(s => s.history || []);
+  const recentSessions = history.slice(0, 2); // Last 2 sessions
+  const consecutiveLowConfidence = recentSessions.filter(s => {
+    const sessDecision = s?.session?.decision;
+    return sessDecision?.confidenceBand === 'low' || sessDecision?.needsRefine === true;
+  }).length >= 2;
+  
+  // Task Q3: Deep Dive recommendation trigger
+  const shouldShowDeepDiveCTA = !fromHistory && (
+    needsRefine === true && (clarityFlag === 'low' || confidenceBand === 'low') ||
+    consecutiveLowConfidence ||
+    stateKey === 'uncertain' ||
+    (confidenceBand === 'medium' && clarityFlag === 'low')
+  );
+
   // 1) main source - router solution
   const _l3Emotion  = useStore(s => s.sessionDraft?.l3?.emotionKey);
+  const _l3State   = useStore(s => s.sessionDraft?.l3?.stateKey);
+
 
   const emotionKey  = fromHistory
     ? (item?.dominantGroup || histSess?.l3?.emotionKey || EMPTY_STR)
     : (_l3Emotion || EMPTY_STR);
+  const stateKey = fromHistory
+    ? (histSess?.l3?.stateKey || emotionToStateKey(emotionKey))
+    : (_l3State || emotionToStateKey(emotionKey));
+
 
 
   const historyItems = useStore(s => {
@@ -348,10 +401,24 @@ export default function L5SummaryScreen({ navigation, route }) {
 
   const intensityBucket  = previewIntensity <= 3 ? 'Low' : previewIntensity <= 6 ? 'Medium' : 'High';
 
-  // ---- визуал круга эмоции
-  const meta        = emotionKey ? getEmotionMeta(emotionKey) : null; // meta.color: [start,end], meta.name
-  const toTitle     = (s) => (s || '').replace(/[_-]+/g, ' ').replace(/\b\w/g, m => m.toUpperCase()).trim();
-  const emotionTitle= meta?.name || toTitle(emotionKey) || 'Emotion';
+  // ---- state (primary) + emotion (lens) for display
+  const emotionMeta  = emotionKey ? getEmotionMeta(emotionKey) : null;
+  const toTitle      = (s) => (s || "").replace(/[_-]+/g, " ").replace(/\b\w/g, (m) => m.toUpperCase()).trim();
+  const emotionTitle = emotionMeta?.name || toTitle(emotionKey) || "Emotion";
+
+  // Task AF: Get stateKey from decision (deep uses macroKey, baseline uses stateKey)
+  const decisionStateKey = decision?.stateKey || decision?.macroKey || stateKey;
+  const stateMeta = decisionStateKey ? getStateMeta(decisionStateKey) : null;
+  const stateTitle = stateMeta?.name || toTitle(decisionStateKey) || "State";
+  
+  // Task AE6: Format state display with micro (if available)
+  const displayStateTitle = microKey
+    ? `${stateTitle} (${toTitle(microKey.split('.')[1] || microKey)})`  // e.g., "Pressured (Rushed)"
+    : stateTitle;
+  
+  const circleColors = Array.isArray(stateMeta?.color)
+    ? stateMeta.color
+    : (Array.isArray(emotionMeta?.color) ? emotionMeta.color : ["#777", "#444"]);
 
   // ---- параметры круга и прогресс-кольца
   const CIRCLE       = Math.min(WIN_W * 0.8, 360);
@@ -362,10 +429,38 @@ export default function L5SummaryScreen({ navigation, route }) {
   const arcLen       = CIRC * fillRatio;
   const s = makeStyles(t, insets, CIRCLE, BAR_BASE_H, BAR_VPAD);
 
-  const onContinue = () => {
-    // L4 already persists triggers/bodyMind. Avoid overwriting with stale values.
-    setL4Intensity(previewIntensity);
-    navigation.navigate('L6Actions');
+  const onContinue = async () => {
+    if (!fromHistory) {
+      try {
+        await finishSession({ skip: false });
+      } catch (e) {
+        console.warn('[L5] finishSession error', e?.message || e);
+      }
+    }
+
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'MainTabs' }],
+    });
+  };
+
+  // Task P(B).3: Navigate to Deep Dive for refinement
+  const onRefineDeepDive = () => {
+    // Navigate to DiagnosticFlow (or L1 cards) with existing baseline metrics and plans tags
+    // This allows the user to start a deep dive from a simplified session
+    navigation.navigate('DiagnosticFlow');
+  };
+
+  // Task P(B).3: UI text constants for clarity and confidence
+  const CLARITY_LOW_HELP = 'Low clarity — result may be less precise. Your signals don\'t strongly match any state.';
+  const LOW_CONFIDENCE_HELP = 'Low confidence result. Baseline signals don\'t strongly match any state.';
+  const CONFIDENCE_LABELS = {
+    high: 'High confidence',
+    medium: 'Medium confidence',
+    low: 'Low confidence',
+  };
+  const MATCH_WARNING_MESSAGES = {
+    weak_match_extreme: 'Baseline signals are very weak. Consider Deep Dive for more accurate results.',
   };
 
   const openFeedback = () => {
@@ -444,7 +539,7 @@ useEffect(() => {
     const histMini  = (histSess?.l5?.miniInsight ?? '');
     const histShort = (histSess?.l5?.shortDescription ?? '');
     setMiniInsight(histMini);
-    setAiDesc(histShort || aiSummaryFromState(emotionKey));
+    setAiDesc(histShort || aiSummaryFromState(stateTitle));
     setLoading(false);
     return () => { isMounted = false; };
   }
@@ -476,7 +571,7 @@ useEffect(() => {
         : (!hasCached);
 
   if (!shouldCallAi) {
-    setAiDesc(hasCached ? String(cachedShortDesc).trim() : aiSummaryFromState(emotionKey));
+    setAiDesc(hasCached ? String(cachedShortDesc).trim() : aiSummaryFromState(stateTitle));
     setAiSource(hasCached ? 'cache' : 'local');
     setLoading(false);
 
@@ -498,7 +593,7 @@ useEffect(() => {
 
       const short = (result?.shortDescription || '').trim();
 
-      setAiDesc(short || aiSummaryFromState(emotionKey));
+      setAiDesc(short || aiSummaryFromState(stateTitle));
       setAiSource(source || 'ai');
 
       setL5Fields({
@@ -511,7 +606,7 @@ useEffect(() => {
     } catch (e) {
       if (!isMounted) return;
       console.warn('[L5] shortDescription error', e?.message || e);
-      setAiDesc(aiSummaryFromState(emotionKey));
+      setAiDesc(aiSummaryFromState(stateTitle));
       setAiSource('local');
       setLoading(false);
     } finally {
@@ -568,7 +663,9 @@ return (
           <View style={{ flex: 1 }}>
             <Text style={sHead.title}>Summary</Text>
             <Text style={sHead.subtitle}>
-              Here’s a quick recap. Your recommendations will use this.
+              {simplified
+                ? "Here’s a quick recap of your current state."
+                : "Here’s a quick recap. Your recommendations will use this."}
             </Text>
           </View>
         </View>
@@ -695,20 +792,21 @@ return (
       </View>
     </Modal>
 
-      {/* Emotion circle with thin progress ring */}
+      {/* State circle with thin progress ring */}
       <View style={s.circleWrap}>
         <View style={{ width: CIRCLE, height: CIRCLE }}>
           {/* градиентное «ядро» круга */}
           <LinearGradient
-            colors={Array.isArray(meta?.color) ? meta.color : ['#777', '#444']}
+            colors={circleColors}
             style={s.circle}
             start={{ x: 0.1, y: 0.1 }}
             end={{ x: 0.9, y: 0.9 }}
           >
             <Text style={s.circleTitle} numberOfLines={1} adjustsFontSizeToFit>
-              {emotionTitle}
+              {displayStateTitle}
             </Text>
-            <Text style={s.circleHint}>Dominant emotion</Text>
+            <Text style={s.circleHint}>Primary state</Text>
+            <Text style={s.circleHint}>Lens: {emotionTitle}</Text>
             <Text style={s.circleHint}>{previewIntensity}/10</Text>
           </LinearGradient>
 
@@ -746,6 +844,66 @@ return (
         {showConfidence >= 0.7 ? 'Auto • accurate' : 'Auto • check'}
       </Text>
 
+      {/* Task P(B).3 + Q3: Confidence indicator — low clarity ≠ uncertain state */}
+      {/* Task Q3: Show Deep Dive CTA based on formalized product rule */}
+      {shouldShowDeepDiveCTA && (
+        <View style={[s.confidenceCard, { backgroundColor: t.cardBackground }]}>
+          {/* Task P(B).3: Show clarity flag message if clarity is low (but state is NOT uncertain) */}
+          {clarityFlag === 'low' && stateKey !== 'uncertain' ? (
+            <>
+              <Text style={[s.confidenceText, { color: t.textPrimary }]}>
+                Low clarity — result may be less precise. Your signals don't strongly match any state.
+              </Text>
+              <TouchableOpacity
+                style={[s.refineButton, { backgroundColor: t.accent }]}
+                onPress={onRefineDeepDive}
+              >
+                <Text style={[s.refineButtonText, { color: t.themeName === 'dark' ? '#000000' : '#FFFFFF' }]}>
+                  Refine (Deep Dive)
+                </Text>
+              </TouchableOpacity>
+            </>
+          ) : stateKey === 'uncertain' && forcedUncertain && uncertainReason === 'extreme_uncertainty' ? (
+            <>
+              <Text style={[s.confidenceText, { color: t.textPrimary }]}>
+                Low clarity detected. If you want a clearer result, try Deep Dive.
+              </Text>
+              <TouchableOpacity
+                style={[s.refineButton, { backgroundColor: t.accent }]}
+                onPress={onRefineDeepDive}
+              >
+                <Text style={[s.refineButtonText, { color: t.themeName === 'dark' ? '#000000' : '#FFFFFF' }]}>
+                  Refine (Deep Dive)
+                </Text>
+              </TouchableOpacity>
+            </>
+          ) : confidenceBand === 'low' ? (
+            <>
+              <Text style={[s.confidenceText, { color: t.textPrimary }]}>
+                {LOW_CONFIDENCE_HELP}
+              </Text>
+              {matchWarning === 'weak_match_extreme' && (
+                <Text style={[s.confidenceSubtext, { color: t.textSecondary }]}>
+                  {MATCH_WARNING_MESSAGES.weak_match_extreme}
+                </Text>
+              )}
+              <TouchableOpacity
+                style={[s.refineButton, { backgroundColor: t.accent }]}
+                onPress={onRefineDeepDive}
+              >
+                <Text style={[s.refineButtonText, { color: t.themeName === 'dark' ? '#000000' : '#FFFFFF' }]}>
+                  Refine (Deep Dive)
+                </Text>
+              </TouchableOpacity>
+            </>
+          ) : confidenceBand === 'medium' ? (
+            <Text style={[s.confidenceText, { color: t.textSecondary, fontSize: 12 }]}>
+              {CONFIDENCE_LABELS.medium}
+            </Text>
+          ) : null}
+        </View>
+      )}
+
       {/* Mini Insight */}
       <MiniInsightCard theme={t} text={miniInsight} />
 
@@ -761,54 +919,58 @@ return (
           {aiDesc}
         </Text>
       </View>
+      
+      {!isSimplifiedSession && (
+        <>
+          <View style={s.card}>
+            <View style={s.cardHeaderRow}>
+              <Text style={[s.aiCardText, { color: t.textPrimary, marginBottom: 4 }]}>
+                Triggers (selected)
+              </Text>
+              <TouchableOpacity
+                onPress={() => onEditSection('triggers')}
+                disabled={fromHistory || editLocks.triggersUsed}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                style={[
+                  s.editIconTouch,
+                  (fromHistory || editLocks.triggersUsed) && s.editIconTouchDisabled,
+                ]}
+              >
+                <EditIcon theme={t} />
+              </TouchableOpacity>
+            </View>
+            <SelectedChips
+              data={editTrig}
+              emptyText="No triggers selected."
+              theme={t}
+            />
+          </View>
 
-      <View style={s.card}>
-        <View style={s.cardHeaderRow}>
-          <Text style={[s.aiCardText, { color: t.textPrimary, marginBottom: 4 }]}>
-            Triggers (selected)
-          </Text>
-          <TouchableOpacity
-            onPress={() => onEditSection('triggers')}
-            disabled={fromHistory || editLocks.triggersUsed}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            style={[
-              s.editIconTouch,
-              (fromHistory || editLocks.triggersUsed) && s.editIconTouchDisabled,
-            ]}
-          >
-            <EditIcon theme={t} />
-          </TouchableOpacity>
-        </View>
-        <SelectedChips
-          data={editTrig}
-          emptyText="No triggers selected."
-          theme={t}
-        />
-      </View>
-
-    <View style={s.card}>
-      <View style={s.cardHeaderRow}>
-        <Text style={[s.aiCardText, { color: t.textPrimary, marginBottom: 4 }]}>
-          Body & Mind (selected)
-        </Text>
-        <TouchableOpacity
-          onPress={() => onEditSection('bodyMind')}
-          disabled={fromHistory || editLocks.bodyMindUsed}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          style={[
-            s.editIconTouch,
-            (fromHistory || editLocks.bodyMindUsed) && s.editIconTouchDisabled,
-          ]}
-        >
-          <EditIcon theme={t} />
-        </TouchableOpacity>
-      </View>
-      <SelectedChips
-        data={editBM}
-        emptyText="No body & mind patterns selected."
-        theme={t}
-      />
-    </View>
+          <View style={s.card}>
+            <View style={s.cardHeaderRow}>
+              <Text style={[s.aiCardText, { color: t.textPrimary, marginBottom: 4 }]}>
+                Body & Mind (selected)
+              </Text>
+              <TouchableOpacity
+                onPress={() => onEditSection('bodyMind')}
+                disabled={fromHistory || editLocks.bodyMindUsed}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                style={[
+                  s.editIconTouch,
+                  (fromHistory || editLocks.bodyMindUsed) && s.editIconTouchDisabled,
+                ]}
+              >
+                <EditIcon theme={t} />
+              </TouchableOpacity>
+            </View>
+            <SelectedChips
+              data={editBM}
+              emptyText="No body & mind patterns selected."
+              theme={t}
+            />
+          </View>
+        </>
+      )}
     </ScrollView>
 
     {/* Bottom action bar */}
@@ -830,11 +992,20 @@ return (
             style={[sBar.btn, sBar.btnPrimary, { height: BAR_BTN_H }]}
             onPress={onContinue}
           >
-            <Text style={sBar.btnPrimaryText}>Next</Text>
+            <Text style={sBar.btnPrimaryText}>{simplified ? 'Finish' : 'Next'}</Text>
           </TouchableOpacity>
         </View>
       </View>
     )}
+    
+    {/* Task AJ2: Feedback modal */}
+    <FeedbackModal
+      visible={feedbackVisible}
+      onClose={handleFeedbackSkip}
+      onSubmit={handleFeedbackSubmit}
+      stateKey={decisionStateKey}
+      microKey={microKey}
+    />
   </ScreenWrapper>
   );
 }
@@ -914,6 +1085,38 @@ const makeStyles = (t, insets, CIRCLE, BAR_BASE_H, BAR_VPAD) => StyleSheet.creat
 
   intensityBadge: { fontSize: 14, fontWeight: '700', color: t.textPrimary, textAlign: 'center', marginTop: 12 },
   confNote: { fontSize: 12, fontWeight: '400', color: t.textSecondary, textAlign: 'center', marginTop: 2 },
+  
+  // Task I3.2: Confidence card styles
+  confidenceCard: {
+    backgroundColor: t.cardBackground,
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: '#00000012',
+  },
+  confidenceText: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 8,
+  },
+  confidenceSubtext: {
+    fontSize: 12,
+    lineHeight: 18,
+    marginBottom: 8,
+    fontStyle: 'italic',
+  },
+  refineButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  refineButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
 
   card: {
     backgroundColor: t.cardBackground,

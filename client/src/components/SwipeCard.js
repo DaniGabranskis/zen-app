@@ -1,10 +1,9 @@
 // components/SwipeCard.js
 import React, { useEffect } from 'react';
-import { StyleSheet, Text, View, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, Pressable } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  interpolate,
   withSpring,
   runOnJS,
 } from 'react-native-reanimated';
@@ -17,17 +16,30 @@ const CARD_WIDTH = width * 0.8;
 const CARD_HEIGHT = Math.round(CARD_WIDTH * 1.05);
 const SWIPE_THRESHOLD = 0.25 * width;
 
-/**
- * SwipeCard — interactive card for swipe questions (used in L1 and L2).
- * Handles left/right swipes to select emotional answers.
- * Props:
- *   - card: { text: string, options: { ... } }
- *   - onSwipeLeft: function() (called on left swipe)
- *   - onSwipeRight: function() (called on right swipe)
- *   - onSwipeProgressChange: function(isSwiping: bool) (optional, for parent animations)
- */
+// Optional swipe-up threshold for "Not sure"
+const SWIPE_UP_THRESHOLD = 0.22 * CARD_HEIGHT;
 
-export default function SwipeCard({ card, onSwipeLeft, onSwipeRight, onSwipeProgressChange }) {
+/**
+ * SwipeCard — interactive card for swipe questions.
+ *
+ * Props:
+ *   - card: { text: string, leftOption: {text, tags}, rightOption: {text, tags} }
+ *   - onSwipeLeft: () => void
+ *   - onSwipeRight: () => void
+ *   - onNotSure?: () => void
+ *   - notSureLabel?: string (default: "Not sure")
+ *   - enableSwipeUpNotSure?: boolean (default: false)
+ *   - onSwipeProgressChange?: (isSwiping: boolean) => void
+ */
+export default function SwipeCard({
+  card,
+  onSwipeLeft,
+  onSwipeRight,
+  onNotSure,
+  notSureLabel = 'Not sure',
+  enableSwipeUpNotSure = false,
+  onSwipeProgressChange,
+}) {
   const { cardBackground, textPrimary, cardChoiceText } = useThemeVars();
 
   // X and Y translation values (for animation)
@@ -36,14 +48,14 @@ export default function SwipeCard({ card, onSwipeLeft, onSwipeRight, onSwipeProg
 
   // Animated card style for reanimated
   const animatedStyle = useAnimatedStyle(() => {
-  return {
-    transform: [
-      { translateX: translateX.value },
-      { translateY: translateY.value },
-      { rotateZ: `${translateX.value * 0.0015}rad` },
-    ],
-  };
-});
+    return {
+      transform: [
+        { translateX: translateX.value },
+        { translateY: translateY.value },
+        { rotateZ: `${translateX.value * 0.0015}rad` },
+      ],
+    };
+  });
 
   // Reset position when card changes
   useEffect(() => {
@@ -51,93 +63,122 @@ export default function SwipeCard({ card, onSwipeLeft, onSwipeRight, onSwipeProg
     translateY.value = 0;
   }, [card]);
 
-// Main pan gesture handler for swiping card
-const panGesture = Gesture.Pan()
-  .onStart(() => {
-    // Notify parent that swipe started (optional)
-    if (onSwipeProgressChange) runOnJS(onSwipeProgressChange)(true);
-  })
-  .onUpdate((event) => {
-    translateX.value = event.translationX;
-    translateY.value = event.translationY;
-  })
-  .onEnd(() => {
-    // Notify parent that swipe ended (optional)
-    if (onSwipeProgressChange) runOnJS(onSwipeProgressChange)(false);
+  // Main pan gesture handler for swiping card
+  const panGesture = Gesture.Pan()
+    .onStart(() => {
+      // Notify parent that swipe started (optional)
+      if (onSwipeProgressChange) runOnJS(onSwipeProgressChange)(true);
+    })
+    .onUpdate((event) => {
+      translateX.value = event.translationX;
+      translateY.value = event.translationY;
+    })
+    .onEnd(() => {
+      // Notify parent that swipe ended (optional)
+      if (onSwipeProgressChange) runOnJS(onSwipeProgressChange)(false);
 
-    // If card swiped left/right enough — trigger callback
-    if (translateX.value < -SWIPE_THRESHOLD) {
-      runOnJS(onSwipeLeft)();
-    } else if (translateX.value > SWIPE_THRESHOLD) {
-      runOnJS(onSwipeRight)();
-    } else {
-      // Otherwise, animate card back to original position
-      translateX.value = withSpring(0);
-      translateY.value = withSpring(0);
-    }
-  });
+      const x = translateX.value;
+      const y = translateY.value;
 
-return (
-  <View style={styles.fullscreen}>
-    <View style={styles.cardWrapper}>
-      <GestureDetector gesture={panGesture}>
-        <Animated.View
-          style={[
-            styles.card,
-            {
-              backgroundColor: cardBackground,
-              width: CARD_WIDTH,
-              height: CARD_HEIGHT,
-              shadowColor: textPrimary,
-            },
-            animatedStyle,
-          ]}>
-            {/* Main question text */}
-          {/* Top label = LEFT swipe option */}
-          <View style={styles.edgeTop}>
-          <View style={styles.edgeRow}>
-            <Icon name="chevron-left" size={20} color={cardChoiceText} />
-            <Text
-              allowFontScaling={false}
-              style={[styles.edgeText, { color: cardChoiceText }]}
-              numberOfLines={2}
-            >
-              {card?.leftOption?.text}
+      // Optional "Swipe Up" as Not sure, guarded to avoid breaking left/right UX
+      if (
+        enableSwipeUpNotSure &&
+        typeof onNotSure === 'function' &&
+        y < -SWIPE_UP_THRESHOLD &&
+        Math.abs(x) < SWIPE_THRESHOLD * 0.6
+      ) {
+        runOnJS(onNotSure)();
+        return;
+      }
+
+      // If card swiped left/right enough — trigger callback
+      if (x < -SWIPE_THRESHOLD) {
+        runOnJS(onSwipeLeft)();
+      } else if (x > SWIPE_THRESHOLD) {
+        runOnJS(onSwipeRight)();
+      } else {
+        // Otherwise, animate card back to original position
+        translateX.value = withSpring(0);
+        translateY.value = withSpring(0);
+      }
+    });
+
+  return (
+    <View style={styles.fullscreen}>
+      <View style={styles.cardWrapper}>
+        <GestureDetector gesture={panGesture}>
+          <Animated.View
+            style={[
+              styles.card,
+              {
+                backgroundColor: cardBackground,
+                width: CARD_WIDTH,
+                height: CARD_HEIGHT,
+                shadowColor: textPrimary,
+              },
+              animatedStyle,
+            ]}
+          >
+            {/* Top label = LEFT swipe option */}
+            <View style={styles.edgeTop}>
+              <View style={styles.edgeRow}>
+                <Icon name="chevron-left" size={20} color={cardChoiceText} />
+                <Text
+                  allowFontScaling={false}
+                  style={[styles.edgeText, { color: cardChoiceText }]}
+                  numberOfLines={2}
+                >
+                  {card?.leftOption?.text}
+                </Text>
+              </View>
+            </View>
+
+            {/* Centered question */}
+            <Text style={[styles.event, { color: textPrimary }]} numberOfLines={2}>
+              {card?.text}
             </Text>
-          </View>
-        </View>
 
-          {/* Centered question */}
-          <Text style={[styles.event, { color: textPrimary }]} numberOfLines={2}>
-            {card?.text}
-          </Text>
+            {/* Bottom label = RIGHT swipe option */}
+            <View style={styles.edgeBottom}>
+              <View style={styles.edgeRow}>
+                <Text
+                  allowFontScaling={false}
+                  style={[styles.edgeText, { color: cardChoiceText }]}
+                  numberOfLines={2}
+                >
+                  {card?.rightOption?.text}
+                </Text>
+                <Icon name="chevron-right" size={20} color={cardChoiceText} />
+              </View>
+            </View>
+          </Animated.View>
+        </GestureDetector>
 
-          {/* Bottom label = RIGHT swipe option */}
-          <View style={styles.edgeBottom}>
-          <View style={styles.edgeRow}>
-            <Text
-              allowFontScaling={false}
-              style={[styles.edgeText, { color: cardChoiceText }]}
-              numberOfLines={2}
-            >
-              {card?.rightOption?.text}
+        {/* "Not sure" CTA under the card (always available if onNotSure provided) */}
+        {typeof onNotSure === 'function' ? (
+          <Pressable
+            onPress={onNotSure}
+            accessibilityRole="button"
+            style={({ pressed }) => [
+              styles.notSureBtn,
+              {
+                backgroundColor: cardBackground, // same background as the main card
+                shadowColor: textPrimary,        // match card shadow color
+                opacity: pressed ? 0.8 : 1,
+              },
+            ]}
+          >
+            <Text style={[styles.notSureText, { color: cardChoiceText }]}>
+              {notSureLabel}
             </Text>
-            <Icon name="chevron-right" size={20} color={cardChoiceText} />
-          </View>
-        </View>
-        </Animated.View>
-      </GestureDetector>
+          </Pressable>
+        ) : null}
+      </View>
     </View>
-  </View>
-);
+  );
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   fullscreen: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10 },
   cardWrapper: {
     flex: 1,
@@ -147,10 +188,8 @@ const styles = StyleSheet.create({
   card: {
     position: 'absolute',
     alignSelf: 'center',
-    backgroundColor: 'white',
     borderRadius: 24,
     padding: width * 0.06,
-    shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
@@ -164,37 +203,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     textAlign: 'center',
   },
-  description: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: '#666',
-    lineHeight: 22,
-  },
-  optionStack: {
-    width: '100%',
-    alignItems: 'center',
-    marginVertical: Math.round(width * 0.03),
-    gap: Math.round(width * 0.015),
-  },
-  optionLeft: {
-    fontSize: Math.round(width * 0.038),
-    color: '#444',
-    textAlign: 'left',
-    width: '100%',
-    alignSelf: 'flex-start',
-    paddingLeft: Math.round(width * 0.03),
-    flexWrap: 'wrap',
-  },
-  optionRight: {
-    fontSize: Math.round(width * 0.038),
-    color: '#444',
-    textAlign: 'right',
-    width: '100%',
-    alignSelf: 'flex-end',
-    paddingRight: Math.round(width * 0.03),
-    flexWrap: 'wrap',
-  },
-    edgeTop: {
+  edgeTop: {
     position: 'absolute',
     top: Math.round(width * 0.1),
     left: Math.round(width * 0.0),
@@ -202,7 +211,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-
   edgeBottom: {
     position: 'absolute',
     bottom: Math.round(width * 0.1),
@@ -211,17 +219,39 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-
   edgeText: {
     fontSize: Math.round(width * 0.048),
     fontWeight: '500',
     textAlign: 'center',
     opacity: 0.9,
   },
-
   edgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6, // небольшой отступ между стрелкой и текстом
+    gap: 6,
+  },
+
+  // Not sure button
+notSureBtn: {
+  position: 'absolute',
+  bottom: '17%',
+  alignSelf: 'center',
+  paddingVertical: 10,
+  paddingHorizontal: 16,
+  borderRadius: 999,
+
+  // Shadow similar to the main card, but smaller/lighter
+  shadowOpacity: 0.08,
+  shadowRadius: 8,
+  shadowOffset: { width: 0, height: 3 },
+  elevation: 3,
+
+  // Ensure it stays clickable above the card area if they ever overlap
+  zIndex: 2,
+},
+  notSureText: {
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
 });

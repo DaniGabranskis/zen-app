@@ -10,11 +10,29 @@ import { logEvent } from '../utils/telemetry';
 
 const initialDraft = () => ({
   l1l2Accepted: [],                       // cards accepted from L1-L2
+  l1l2Plan: [],                           // order of shown cards (for reproducibility)
+  l1l2Coverage: null,                     // latest coverage snapshot (debugging)
+  l1l2AskedDiscriminators: [],            // asked discriminator pair keys (debugging)
   evidenceTags: [],                       // canonical tags from accepted cards
+  sessionType: null, // 'morning' | 'evening'
+  baseline: {
+    // 1..7 scales; keep defaults at MID=4 for "neutral"
+    metrics: { valence: 4, energy: 4, tension: 4, clarity: 4, control: 4, social: 4 },
+    notSureMap: {}, // { valence: true, ... }
+    at: null,       // ISO timestamp
+  },
+  plans: {
+    focusTags: [],     // e.g. ["work","health"]
+    intensity: 'med',  // 'low' | 'med' | 'high'
+  },
+  l0: {
+    answers: {}, // cardId -> { selectedLabel, selectedTags[], answer, at }
+  },
   decision: null,                         // { mode, top, probs }
-  l3: { emotionKey: null },               // dominant emotion (auto-picked)
+  flowMode: null,                         // null | "simplified" | "deep"
+  l3: { stateKey: null },               // dominant state/emotion (auto-picked)
   l4: { triggers: [], bodyMind: [], intensity: 0 },
-l5: {
+  l5: {
   context: '',
   tinyActionKey: null,
   miniInsight: '',
@@ -106,6 +124,9 @@ const useStore = create(
           selectedKey: String(card?.selectedKey || ''),
           selectedLabel: String(card?.selectedLabel || ''),
           selectedTags: Array.isArray(card?.selectedTags) ? card.selectedTags : [],
+          answer: String(card?.answer || ''),
+          isNotSure: Boolean(card?.isNotSure),
+          group: String(card?.group || ''),
         };
         arr.push(safe);
         logEvent(
@@ -148,12 +169,43 @@ const useStore = create(
         set({ sessionDraft: { ...draft, decision } });
       },
 
-      // -------- L3
+      // -------- flow control
+        setFlowMode(mode) {
+          const next =
+            mode === 'deep' ? 'deep' :
+            mode === 'simplified' ? 'simplified' :
+            null;
 
-      pickEmotion(key) {
-        logEvent('store_pick_emotion', { key }, `Store: emotion=${key}`);
+          const prev = get().sessionDraft || {};
+          set({ sessionDraft: { ...prev, flowMode: next } });
+        },
+      
+      setL1L2Debug(payload) {
+        // payload: { plan[], coverage{}, askedDiscriminators[] }
         const draft = get().sessionDraft;
-        set({ sessionDraft: { ...draft, l3: { emotionKey: key } } });
+        set({
+          sessionDraft: {
+            ...draft,
+            l1l2Plan: Array.isArray(payload?.plan) ? payload.plan : draft.l1l2Plan,
+            l1l2Coverage: payload?.coverage ?? draft.l1l2Coverage,
+            l1l2AskedDiscriminators: Array.isArray(payload?.askedDiscriminators)
+              ? payload.askedDiscriminators
+              : draft.l1l2AskedDiscriminators,
+          },
+        });
+      },
+
+// -------- L3
+
+      pickState(key, emotionKey = null) {
+        logEvent("store_pick_state", { key, emotionKey }, `Store: state=${key}, emotion=${emotionKey || 'null'}`);
+        const draft = get().sessionDraft;
+        const prev = draft?.l3 || {};
+        const next = { ...prev, stateKey: key };
+        if (emotionKey !== null && emotionKey !== undefined) {
+          next.emotionKey = String(emotionKey);
+        }
+        set({ sessionDraft: { ...draft, l3: next } });
       },
 
       // -------- L4
@@ -325,11 +377,15 @@ const useStore = create(
       finishSession: async ({ skip = false, recommendation = null } = {}) => {
         const { sessionDraft, history } = get();
 
-        // 1) Определяем доминирующую группу для легаси-экранов
-        const dominantGroup =
-          sessionDraft?.decision?.top?.[0] ||
-          sessionDraft?.l3?.emotionKey ||
-          'unknown';
+        // 1) Resolve dominant state for History/Stats
+        const dominantStateKey =
+          sessionDraft?.l3?.stateKey ||
+          sessionDraft?.decision?.stateKey ||
+          sessionDraft?.decision?.dominant ||
+          'mixed';
+
+        // Keep the legacy field name to avoid breaking existing screens.
+        const dominantGroup = dominantStateKey;
 
         // 2) Простейшая метрика score (0..100)
         //    Берём интенсивность (0..10) и accuracy (1..5),
@@ -356,7 +412,9 @@ const useStore = create(
           date: nowIso,             // <-- поле, на которое смотрят History/Stats
           createdAt: nowIso,
           score,
+          dominantStateKey,
           dominantGroup,
+          sessionType: sessionDraft.sessionType || null,
           reflection,
           recommendation: {
             title: recommendation?.title ?? null,
@@ -402,6 +460,96 @@ const useStore = create(
         );
         set({ history: next });
         get().resetSession();
+      },
+
+            startSession(sessionType) {
+        const t = sessionType === 'evening' ? 'evening' : 'morning';
+        logEvent('store_start_session', { sessionType: t }, `Store: start session (${t})`);
+        set({ sessionDraft: { ...initialDraft(), sessionType: t } });
+      },
+
+      setSessionType(sessionType) {
+        const t = sessionType === 'evening' ? 'evening' : 'morning';
+        const draft = get().sessionDraft;
+        if (draft?.sessionType === t) return;
+        logEvent('store_set_session_type', { sessionType: t }, `Store: sessionType=${t}`);
+        set({ sessionDraft: { ...draft, sessionType: t } });
+      },
+
+      setL0Answer({ cardId, selectedLabel, selectedTags, answer }) {
+        const draft = get().sessionDraft;
+        const id = String(cardId || '');
+        if (!id) return;
+
+        const prev = (draft?.l0?.answers && typeof draft.l0.answers === 'object') ? draft.l0.answers : {};
+        const nextAnswers = {
+          ...prev,
+          [id]: {
+            selectedLabel: String(selectedLabel || ''),
+            selectedTags: Array.isArray(selectedTags) ? selectedTags : [],
+            answer: String(answer || ''),
+            at: new Date().toISOString(),
+          },
+        };
+
+        set({ sessionDraft: { ...draft, l0: { ...(draft.l0 || {}), answers: nextAnswers } } });
+      },
+
+      setBaselineMetric(key, value) {
+        const draft = get().sessionDraft;
+        const prev = draft?.baseline?.metrics || {};
+        const next = { ...prev, [key]: value };
+        set({ sessionDraft: { ...draft, baseline: { ...(draft.baseline || {}), metrics: next } } });
+      },
+
+      setBaselineNotSure(key, flag) {
+        const draft = get().sessionDraft;
+        const prev = draft?.baseline?.notSureMap || {};
+        const next = { ...prev, [key]: Boolean(flag) };
+        set({ sessionDraft: { ...draft, baseline: { ...(draft.baseline || {}), notSureMap: next } } });
+      },
+
+      finalizeBaseline() {
+        const draft = get().sessionDraft;
+        const at = new Date().toISOString();
+        set({ sessionDraft: { ...draft, baseline: { ...(draft.baseline || {}), at } } });
+      },
+
+      // -------- Plans (for plan-aware evening questions)
+      togglePlanFocusTag(tagKey) {
+        const key = String(tagKey || '').trim();
+        if (!key) return;
+
+        const draft = get().sessionDraft;
+        const prev = Array.isArray(draft?.plans?.focusTags) ? draft.plans.focusTags : [];
+        const exists = prev.includes(key);
+
+        const next = exists ? prev.filter((x) => x !== key) : [...prev, key];
+
+        logEvent('store_plans_toggle', { key, enabled: !exists }, `Store: plans.toggle ${key}=${!exists}`);
+
+        set({
+          sessionDraft: {
+            ...draft,
+            plans: { ...(draft.plans || {}), focusTags: next },
+          },
+        });
+      },
+
+      setPlanIntensity(level) {
+        const raw = String(level || '').toLowerCase();
+        const next = raw === 'low' ? 'low' : raw === 'high' ? 'high' : 'med';
+
+        const draft = get().sessionDraft;
+
+        logEvent('store_plans_intensity', { level: next }, `Store: plans.intensity=${next}`);
+
+        set({
+          sessionDraft: {
+            ...draft,
+            plans: { ...(draft.plans || {}), intensity: next },
+          },
+        });
       },
 
       resetSession() {

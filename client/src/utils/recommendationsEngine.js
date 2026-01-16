@@ -8,7 +8,8 @@ export const RECOMMENDATIONS = [
     durationSec: 45, // Default fallback; actual value is overridden by getBreezeDurationSec(intensity).
     description: "A short breathing reset to lower activation and regain control.",
     signals: {
-      emotions: ["anxiety", "anxious", "tension", "anger", "frustration", "irritation", "overwhelm", "overload", "panic"],
+      emotions: ["anxiety", "tension", "anger", "frustration", "overload", "fear"],
+      states: ["pressured","threatened","overloaded","confrontational","uncertain"],
       tagsAny: ["l1_body_tension", "l1_pressure_high", "l2_uncert_high", "l2_social_threat"],
       bodyMindAny: ["shallow breathing", "heart racing", "tight chest", "butterflies", "restless"],
       intensityMin: 2,
@@ -20,7 +21,8 @@ export const RECOMMENDATIONS = [
     kind: "grounding",
     description: "A grounding routine to return attention to the body and the present moment.",
     signals: {
-      emotions: ["anxiety", "anxious", "confusion", "overwhelm", "disconnected"],
+      emotions: ["anxiety", "confusion", "overload", "disconnected", "numbness", "fatigue"],
+      states: ["threatened","overloaded","pressured","uncertain"],
       tagsAny: ["l2_shutdown", "l2_disconnect_numb", "l1_clarity_low"],
       bodyMindAny: ["numb", "dissociated", "floaty", "shaky", "jaw clenching"],
       intensityMin: 1,
@@ -32,7 +34,8 @@ export const RECOMMENDATIONS = [
     kind: "plan",
     description: "Turn the day into 1–3 tiny steps to reduce overwhelm.",
     signals: {
-      emotions: ["overwhelm", "overload", "sadness", "confusion", "anxiety", "anxious"],
+      emotions: ["overload", "sadness", "confusion", "anxiety", "fatigue"],
+      states: ["overloaded","pressured","uncertain"],
       tagsAny: ["l1_pressure_high", "l2_focus_future", "l2_uncert_high", "l2_meaning_low"],
       intensityMin: 2,
     },
@@ -44,6 +47,7 @@ export const RECOMMENDATIONS = [
     description: "A gentle exercise to reduce self-judgment and shame.",
     signals: {
       emotions: ["shame", "guilt"],
+      states: ["self_critical","down"],
       tagsAny: ["l2_guilt", "l1_worth_low"],
       intensityMin: 1,
     },
@@ -55,6 +59,7 @@ export const RECOMMENDATIONS = [
     description: "A short reframe to shift perspective without denying reality.",
     signals: {
       emotions: ["frustration", "anger", "confusion"],
+      states: ["blocked","confrontational","uncertain","pressured"],
       tagsAny: ["l1_control_low", "l1_expect_low", "l2_let_down"],
       intensityMin: 1,
     },
@@ -66,6 +71,7 @@ export const RECOMMENDATIONS = [
     description: "A small, concrete step toward support or contact.",
     signals: {
       emotions: ["disconnected", "sadness", "shame"],
+      states: ["detached","down","self_critical"],
       tagsAny: ["l2_social_pain_yes", "l1_safety_low"],
       intensityMin: 1,
     },
@@ -76,7 +82,8 @@ export const RECOMMENDATIONS = [
     kind: "rest",
     description: "A brief recovery plan for low energy and fatigue.",
     signals: {
-      emotions: ["overwhelm", "overload", "sadness", "tiredness"],
+      emotions: ["overload", "sadness", "fatigue"],
+      states: ["exhausted","overloaded","down"],
       tagsAny: ["l1_energy_low"],
       intensityMin: 1,
     },
@@ -87,7 +94,8 @@ export const RECOMMENDATIONS = [
     kind: "positive",
     description: "Lock in something good from today to stabilize mood.",
     signals: {
-      emotions: ["gratitude", "calm", "joy", "clarity", "contentment"],
+      emotions: ["gratitude", "calm", "joy", "clarity", "connection", "confidence"],
+      states: ["grounded","connected"],
       tagsAny: ["l2_pos_gratitude", "l2_content_warm", "l2_clarity_high"],
       intensityMin: 0,
     },
@@ -99,6 +107,7 @@ export const RECOMMENDATIONS = [
     description: "Reconnect actions with what matters most.",
     signals: {
       emotions: ["confusion", "sadness", "disconnected"],
+      states: ["uncertain","blocked","pressured"],
       tagsAny: ["l2_meaning_low"],
       intensityMin: 1,
     },
@@ -109,7 +118,8 @@ export const RECOMMENDATIONS = [
     kind: "body",
     description: "A short release routine for tension patterns.",
     signals: {
-      emotions: ["tension", "anxiety", "anxious", "frustration"],
+      emotions: ["tension", "anxiety", "frustration", "overload"],
+      states: ["pressured","threatened","overloaded","blocked"],
       tagsAny: ["l1_body_tension"],
       bodyMindAny: ["jaw clenching", "tight shoulders", "stiff neck"],
       intensityMin: 1,
@@ -166,15 +176,11 @@ export function isHighArousal(input) {
 
   const HIGH_AROUSAL_EMOTIONS = new Set([
     "anxiety",
-    "anxious",
+    "fear",
     "anger",
     "frustration",
-    "irritation",
     "tension",
-    "overwhelm",
     "overload",
-    "panic",
-    "fear",
   ]);
 
   if (intensity >= 7) return true;
@@ -210,8 +216,8 @@ export function isSelfJudgment(input) {
 // -------------------------
 
 function scoreRecommendation(rec, input) {
-  const dominant = normStr(input?.dominant);
-  const secondary = normStr(input?.secondary);
+  const dominantState = normStr(input?.stateKey ?? input?.dominant);
+  const secondaryState = normStr(input?.secondary);
   const intensity = Number(input?.intensity || 0);
 
   const evidenceTags = input?.evidenceTags || input?.tags || [];
@@ -222,9 +228,15 @@ function scoreRecommendation(rec, input) {
 
   const s = rec.signals || {};
 
-  // Emotion match
-  if (Array.isArray(s.emotions) && s.emotions.map(normStr).includes(dominant)) score += 4;
-  else if (Array.isArray(s.emotions) && s.emotions.map(normStr).includes(secondary)) score += 2;
+  // State match
+  if (Array.isArray(s.states) && s.states.map(normStr).includes(dominantState)) score += 4;
+  else if (Array.isArray(s.states) && s.states.map(normStr).includes(secondaryState)) score += 2;
+
+  // Emotion match (legacy input)
+  const dominantEmotion = normStr(input?.emotionKey ?? input?.dominantEmotion);
+  const secondaryEmotion = normStr(input?.secondaryEmotion);
+  if (Array.isArray(s.emotions) && s.emotions.map(normStr).includes(dominantEmotion)) score += 3;
+  else if (Array.isArray(s.emotions) && s.emotions.map(normStr).includes(secondaryEmotion)) score += 1;
 
   // Tags match (cap only tag part, not total score)
   let tagScore = 0;

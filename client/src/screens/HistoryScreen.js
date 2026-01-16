@@ -10,7 +10,8 @@ import useStore from '../store/useStore';
 import useThemeVars from '../hooks/useThemeVars';
 import useResponsive from '../hooks/useResponsive';
 import ScreenWrapper from '../components/ScreenWrapper';
-import { getEmotionMeta } from '../utils/evidenceEngine';
+import { getStateMeta } from '../data/stateMeta';
+import { resolveStateKeyFromEntry } from '../utils/resolveStateKeyFromEntry';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const P_SMALL = Math.round(SCREEN_WIDTH * 0.02);
@@ -78,8 +79,9 @@ export default function HistoryScreen({ navigation }) {
   // Single history card
   const renderCard = (item) => {
     const date = new Date(item.date).toLocaleDateString();
-    const label = item.dominantGroup || 'Unknown';
-    const meta = getEmotionMeta(item.dominantGroup);
+    const stateKey = resolveStateKeyFromEntry(item);
+    const meta = getStateMeta(stateKey);
+    const label = meta?.name || stateKey || 'Unknown';
     const barColor = Array.isArray(meta?.color) ? meta.color[0] : '#A78BFA';
     // prefer shortDescription from session.l5; fallback to miniInsight; else '—'
     const short = item?.session?.l5?.shortDescription?.trim?.() || '';

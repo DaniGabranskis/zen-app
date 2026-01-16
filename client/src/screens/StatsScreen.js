@@ -17,7 +17,8 @@ import StreakProgress from '../components/StreakProgress';
 import useStats from '../hooks/useStats';
 import WeekActivityRow from '../components/WeekActivityRow';
 import TimeRangeToggle from '../components/TimeRangeToggle';
-import { getEmotionMeta } from '../utils/evidenceEngine';
+import { getStateMeta } from '../data/stateMeta';
+import { resolveStateKeyFromEntry } from '../utils/resolveStateKeyFromEntry';
 import EmotionalBalanceBar from '../components/EmotionalBalanceBar';
 import { generateInsights } from '../utils/insightGenerator';
 
@@ -36,7 +37,7 @@ const P_LARGE = Math.round(SCREEN_WIDTH * 0.08);
 function makePieData(rows = []) {
   const byName = new Map();
   for (const h of rows) {
-    const name = h?.dominantGroup || h?.session?.l3?.emotionKey;
+    const name = resolveStateKeyFromEntry(h);
     if (!name) continue;
     byName.set(name, (byName.get(name) || 0) + 1);
   }
@@ -153,36 +154,36 @@ export default function StatsScreen() {
   });
 
   const chartData = pieDataDonut.map((d) => {
-    const meta = getEmotionMeta(d.name);
+    const meta = getStateMeta(d.name);
     const color = Array.isArray(meta?.color)
       ? meta.color[0]
       : meta?.color || '#A78BFA';
     return {
       value: d.population,
       color,
-      label: d.name,
+      label: meta?.name || d.name,
       name: d.name,
       count: d.population,
     };
   });
 
   const chartDataBar = pieDataBar.map((d) => {
-    const meta = getEmotionMeta(d.name);
+    const meta = getStateMeta(d.name);
     const color = Array.isArray(meta?.color)
       ? meta.color[0]
       : meta?.color || '#A78BFA';
     return {
       value: d.population,
       color,
-      label: d.name,
+      label: meta?.name || d.name,
       name: d.name,
       count: d.population,
     };
   });
 
   // Emotional balance: use meta-driven polarity (data first, no hardcoded sets)
-  const mapEmotionToPolarity = (name) =>
-    getEmotionMeta(name)?.polarity || 'neutral';
+  const mapStateToPolarity = (stateKey) =>
+  getStateMeta(stateKey)?.polarity || 'neutral';
 
   const computedCurrentStreak = calcCurrentStreak(history);
   const currentStreak = computedCurrentStreak;
@@ -327,7 +328,7 @@ export default function StatsScreen() {
                   name: x.name,
                   count: x.count,
                 }))}
-                mapEmotionToPolarity={mapEmotionToPolarity}
+                mapEmotionToPolarity={mapStateToPolarity}
                 width={BLOCK_WIDTH - 24}
                 maxBarHeight={120}
                 gapPx={100}
