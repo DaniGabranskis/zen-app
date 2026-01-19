@@ -1,102 +1,102 @@
 [
   {
     "id": "L1_mood",
-    "title": "Overall tone right now",
+    "title": "Emotional weight right now",
     "type": "swipe",
     "options": [
-      { "label": "Heavy / low", "tags": ["L1_MOOD_NEG"] },
-      { "label": "Light / upbeat", "tags": ["L1_MOOD_POS"] }
+      { "label": "Heavy / weighed down", "tags": ["L1_MOOD_NEG"] },
+      { "label": "Light / uplifted", "tags": ["L1_MOOD_POS"] }
     ],
-    "meta": { "group": "core", "covers": ["valence"], "minAskedAfter": 0 }
+    "meta": { "group": "core", "covers": ["valence"] }
   },
   {
     "id": "L1_body",
-    "title": "Body signal right now",
+    "title": "Body signal in this moment",
     "type": "swipe",
     "options": [
-      { "label": "Tight / tense", "tags": ["L1_BODY_TENSION"] },
-      { "label": "Loose / relaxed", "tags": ["L1_BODY_RELAXED"] }
+      { "label": "Tight / clenched", "tags": ["L1_BODY_TENSION"] },
+      { "label": "Loose / open", "tags": ["L1_BODY_RELAXED"] }
     ],
-    "meta": { "group": "core", "covers": ["tension"], "minAskedAfter": 0 }
+    "meta": { "group": "core", "covers": ["tension"] }
   },
   {
     "id": "L1_energy",
-    "title": "Energy level right now",
+    "title": "Your pace feels more like…",
     "type": "swipe",
     "options": [
-      { "label": "Low — drained", "tags": ["L1_ENERGY_LOW"] },
-      { "label": "High — wired", "tags": ["L1_ENERGY_HIGH"] }
+      { "label": "Dragging / slowed down", "tags": ["L1_ENERGY_LOW"] },
+      { "label": "Wired / can't slow down", "tags": ["L1_ENERGY_HIGH"] }
     ],
-    "meta": { "group": "core", "covers": ["arousal"], "minAskedAfter": 0 }
+    "meta": { "group": "core", "covers": ["energy"] }
   },
   {
     "id": "L1_social",
-    "title": "Social energy right now",
+    "title": "With people, your default is…",
     "type": "swipe",
     "options": [
-      { "label": "Need space", "tags": ["L1_SOCIAL_THREAT"] },
-      { "label": "Open to people", "tags": ["L1_SOCIAL_SUPPORT"] }
+      { "label": "Guarded / want distance", "tags": ["L1_SOCIAL_THREAT"] },
+      { "label": "Open / supported", "tags": ["L1_SOCIAL_SUPPORT"] }
     ],
-    "meta": { "group": "core", "covers": ["social"], "minAskedAfter": 0 }
+    "meta": { "group": "core", "covers": ["social"] }
   },
   {
     "id": "L1_control",
-    "title": "Sense of control",
+    "title": "Steering wheel: you feel…",
     "type": "swipe",
     "options": [
-      { "label": "Scattered / reactive", "tags": ["L1_CONTROL_LOW"] },
-      { "label": "Steady / in charge", "tags": ["L1_CONTROL_HIGH"] }
+      { "label": "Pulled by events / reactive", "tags": ["L1_CONTROL_LOW"] },
+      { "label": "I can choose / direct things", "tags": ["L1_CONTROL_HIGH"] }
     ],
-    "meta": { "group": "core", "covers": ["agency"], "minAskedAfter": 0 }
+    "meta": { "group": "core", "covers": ["control"] }
   },
   {
     "id": "L1_safety",
-    "title": "Internal safety",
+    "title": "Safety in the moment feels…",
     "type": "swipe",
     "options": [
-      { "label": "On edge / unsafe", "tags": ["L1_SAFETY_LOW"] },
+      { "label": "On guard / unsafe", "tags": ["L1_SAFETY_LOW"] },
       { "label": "Safe / grounded", "tags": ["L1_SAFETY_HIGH"] }
     ],
-    "meta": { "group": "core", "covers": ["safety"], "minAskedAfter": 0 }
+    "meta": { "group": "core", "covers": ["safety"] }
   },
   {
     "id": "L1_self_worth",
-    "title": "Self-talk",
+    "title": "Your inner voice is…",
     "type": "swipe",
     "options": [
-      { "label": "Harsh / critical", "tags": ["L1_WORTH_LOW"] },
-      { "label": "Kind / supportive", "tags": ["L1_WORTH_HIGH"] }
+      { "label": "Critical / pushing", "tags": ["L1_WORTH_LOW"] },
+      { "label": "Supportive / kind", "tags": ["L1_WORTH_HIGH"] }
     ],
-    "meta": { "group": "core", "covers": ["valence", "agency"], "minAskedAfter": 0 }
+    "meta": { "group": "core", "covers": ["agency", "self_worth"] }
   },
   {
     "id": "L1_expectations",
-    "title": "The day ahead feels…",
+    "title": "Next steps feel…",
     "type": "swipe",
     "options": [
-      { "label": "Hard / uncertain", "tags": ["L1_EXPECT_LOW"] },
-      { "label": "Manageable", "tags": ["L1_EXPECT_OK"] }
+      { "label": "Uncertain / hard to predict", "tags": ["L1_EXPECT_LOW"] },
+      { "label": "Clear enough / I know what's next", "tags": ["L1_EXPECT_OK"] }
     ],
-    "meta": { "group": "core", "covers": ["clarity"], "minAskedAfter": 0 }
+    "meta": { "group": "core", "covers": ["clarity"] }
   },
   {
     "id": "L1_pressure",
-    "title": "Pressure level",
+    "title": "The load on you feels…",
     "type": "swipe",
     "options": [
-      { "label": "High pressure", "tags": ["L1_PRESSURE_HIGH"] },
-      { "label": "Low pressure", "tags": ["L1_PRESSURE_LOW"] }
+      { "label": "Too much / pressing", "tags": ["L1_PRESSURE_HIGH"] },
+      { "label": "Manageable / room to breathe", "tags": ["L1_PRESSURE_LOW"] }
     ],
-    "meta": { "group": "core", "covers": ["arousal", "safety"], "minAskedAfter": 0 }
+    "meta": { "group": "core", "covers": ["load"] }
   },
   {
     "id": "L1_clarity",
-    "title": "Mental clarity",
+    "title": "Your mind feels…",
     "type": "swipe",
     "options": [
-      { "label": "Foggy", "tags": ["L1_CLARITY_LOW"] },
-      { "label": "Clear", "tags": ["L1_CLARITY_HIGH"] }
+      { "label": "Foggy / hard to name things", "tags": ["L1_CLARITY_LOW"] },
+      { "label": "Clear / words come easily", "tags": ["L1_CLARITY_HIGH"] }
     ],
-    "meta": { "group": "core", "covers": ["clarity"], "minAskedAfter": 0 }
+    "meta": { "group": "core", "covers": ["clarity"] }
   }
 ]
