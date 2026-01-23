@@ -22,8 +22,9 @@ const initialDraft = () => ({
     at: null,       // ISO timestamp
   },
   plans: {
-    focusTags: [],     // e.g. ["work","health"]
+    focusTags: [],     // e.g. ["plan_focus_work", "plan_custom:my_plan"]
     intensity: 'med',  // 'low' | 'med' | 'high'
+    custom: [],        // EPIC B1: Custom plan labels (e.g. ["My custom plan", "Another plan"])
   },
   l0: {
     answers: {}, // cardId -> { selectedLabel, selectedTags[], answer, at }
@@ -210,7 +211,23 @@ const useStore = create(
 
       // -------- L4
 
-      // -------- L4
+      // Task AK3-POST-4c.3: Store session log for smoke tests
+      sessionLog: null,
+      setSessionLog: (log) => {
+        set({ sessionLog: log });
+      },
+
+      // P0: Track logged smoke sessions to prevent duplicates
+      smokeLoggedStartedAt: null,
+      markSmokeLogged: (startedAt) => {
+        if (typeof startedAt === 'number' && startedAt > 0) {
+          set({ smokeLoggedStartedAt: startedAt });
+        }
+      },
+      isSmokeLogged: (startedAt) => {
+        const logged = get().smokeLoggedStartedAt;
+        return logged !== null && logged === startedAt;
+      },
 
       setL4Triggers(list) {
         logEvent('store_l4_triggers', { list }, `Store: L4 triggers (${list.length})`);
@@ -516,6 +533,71 @@ const useStore = create(
       },
 
       // -------- Plans (for plan-aware evening questions)
+      // EPIC B1: Add custom plan
+      addCustomPlan(label) {
+        const raw = String(label ?? '').trim();
+        if (!raw) {
+          return; // Cannot add empty plan
+        }
+
+        const draft = get().sessionDraft;
+        const current = Array.isArray(draft?.plans?.custom) 
+          ? draft.plans.custom 
+          : [];
+
+        // Avoid duplicates (case-insensitive)
+        const lower = raw.toLowerCase();
+        if (current.some(c => c.toLowerCase() === lower)) {
+          return; // Duplicate
+        }
+
+        const next = [...current, raw];
+        logEvent('store_plans_custom_add', { label: raw, count: next.length }, `Store: plans.custom +1 (${next.length})`);
+        set({
+          sessionDraft: {
+            ...draft,
+            plans: { ...(draft.plans || {}), custom: next },
+          },
+        });
+      },
+
+      // EPIC B1: Remove custom plan
+      removeCustomPlan(label) {
+        const raw = String(label ?? '').trim();
+        if (!raw) {
+          return;
+        }
+
+        const draft = get().sessionDraft;
+        const current = Array.isArray(draft?.plans?.custom) 
+          ? draft.plans.custom 
+          : [];
+
+        const lower = raw.toLowerCase();
+        const next = current.filter(c => c.toLowerCase() !== lower);
+
+        if (next.length === current.length) {
+          return; // Not found
+        }
+
+        // Also remove from focusTags if selected
+        const tagKey = `plan_custom:${raw.toLowerCase().replace(/\s+/g, '_')}`;
+        const focusTags = Array.isArray(draft?.plans?.focusTags) ? draft.plans.focusTags : [];
+        const nextFocusTags = focusTags.filter(t => t !== tagKey);
+
+        logEvent('store_plans_custom_remove', { label: raw, count: next.length }, `Store: plans.custom -1 (${next.length})`);
+        set({
+          sessionDraft: {
+            ...draft,
+            plans: { 
+              ...(draft.plans || {}), 
+              custom: next,
+              focusTags: nextFocusTags,
+            },
+          },
+        });
+      },
+
       togglePlanFocusTag(tagKey) {
         const key = String(tagKey || '').trim();
         if (!key) return;

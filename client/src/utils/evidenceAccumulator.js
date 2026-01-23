@@ -14,7 +14,8 @@ export function accumulateEvidence(l1Responses) {
   
   for (const response of l1Responses) {
     // Extract tags from response
-    const responseTags = response.tags || [];
+    // P0: Support both tags and selectedTags fields
+    const responseTags = response.tags || response.selectedTags || [];
     const normalizedTags = normalizeTags(responseTags, response.values || {});
     
     // Validate normalized tags

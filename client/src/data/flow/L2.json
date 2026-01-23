@@ -1,216 +1,134 @@
 [
   {
     "id": "L2_focus",
-    "title": "Your mind is mostly…",
+    "title": "Mind loops",
+    "hint": "Attention keeps landing on…",
     "type": "swipe",
     "options": [
-      { "label": "Future-focused / worrying", "tags": ["L2_FOCUS_FUTURE"] },
-      { "label": "Past-focused / replaying", "tags": ["L2_FOCUS_PAST"] }
+      { "label": "Future scan", "tags": ["L2_FOCUS_FUTURE"] },
+      { "label": "Past replay", "tags": ["L2_FOCUS_PAST"] }
     ],
-    "meta": {
-      "group": "confirm",
-      "covers": ["arousal"],
-      "discriminates": [
-        ["threatened", "down"],
-        ["threatened", "self_critical"],
-        ["threatened", "exhausted"]
-      ],
-      "minAskedAfter": 10
-    }
+    "meta": { "group": "probe", "discriminates": ["ruminating", "stuck"], "covers": ["clarity"] }
   },
   {
     "id": "L2_source",
-    "title": "Main source of tension",
+    "title": "Pressure from",
+    "hint": "Main pressure comes from…",
     "type": "swipe",
     "options": [
-      { "label": "People / conflict", "tags": ["L2_SOURCE_PEOPLE"] },
-      { "label": "Tasks / overload", "tags": ["L2_SOURCE_TASKS"] }
+      { "label": "People stuff", "tags": ["L2_SOURCE_PEOPLE"] },
+      { "label": "Task load", "tags": ["L2_SOURCE_TASKS"] }
     ],
-    "meta": {
-      "group": "discriminator",
-      "covers": ["agency", "safety"],
-      "discriminates": [
-        ["confrontational", "overloaded"],
-        ["blocked", "overloaded"],
-        ["confrontational", "blocked"]
-      ],
-      "minAskedAfter": 6
-    }
+    "meta": { "group": "probe", "discriminates": ["blocked", "overloaded"], "covers": ["context"] }
   },
   {
     "id": "L2_uncertainty",
-    "title": "How clear does it feel?",
+    "title": "Signals read",
+    "hint": "Signals feel…",
     "type": "swipe",
     "options": [
-      { "label": "Clear enough", "tags": ["L2_UNCERTAINTY_LOW"] },
-      { "label": "Unclear / mixed", "tags": ["L2_UNCERTAINTY_HIGH"] }
+      { "label": "Pretty clear", "tags": ["L2_UNCERTAINTY_HIGH"] },
+      { "label": "Hard to read", "tags": ["L2_UNCERTAINTY_LOW"] }
     ],
-    "meta": {
-      "group": "discriminator",
-      "covers": ["clarity"],
-      "discriminates": [["uncertain", "capable"]],
-      "minAskedAfter": 6
-    }
+    "meta": { "group": "probe", "discriminates": ["uncertain", "capable"], "covers": ["clarity"] }
   },
   {
     "id": "L2_social_pain",
-    "title": "Social situation",
+    "title": "Social hit",
+    "hint": "Social tone right now",
     "type": "swipe",
     "options": [
-      { "label": "Hurt / excluded", "tags": ["L2_SOCIAL_PAIN_YES"] },
-      { "label": "Neutral / OK", "tags": ["L2_SOCIAL_PAIN_NO"] }
+      { "label": "Feel hurt", "tags": ["L2_SOCIAL_PAIN"] },
+      { "label": "Mostly OK", "tags": ["L2_SOCIAL_OK"] }
     ],
-    "meta": {
-      "group": "discriminator",
-      "covers": ["social"],
-      "discriminates": [
-        ["detached", "down"],
-        ["detached", "engaged"],
-        ["detached", "connected"]
-      ],
-      "minAskedAfter": 6
-    }
+    "meta": { "group": "probe", "discriminates": ["detached", "down"], "covers": ["social"] }
   },
   {
     "id": "L2_numb",
-    "title": "Emotional presence",
+    "title": "Emo volume",
+    "hint": "Emotional volume",
     "type": "swipe",
     "options": [
-      { "label": "Numb / shut down", "tags": ["L2_NUMB_YES"] },
-      { "label": "Present / connected", "tags": ["L2_NUMB_NO"] }
+      { "label": "Muted", "tags": ["L2_NUMB_HIGH"] },
+      { "label": "I feel it", "tags": ["L2_NUMB_LOW"] }
     ],
-    "meta": {
-      "group": "confirm",
-      "covers": ["social"],
-      "discriminates": [
-        ["detached", "down"],
-        ["detached", "exhausted"]
-      ],
-      "minAskedAfter": 10
-    }
+    "meta": { "group": "probe", "discriminates": ["detached", "down"], "covers": ["valence"] }
   },
   {
     "id": "L2_heavy",
-    "title": "Body–mind load",
+    "title": "Body load",
+    "hint": "Body load",
     "type": "swipe",
     "options": [
-      { "label": "Heavy / exhausted", "tags": ["L2_HEAVY_YES"] },
-      { "label": "Light / OK", "tags": ["L2_HEAVY_NO"] }
+      { "label": "Drained", "tags": ["L2_HEAVY_HIGH"] },
+      { "label": "More mobile", "tags": ["L2_HEAVY_LOW"] }
     ],
-    "meta": {
-      "group": "discriminator",
-      "covers": ["fatigue"],
-      "discriminates": [
-        ["exhausted", "down"],
-        ["exhausted", "overloaded"]
-      ],
-      "minAskedAfter": 6
-    }
+    "meta": { "group": "probe", "discriminates": ["exhausted", "down"], "covers": ["arousal"] }
   },
   {
     "id": "L2_guilt",
-    "title": "Self-blame",
+    "title": "Fault lens",
+    "hint": "Inner blame",
     "type": "swipe",
     "options": [
-      { "label": "Blaming myself", "tags": ["L2_SELF_BLAME_YES"] },
-      { "label": "Not blaming myself", "tags": ["L2_SELF_BLAME_NO"] }
+      { "label": "Blame self", "tags": ["L2_GUILT_HIGH"] },
+      { "label": "Not on me", "tags": ["L2_GUILT_LOW"] }
     ],
-    "meta": {
-      "group": "discriminator",
-      "covers": ["agency"],
-      "discriminates": [
-        ["self_critical", "down"],
-        ["self_critical", "blocked"]
-      ],
-      "minAskedAfter": 6
-    }
+    "meta": { "group": "probe", "discriminates": ["guilty", "ashamed"], "covers": ["self-blame"] }
   },
   {
     "id": "L2_shame",
-    "title": "Shame / embarrassment",
+    "title": "Exposure",
+    "hint": "Feeling exposed",
     "type": "swipe",
     "options": [
-      { "label": "Ashamed / exposed", "tags": ["L2_SHAME_YES"] },
-      { "label": "Not really", "tags": ["L2_SHAME_NO"] }
+      { "label": "Feel exposed", "tags": ["L2_SHAME_HIGH"] },
+      { "label": "Not really", "tags": ["L2_SHAME_LOW"] }
     ],
-    "meta": {
-      "group": "discriminator",
-      "covers": ["agency"],
-      "discriminates": [
-        ["self_critical", "down"],
-        ["self_critical", "blocked"]
-      ],
-      "minAskedAfter": 6
-    }
+    "meta": { "group": "probe", "discriminates": ["guilty", "ashamed"], "covers": ["shame"] }
   },
   {
     "id": "L2_positive_moments",
-    "title": "Any bright spots recently?",
+    "title": "Bright spots",
+    "hint": "Small bright spots lately",
     "type": "swipe",
     "options": [
-      { "label": "Almost none", "tags": ["L2_POSITIVE_NONE"] },
-      { "label": "Some", "tags": ["L2_POSITIVE_SOME"] }
+      { "label": "None show up", "tags": ["L2_POSITIVE_MOMENTS_LOW"] },
+      { "label": "Some exist", "tags": ["L2_POSITIVE_MOMENTS_HIGH"] }
     ],
-    "meta": {
-      "group": "discriminator",
-      "covers": ["valence"],
-      "discriminates": [
-        ["down", "connected"],
-        ["down", "engaged"],
-        ["down", "grounded"]
-      ],
-      "minAskedAfter": 6
-    }
+    "meta": { "group": "probe", "discriminates": ["depressed", "detached"], "covers": ["valence"] }
   },
   {
     "id": "L2_regulation",
-    "title": "Can you downshift?",
+    "title": "Pause 10s",
+    "hint": "Pause for 10 seconds. You…",
     "type": "swipe",
     "options": [
-      { "label": "Stuck on edge", "tags": ["L2_REGULATION_LOW"] },
-      { "label": "Can calm down", "tags": ["L2_REGULATION_HIGH"] }
+      { "label": "Still keyed", "tags": ["L2_REGULATION_LOW"] },
+      { "label": "Settle a bit", "tags": ["L2_REGULATION_HIGH"] }
     ],
-    "meta": {
-      "group": "discriminator",
-      "covers": ["arousal"],
-      "discriminates": [
-        ["threatened", "grounded"],
-        ["pressured", "grounded"]
-      ],
-      "minAskedAfter": 6
-    }
+    "meta": { "group": "probe", "discriminates": ["anxious", "tense"], "covers": ["tension"] }
   },
   {
     "id": "L2_clarity",
-    "title": "Do you understand what's going on inside?",
+    "title": "Name it",
+    "hint": "Can you name what's underneath?",
     "type": "swipe",
     "options": [
       { "label": "Not yet", "tags": ["L2_CLARITY_LOW"] },
-      { "label": "Yes", "tags": ["L2_CLARITY_HIGH"] }
+      { "label": "Yes, can", "tags": ["L2_CLARITY_HIGH"] }
     ],
-    "meta": {
-      "group": "discriminator",
-      "covers": ["clarity"],
-      "discriminates": [["uncertain", "capable"]],
-      "minAskedAfter": 6
-    }
+    "meta": { "group": "probe", "discriminates": ["uncertain", "capable"], "covers": ["clarity"] }
   },
   {
     "id": "L2_meaning",
-    "title": "Sense of meaning",
+    "title": "Meaning link",
+    "hint": "Connection to meaning",
     "type": "swipe",
     "options": [
-      { "label": "Empty / meaningless", "tags": ["L2_MEANING_LOW"] },
+      { "label": "Feels empty", "tags": ["L2_MEANING_LOW"] },
       { "label": "Some meaning", "tags": ["L2_MEANING_HIGH"] }
     ],
-    "meta": {
-      "group": "confirm",
-      "covers": ["valence"],
-      "discriminates": [
-        ["down", "grounded"],
-        ["blocked", "grounded"]
-      ],
-      "minAskedAfter": 10
-    }
+    "meta": { "group": "probe", "discriminates": ["depressed", "exhausted"], "covers": ["meaning"] }
   }
 ]

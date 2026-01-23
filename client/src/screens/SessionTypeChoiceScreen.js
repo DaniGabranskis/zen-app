@@ -37,7 +37,12 @@ export default function SessionTypeChoiceScreen({ navigation }) {
       // no-op
     }
 
-    navigation.dispatch(StackActions.replace('BaselineCheckIn'));
+    // EPIC A1: For morning, go to PlansForDay first; for evening, keep BaselineCheckIn first
+    if (sessionType === 'morning') {
+      navigation.dispatch(StackActions.replace('PlansForDay'));
+    } else {
+      navigation.dispatch(StackActions.replace('BaselineCheckIn'));
+    }
   };
 
   return (

@@ -1,5 +1,5 @@
 // src/screens/L5SummaryScreen.js
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -451,6 +451,66 @@ export default function L5SummaryScreen({ navigation, route }) {
     navigation.navigate('DiagnosticFlow');
   };
 
+  // Task AK3-POST-4c.3: Log complete session with triggers/bodyMind for deep sessions
+  // P0: Store-based guard to ensure only one log per startedAt (survives remounts/StrictMode)
+  const isSmokeLogged = useStore((s) => s.isSmokeLogged);
+  const markSmokeLogged = useStore((s) => s.markSmokeLogged);
+  
+  useEffect(() => {
+    if (!fromHistory && !simplified && flowMode === 'deep') {
+      // Get session log from store (set by DiagnosticFlowScreen)
+      const sessionLog = useStore.getState().sessionLog;
+      
+      if (sessionLog) {
+        // P0: Check if we already logged this session (store-based guard)
+        const sessionStartedAt = sessionLog.startedAt;
+        if (isSmokeLogged(sessionStartedAt)) {
+          return; // Already logged this session
+        }
+        
+        // Task AK3-POST-4c.3: Add triggers and bodyMind to session log
+        const TRIGGERS_LIMIT = 10;
+        const BODYMIND_LIMIT = 10;
+        const triggersSample = storeTriggers.slice(0, TRIGGERS_LIMIT);
+        const bodyMindSample = storeBM.slice(0, BODYMIND_LIMIT);
+        
+        const completeSessionLog = {
+          ...sessionLog,
+          triggers: {
+            count: storeTriggers.length,
+            sample: triggersSample,
+            truncated: storeTriggers.length > TRIGGERS_LIMIT,
+          },
+          bodyMind: {
+            count: storeBM.length,
+            sample: bodyMindSample,
+            truncated: storeBM.length > BODYMIND_LIMIT,
+          },
+        };
+        
+        // Task AK3-POST-4c.3: Output complete session log as single JSON block
+        // P0: Mark as logged in store (survives remounts/StrictMode)
+        markSmokeLogged(sessionStartedAt);
+        console.log('[DEEP_SMOKE_SESSION]', JSON.stringify(completeSessionLog, null, 2));
+      } else {
+        // Fallback: if sessionLog not available, log L4 data separately
+        const TRIGGERS_LIMIT = 10;
+        const BODYMIND_LIMIT = 10;
+        const triggersSample = storeTriggers.slice(0, TRIGGERS_LIMIT);
+        const bodyMindSample = storeBM.slice(0, BODYMIND_LIMIT);
+        
+        console.log('[DEEP_SMOKE_L4]', JSON.stringify({
+          triggersCount: storeTriggers.length,
+          triggersSample,
+          triggersTruncated: storeTriggers.length > TRIGGERS_LIMIT,
+          bodyMindCount: storeBM.length,
+          bodyMindSample,
+          bodyMindTruncated: storeBM.length > BODYMIND_LIMIT,
+        }, null, 2));
+      }
+    }
+  }, [fromHistory, simplified, flowMode, storeTriggers, storeBM]);
+  
   // Task P(B).3: UI text constants for clarity and confidence
   const CLARITY_LOW_HELP = 'Low clarity — result may be less precise. Your signals don\'t strongly match any state.';
   const LOW_CONFIDENCE_HELP = 'Low confidence result. Baseline signals don\'t strongly match any state.';
@@ -472,6 +532,15 @@ export default function L5SummaryScreen({ navigation, route }) {
 
   const closeFeedback = () => {
     setFeedbackVisible(false);
+  };
+
+  // Task AK3-DEEP-L5-CRASH-1: Add missing handleFeedbackSkip and handleFeedbackSubmit
+  const handleFeedbackSkip = () => {
+    setFeedbackVisible(false);
+  };
+
+  const handleFeedbackSubmit = (data) => {
+    submitFeedback();
   };
 
   const submitFeedback = () => {
@@ -528,7 +597,9 @@ export default function L5SummaryScreen({ navigation, route }) {
     if (section === 'triggers' && editLocks.triggersUsed) return;
     if (section === 'bodyMind' && editLocks.bodyMindUsed) return;
 
-    navigation.navigate('L4Deepen', { editSection: section });
+    // Task AK3-DEEP-L4-ALWAYS-3: Pass mode when editing from L5
+    const currentMode = simplified ? 'simplified' : 'deep';
+    navigation.navigate('L4Deepen', { editSection: section, mode: currentMode });
   };
 
  // Loading effect: we calculate a local mini-insight and request a short AI description
@@ -999,9 +1070,10 @@ return (
     )}
     
     {/* Task AJ2: Feedback modal */}
+    {/* Task AK-L5-FEEDBACK-CRASH-1: Use closeFeedback instead of handleFeedbackSkip */}
     <FeedbackModal
       visible={feedbackVisible}
-      onClose={handleFeedbackSkip}
+      onClose={closeFeedback}
       onSubmit={handleFeedbackSubmit}
       stateKey={decisionStateKey}
       microKey={microKey}

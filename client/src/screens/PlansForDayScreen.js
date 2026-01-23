@@ -60,13 +60,20 @@ export default function PlansForDayScreen({ navigation }) {
       : 'Pick what you plan to focus on today. This helps the questions feel relevant.';
 
   const onContinue = () => {
-    // Simplified: Baseline + Plans -> L5 short (NO diagnostics in simplified, morning or evening).
+    // EPIC A1: For morning, Plans comes before Baseline, so navigate to BaselineCheckIn
+    // For evening, Plans comes after Baseline, so go directly to DiagnosticFlow/L5Summary
+    if (sessionType === 'morning') {
+      navigation.dispatch(StackActions.replace('BaselineCheckIn'));
+      return;
+    }
+
+    // Evening: Simplified: Baseline + Plans -> L5 short (NO diagnostics in simplified, morning or evening).
     if (flowMode === 'simplified') {
       navigation.dispatch(StackActions.replace('L5Summary', { mode: 'simplified' }));
       return;
     }
 
-    // Deep Dive: go to diagnostics
+    // Evening: Deep Dive: go to diagnostics
     navigation.dispatch(StackActions.replace('DiagnosticFlow'));
   };
 

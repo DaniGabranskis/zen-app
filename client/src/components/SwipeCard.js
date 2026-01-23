@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
   // Not sure button
 notSureBtn: {
   position: 'absolute',
-  bottom: '17%',
+  bottom: '17%', // Position below the card (negative value places it below the card's bottom edge)
   alignSelf: 'center',
   paddingVertical: 10,
   paddingHorizontal: 16,

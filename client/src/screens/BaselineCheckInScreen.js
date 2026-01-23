@@ -59,7 +59,21 @@ export default function BaselineCheckInScreen({ navigation }) {
       // no-op
     }
 
-    navigation.navigate('PlansForDay');
+    // EPIC A1: After baseline, navigate based on sessionType and flowMode
+    const sessionType = useStore.getState().sessionDraft?.sessionType || 'morning';
+    const flowMode = useStore.getState().sessionDraft?.flowMode || 'simplified';
+
+    if (sessionType === 'morning') {
+      // Morning: Baseline -> Plans (already done) -> DiagnosticFlow/L5Summary
+      if (flowMode === 'simplified') {
+        navigation.dispatch(StackActions.replace('L5Summary', { mode: 'simplified' }));
+      } else {
+        navigation.dispatch(StackActions.replace('DiagnosticFlow'));
+      }
+    } else {
+      // Evening: Baseline -> Plans -> DiagnosticFlow/L5Summary
+      navigation.navigate('PlansForDay');
+    }
   };
 
   const cards = useMemo(

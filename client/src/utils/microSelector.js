@@ -34,6 +34,15 @@ function scoreMicros(macroKey, evidenceTags, options = {}) {
       const supportingMatched = evidenceTagSet.supporting.filter(tag => 
         evidenceTags.includes(tag)
       );
+
+      // Task 2 (P0): Ensure matchedTags reflects what actually contributed to score.
+      // Without this, topCandidate.matchedTags can look empty even when mustHave/supporting matched.
+      for (const t of mustHaveMatched) {
+        if (!matchedTags.includes(t)) matchedTags.push(t);
+      }
+      for (const t of supportingMatched) {
+        if (!matchedTags.includes(t)) matchedTags.push(t);
+      }
       
       // Task AK3.4: Must-have tags get strong multiplier
       // If all must-have match → strong boost (2x base)
@@ -185,6 +194,8 @@ export function selectMicroDebug(macroKey, evidenceTags, options = {}) {
     };
   }
   
+  // Task P1.3: no_evidence only when evidenceTags.length === 0
+  // If evidence exists but no match, use 'no_matches_zero_score' or 'below_threshold_nonzero'
   if (evidenceTags.length === 0) {
     const microScores = scoreMicros(macroKey, evidenceTags, options);
     const topCandidate = microScores[0] ? {
@@ -197,7 +208,7 @@ export function selectMicroDebug(macroKey, evidenceTags, options = {}) {
       selected: null,
       topCandidate,
       effectiveThreshold: threshold,
-      reason: 'no_evidence',
+      reason: 'no_evidence', // Only when evidenceTags.length === 0
     };
   }
   
@@ -264,7 +275,9 @@ export function selectMicroDebug(macroKey, evidenceTags, options = {}) {
       selected,
       topCandidate,
       effectiveThreshold,
-      reason: 'selected',
+      // Task 2 (P0): Make reasons explicit and stable for downstream logging.
+      // "matched" means we selected a micro (i.e., passed threshold).
+      reason: 'matched',
     };
   }
   

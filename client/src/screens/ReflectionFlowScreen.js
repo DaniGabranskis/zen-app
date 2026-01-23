@@ -7,6 +7,7 @@ import useThemeVars from '../hooks/useThemeVars';
 import ScreenWrapper from '../components/ScreenWrapper';
 import SwipeCard from '../components/SwipeCard';
 import QuestionBlock from '../components/QuestionBlock';
+import SwipeHeaderHint from '../components/SwipeHeaderHint';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 
 import L1 from '../data/flow/L1.json';
@@ -47,6 +48,7 @@ function normalizeCards(raw) {
     ...c,
     id: String(c?.id || ''),
     title: String(c?.title || ''),
+    hint: String(c?.hint || c?.meta?.hint || ''),
     type: String(c?.type || 'swipe'),
     options: Array.isArray(c?.options) ? c.options : [],
     meta: {
@@ -65,40 +67,6 @@ function showToast(msg) {
     Alert.alert('Notice', msg);
   }
 }
-
- // Overlay "← Swipe →" hint that does not affect layout
-  function SwipeHint({ color = '#8A8A8A', top = 8 }) {
-    return (
-      <View
-        pointerEvents="none"
-        style={{
-          position: 'absolute',
-          top: 40,
-          left: 0,
-          right: 0,
-          alignItems: 'center',
-          zIndex: 10,
-        }}
-      >
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <Icon name="chevron-left" size={20} color={color} />
-        <Text
-          style={{
-            fontSize: 20,
-            fontWeight: '600',
-            letterSpacing: 1,
-            opacity: 0.85,
-            lineHeight: 20,
-            color,
-          }}
-        >
-          Swipe
-        </Text>
-         <Icon name="chevron-right" size={20} color={color} />
-      </View>
-       </View>
-    );
-  }
 
   // Bottom overlay hint that does not affect layout
 function BottomAffirm({ text = 'Every swipe is a step toward clarity.', color = '#8A8A8A', bottom = 12 }) {
@@ -485,12 +453,20 @@ const allIdsToUse = isDeep ? allIds : baseIds;
 
   // Render
   const swipeCard = useMemo(() => toSwipeCard(currentCard), [currentCard]);
+  const hintText = currentCard?.hint || '';
+  
+  // Task P1.1b: Runtime warn if hint is missing
+  useEffect(() => {
+    if (currentCard && (!currentCard.hint || currentCard.hint.trim().length === 0)) {
+      console.warn(`[CARD_HINT_MISSING] Card ${currentCard.id} has no hint. This should be caught by validateCardCopy.js`);
+    }
+  }, [currentCard]);
 
   if (!currentCard) {
     return (
       <ScreenWrapper>
         <View style={{ padding: 16 }}>
-          <SwipeHint color={t.textSecondary} top={8} />
+          <SwipeHeaderHint hint="" top={8} />
           <Text style={{ color: t.textPrimary, fontSize: 16 }}>
             Loading reflection…
           </Text>
@@ -502,20 +478,26 @@ const allIdsToUse = isDeep ? allIds : baseIds;
 
   const opts = currentCard.options || [];
 
+  // Task P0: Layout constants for Swipe Header + Hint
+  const HEADER_TOP = 16;
+  const HEADER_HEIGHT = 44; // Approximate height of SwipeHeaderHint (swipe text + hint)
+  const CONTENT_TOP_PADDING = HEADER_TOP + HEADER_HEIGHT;
+
 return (
   <ScreenWrapper>
     {swipeCard ? (
       <View style={{ flex: 1, position: 'relative' }}>
-        <SwipeHint color={t.textSecondary} top={8} />
-
-        <SwipeCard
+        <SwipeHeaderHint hint={hintText} top={HEADER_TOP} />
+        <View style={{ paddingTop: CONTENT_TOP_PADDING, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <SwipeCard
           card={swipeCard}
           onSwipeLeft={() => onChooseForCurrent('A', swipeCard.leftOption.text, swipeCard.leftOption.tags)}
           onSwipeRight={() => onChooseForCurrent('B', swipeCard.rightOption.text, swipeCard.rightOption.tags)}
           onNotSure={onNotSureForCurrent}
           notSureLabel={NOT_SURE_LABEL}
           enableSwipeUpNotSure={false}
-        />
+          />
+        </View>
 
         <BottomAffirm color={t.textSecondary} bottom={12} />
       </View>

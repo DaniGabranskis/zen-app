@@ -17,7 +17,8 @@
     "sim:sample": "node scripts/simulateAllFlows.js --inDir src/data --mode sample --samples 20000 --out analysis/sim_sample",
     "sim:all": "node scripts/simulateAllFlows.js --inDir src/data --mode exhaustive --maxPaths 300000 --out analysis/sim_all",
     "check:balance": "node scripts/checkBalance.js",
-    "check:probeStats": "node scripts/checkProbeStats.js"
+    "check:probeStats": "node scripts/checkProbeStats.js",
+    "validate:cards": "node scripts/validateCardCopy.js"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",

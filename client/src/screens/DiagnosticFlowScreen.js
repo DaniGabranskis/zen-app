@@ -8,6 +8,7 @@ import { StackActions } from '@react-navigation/native';
 import ScreenWrapper from '../components/ScreenWrapper';
 import useThemeVars from '../hooks/useThemeVars';
 import SwipeCard from '../components/SwipeCard';
+import SwipeHeaderHint from '../components/SwipeHeaderHint';
 
 import L1 from '../data/flow/L1.json';
 import L2 from '../data/flow/L2.json';
@@ -26,6 +27,7 @@ function normalizeCards(list) {
   return arr.map((c) => ({
     id: String(c?.id || ''),
     title: String(c?.title || ''),
+    hint: String(c?.hint || c?.meta?.hint || ''),
     type: String(c?.type || 'swipe'),
     options: Array.isArray(c?.options) ? c.options : [],
     meta: c?.meta || {},
@@ -121,7 +123,11 @@ const plan = useMemo(() => {
     console.log('[DeepFlow] Finalizing session', { endedBy, reason, askedCount: askedIds.size });
     
     setIsFinished(true);
-    sessionLogRef.current.endedBy = endedBy;
+    // Task 1 (P0): "All L1 asked" is a normal completion, not an error-like no_card.
+    const endedByFinal = (endedBy === 'no_card' && reason === 'all_l1_cards_asked')
+      ? 'completed_l1'
+      : endedBy;
+    sessionLogRef.current.endedBy = endedByFinal;
     // Task 1: Add endedReason from selector (detailed reason code)
     sessionLogRef.current.endedReason = reason || null;
     
@@ -358,6 +364,16 @@ const plan = useMemo(() => {
       baselineMetrics,
       baselineConfidence: baselineResult?.confidenceBand || null,
     });
+    // Task 3 (P0): Hard guard - never show a card that was already accepted.
+    // Even if selector has a bug or askedIds got out of sync, we prevent repeated question.
+    if (result?.cardId && askedIds?.has?.(result.cardId)) {
+      console.warn('[DeepFlow] Preventing duplicate next cardId from selector', {
+        cardId: result.cardId,
+        selectorReason: result.reason,
+        askedCount: askedIds.size,
+      });
+      return { ...result, cardId: null, reason: 'duplicate_next_card_prevented' };
+    }
     return result;
   }, [adaptiveL1Enabled, isDeep, isInProbePhase, macroBase, askedIds, evidenceTags, currentQuality, allCards.byId, accepted]);
   
@@ -398,6 +414,14 @@ const plan = useMemo(() => {
   const currentId = currentProbeId || currentMainId;
   const currentCard = currentId ? allCards.byId[currentId] : null;
   const swipeCard = useMemo(() => toSwipeCard(currentCard), [currentCard]);
+  const hintText = currentCard?.hint || '';
+  
+  // Task P1.1b: Runtime warn if hint is missing
+  useEffect(() => {
+    if (currentCard && (!currentCard.hint || currentCard.hint.trim().length === 0)) {
+      console.warn(`[CARD_HINT_MISSING] Card ${currentCard.id} has no hint. This should be caught by validateCardCopy.js`);
+    }
+  }, [currentCard]);
 
   const pushAccepted = (card, selectedKey, label, tags, isNotSure = false) => {
     // Task 3: Add tags for NS (Not sure) responses to make them useful signals
@@ -646,7 +670,12 @@ const plan = useMemo(() => {
       
       // Task AK3-POST-4c.1: Mark normal finish
       if (isDeep) {
-        sessionLogRef.current.endedBy = adaptiveNextL1Id === null ? 'no_card' : 'normal';
+        // Task 1 (P0): If we ran out because all L1 were asked, treat as normal completion.
+        const endReason = adaptiveNextL1Result?.reason || null;
+        sessionLogRef.current.endedBy =
+          (adaptiveNextL1Id === null && endReason === 'all_l1_cards_asked')
+            ? 'completed_l1'
+            : (adaptiveNextL1Id === null ? 'no_card' : 'normal');
       }
       
       // Use setTimeout to defer navigation/state updates to avoid React warnings
@@ -846,10 +875,17 @@ const plan = useMemo(() => {
     );
   }
 
+  // Task P0: Layout constants for Swipe Header + Hint
+  const HEADER_TOP = 60;
+  const HEADER_HEIGHT = 44; // Approximate height of SwipeHeaderHint (swipe text + hint)
+  const CONTENT_TOP_PADDING = HEADER_TOP + HEADER_HEIGHT;
+
   return (
     <ScreenWrapper>
       <View style={styles.container}>
-        <SwipeCard
+        <SwipeHeaderHint hint={hintText} top={HEADER_TOP} />
+        <View style={{ paddingTop: CONTENT_TOP_PADDING, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <SwipeCard
           card={swipeCard}
           onSwipeLeft={() => {
             const opt = currentCard.options[0];
@@ -863,7 +899,8 @@ const plan = useMemo(() => {
             pushAccepted(currentCard, 'NS', 'Not sure', [], true);
           }}
           notSureLabel="Not sure"
-        />
+          />
+        </View>
         <Text style={[styles.counter, { color: t.textSecondary }]}>
           {isInProbePhase
             ? `Clarifying ${probeIndex + 1} / ${probePlan.length}`

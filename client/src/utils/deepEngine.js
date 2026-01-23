@@ -72,10 +72,27 @@ export async function routeStateFromDeep(baselineMetrics, l1Responses = [], opti
   let microReason = microDebug.reason;
   let microTopCandidate = microDebug.topCandidate;
   
+  // Task 3: Check for high uncertainty (many NS responses / sig.uncertainty.high)
+  const hasHighUncertainty = evidenceTags.some(tag => tag === 'sig.uncertainty.high' || tag.includes('sig.uncertainty'));
+  const certainTagsCount = evidenceTags.filter(tag => 
+    tag.startsWith('sig.') && 
+    !tag.includes('unknown') && 
+    !tag.includes('uncertainty') &&
+    (tag.includes('.low') || tag.includes('.high') || tag.includes('.mid'))
+  ).length;
+  
+  // If high uncertainty and few certain signals, mark as high_uncertainty
+  if (hasHighUncertainty && certainTagsCount < 3) {
+    microReason = 'high_uncertainty';
+  }
+  
   // Step 5: Check if micro should be null (weak/conflicting evidence)
   if (microResult && shouldMicroBeNull(baselineMacro, evidenceTags, adjustedConfidence)) {
     microResult = null;
-    microReason = 'should_be_null_weak_evidence';
+    // Don't override high_uncertainty reason
+    if (microReason !== 'high_uncertainty') {
+      microReason = 'should_be_null_weak_evidence';
+    }
   }
   
   // Step 6: Check for macro flip (rare)
@@ -128,6 +145,15 @@ export async function routeStateFromDeep(baselineMetrics, l1Responses = [], opti
     microSource === 'fallback';
   
   // Step 9: Build result (Task AF: compatible with baseline format for L5)
+  // P1: Add sig.micro.* tag after micro selection (for analytics, not for selection)
+  const finalEvidenceTags = [...evidenceTags];
+  if (microKeyFinal && microSource === 'selected') {
+    const microTag = `sig.micro.${microKeyFinal}`;
+    if (!finalEvidenceTags.includes(microTag)) {
+      finalEvidenceTags.push(microTag);
+    }
+  }
+  
   const result = {
     // Core state (backward compatible with baseline format)
     stateKey: finalMacro, // Task AF: Use stateKey for L5 compatibility (same as macroKey)
@@ -148,8 +174,8 @@ export async function routeStateFromDeep(baselineMetrics, l1Responses = [], opti
     macroFlipApplied,
     macroFlipReason,
     
-    // Evidence
-    evidenceTags,
+    // Evidence (includes sig.micro.* tag if micro was selected)
+    evidenceTags: finalEvidenceTags,
     uncertaintySignals,
     
     // Baseline reference
@@ -161,6 +187,9 @@ export async function routeStateFromDeep(baselineMetrics, l1Responses = [], opti
     score2: baselineResult.score2,
     delta: baselineResult.delta,
     vector: baselineResult.vector,
+    
+    // Task AK3-DEEP-STORE-1: Set mode to 'deep' for store_decision
+    mode: 'deep',
     
     // Diagnostics (for simulation/debugging)
     diagnostics: {

@@ -2,7 +2,8 @@
 // Simulates deep dive flow with noisy-mixed mode and comprehensive metrics
 //
 // Usage:
-//   node scripts/checkDeepBalance.js --mode noisy-mixed --seed 42 --runs 100000 --outDir ./scripts/out
+//   node scripts/checkDeepBalance.js --mode noisy-mixed --seed 42 --runs 100000 --outDir ./scripts/out --flow fixed
+//   node scripts/checkDeepBalance.js --mode noisy-mixed --seed 42 --runs 100000 --outDir ./scripts/out --flow adaptive-l1
 //
 // Task AI: Integration Hygiene
 // - Uses canonical imports (no local copies of engine logic)
@@ -17,6 +18,13 @@ import fs from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Task P0: Utility function to read JSON files (more reliable than import)
+function readJson(relPath) {
+  const abs = path.resolve(process.cwd(), relPath);
+  const raw = fs.readFileSync(abs, 'utf8');
+  return JSON.parse(raw);
+}
+
 // Parse command line arguments
 function parseArgs() {
   const args = process.argv.slice(2);
@@ -25,6 +33,7 @@ function parseArgs() {
     seed: 42,
     runs: null, // null = use all baseline combinations
     outDir: path.join(__dirname, 'out'),
+    flow: 'fixed', // Task AK3-DEEP-L1-2: 'fixed' or 'adaptive-l1'
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -39,6 +48,9 @@ function parseArgs() {
       i++;
     } else if (args[i] === '--outDir' && args[i + 1]) {
       config.outDir = args[i + 1];
+      i++;
+    } else if (args[i] === '--flow' && args[i + 1]) {
+      config.flow = args[i + 1]; // Task AK3-DEEP-L1-2
       i++;
     }
   }
@@ -87,6 +99,7 @@ async function main() {
   console.log(`  Mode: ${config.mode}`);
   console.log(`  Seed: ${config.seed}`);
   console.log(`  Runs: ${config.runs || 'all baseline combinations'}`);
+  console.log(`  Flow: ${config.flow}`); // Task AK3-DEEP-L1-2
   console.log(`  Output dir: ${config.outDir}`);
   console.log('');
   
@@ -116,13 +129,174 @@ async function main() {
   console.log(`Running simulation on ${baselineSubset.length} baselines...`);
   console.log('');
   
+  // Task AK3-DEEP-L1-2: Load L1 cards for adaptive selection
+  let L1_CARDS = [];
+  let L1_CARDS_BY_ID = {};
+  
+  if (config.flow === 'adaptive-l1') {
+    try {
+      // Task P0: Use readJson instead of import to avoid JSON import issues
+      const l1Data = readJson('src/data/flow/L1.json');
+      L1_CARDS = Array.isArray(l1Data) ? l1Data : [];
+      // Normalize cards
+      L1_CARDS = L1_CARDS.map(card => ({
+        id: String(card?.id || ''),
+        title: String(card?.title || ''),
+        type: String(card?.type || 'swipe'),
+        options: Array.isArray(card?.options) ? card.options : [],
+        meta: card?.meta || {},
+        cluster: card?.cluster || 'GENERAL', // Task AK3-DEEP-L1-1c
+        macroAllow: Array.isArray(card?.macroAllow) ? card.macroAllow : null,
+        signals: Array.isArray(card?.signals) ? card.signals : [],
+      })).filter(c => c.id && c.id.startsWith('L1_'));
+      
+      for (const card of L1_CARDS) {
+        L1_CARDS_BY_ID[card.id] = card;
+      }
+      
+      // Task P0.1: Log L1 loading for verification
+      console.log('[checkDeepBalance] L1 loaded:', Array.isArray(L1_CARDS) ? L1_CARDS.length : 'not-array');
+      console.log('[checkDeepBalance] Example L1 ids:', (Array.isArray(L1_CARDS) ? L1_CARDS.slice(0, 3).map(x => x.id) : []));
+    } catch (e) {
+      console.error('[checkDeepBalance] Failed to load L1 cards:', e.message);
+      console.error('[checkDeepBalance] Error stack:', e.stack);
+      throw new Error(`Failed to load L1 cards: ${e.message}. Ensure src/data/flow/L1.json exists.`);
+    }
+  }
+
   // Task AK3-POST-1: Enhanced noisy-mixed mode with real noise
-  async function generateSyntheticL1Responses(baselineMacro, mode, rng) {
+  // Task AK3-DEEP-L1-2: Updated to support adaptive-l1 flow
+  async function generateSyntheticL1Responses(baselineMacro, mode, rng, flowMode, baselineMetrics) {
     const { getMicrosForMacro } = await import('../src/data/microTaxonomy.js');
     const { getMicroEvidenceTags } = await import('../src/data/microEvidenceTags.js');
     
     const micros = getMicrosForMacro(baselineMacro);
     const responses = [];
+    
+    // Task AK3-DEEP-L1-2: Adaptive vs fixed flow
+    if (flowMode === 'adaptive-l1' && L1_CARDS.length > 0) {
+      // Adaptive flow: use pickNextL1Card to select cards step-by-step
+      const { pickNextL1Card } = await import('../src/utils/l1CardSelector.js');
+      const { routeStateFromBaseline } = await import('../src/utils/baselineEngine.js');
+      
+      const askedIds = [];
+      let evidenceTags = [];
+      const MAX_STEPS = 10;
+      let steps = 0;
+      let quality = { needsRefine: true };
+      
+      while (steps < MAX_STEPS) {
+        // Get baseline result for quality check
+        const baselineResult = routeStateFromBaseline(baselineMetrics || {}, {
+          evidenceVector: null,
+          evidenceWeight: 0.25,
+        });
+        
+        quality = {
+          needsRefine: baselineResult?.mode === 'probe' || baselineResult?.isUncertain === true,
+          confidenceBand: baselineResult?.confidenceBand || null,
+          clarityFlag: baselineResult?.clarityFlag || null,
+        };
+        
+        // Pick next card adaptively
+        const pickResult = pickNextL1Card({
+          macroBase: baselineMacro,
+          askedIds,
+          evidenceTags,
+          quality,
+          cardsById: L1_CARDS_BY_ID,
+          askedCount: askedIds.length,
+        });
+        
+        if (!pickResult || !pickResult.cardId) {
+          // Early exit or no more cards
+          // Task AK3-DEEP-L1-2b: Assert early exit conditions
+          const { areMinimumGatesClosed } = await import('../src/utils/l1CardSelector.js');
+          const gatesClosed = areMinimumGatesClosed({ macroBase: baselineMacro, evidenceTags });
+          const MIN_STEPS = 4; // From l1CardSelector.js
+          
+          if (pickResult?.reason === 'early_exit_gates_closed') {
+            // Check invariants for early exit
+            const violations = [];
+            if (steps < MIN_STEPS) {
+              violations.push({ reason: 'early_exit_min_steps', steps, minSteps: MIN_STEPS });
+            }
+            if (!gatesClosed) {
+              violations.push({ reason: 'early_exit_gates_open', gatesClosed });
+            }
+            if (quality.needsRefine) {
+              violations.push({ reason: 'early_exit_needs_refine', needsRefine: quality.needsRefine });
+            }
+            
+            // Log violations if any
+            if (violations.length > 0) {
+              console.warn('[checkDeepBalance] Early exit invariant violations:', violations);
+              // Continue instead of exiting (but we'll break anyway since pickResult is null)
+              // For metrics, we'll record the violation
+              if (typeof metrics !== 'undefined') {
+                metrics.invariantViolations.push({
+                  baselineMacro,
+                  violations,
+                  askedIds: [...askedIds],
+                  steps,
+                  evidenceTags: [...evidenceTags],
+                });
+                metrics.invariantViolationCount++;
+                for (const v of violations) {
+                  metrics.invariantViolationsByReason[v.reason] = (metrics.invariantViolationsByReason[v.reason] || 0) + 1;
+                }
+              }
+            }
+          }
+          break;
+        }
+        
+        const cardId = pickResult.cardId;
+        const card = L1_CARDS_BY_ID[cardId];
+        if (!card) break;
+        
+        // Task AK3-DEEP-L1-2b: Assert no duplicates
+        if (askedIds.includes(cardId)) {
+          // This should never happen, but log it if it does
+          console.warn('[checkDeepBalance] Duplicate card detected in adaptive-l1 flow', {
+            cardId,
+            askedIds,
+            step: steps + 1,
+          });
+          // Skip this card and continue
+          break;
+        }
+        
+        askedIds.push(cardId);
+        steps++;
+        
+        // Simulate response for this card (noisy-mixed logic)
+        const cardTags = await simulateCardResponse(card, baselineMacro, mode, rng);
+        evidenceTags = [...evidenceTags, ...cardTags];
+        
+        responses.push({
+          tags: [...new Set(cardTags)], // Remove duplicates
+          values: {},
+          uncertainty: rng.random() < 0.25 ? 'low_clarity' : null, // 25% uncertainty
+        });
+        
+        // Check for early exit condition
+        if (pickResult.reason === 'early_exit_gates_closed') {
+          break;
+        }
+      }
+      
+      // Task AK3-DEEP-L1-2b: Check if MAX_STEPS was reached
+      const endedByMaxSteps = steps >= MAX_STEPS;
+      
+      return { 
+        responses, 
+        stepsTaken: steps,
+        endedByMaxSteps, // Track if we hit MAX_STEPS
+      };
+    }
+    
+    // Fixed flow: generate 2-3 responses as before
     const responseCount = Math.floor(rng.random() * 2) + 2; // 2-3 responses
     
     if (mode === 'cluster-aligned') {
@@ -228,7 +402,63 @@ async function main() {
       }
     }
     
-    return responses;
+    // Fixed flow: return responses and step count
+    // Task AK3-DEEP-L1-2c: For fixed flow, we don't track card sequence (it's random)
+    return { responses, stepsTaken: responseCount, cardSequence: null };
+  }
+  
+  // Task AK3-DEEP-L1-2: Helper function to simulate response for a card
+  async function simulateCardResponse(card, baselineMacro, mode, rng) {
+    const tags = [];
+    const { getMicrosForMacro } = await import('../src/data/microTaxonomy.js');
+    const { getMicroEvidenceTags } = await import('../src/data/microEvidenceTags.js');
+    
+    const micros = getMicrosForMacro(baselineMacro);
+    const tagCount = Math.floor(rng.random() * 5); // 0-4 tags
+    
+    for (let j = 0; j < tagCount; j++) {
+      const tagType = rng.random();
+      
+      if (tagType < 0.4 && micros.length > 0) {
+        // 40%: Aligned tag
+        const micro = micros[Math.floor(rng.random() * micros.length)];
+        const evidenceTags = getMicroEvidenceTags(micro.microKey);
+        if (evidenceTags) {
+          if (evidenceTags.mustHave.length > 0 && rng.random() < 0.7) {
+            tags.push(evidenceTags.mustHave[Math.floor(rng.random() * evidenceTags.mustHave.length)]);
+          } else if (evidenceTags.supporting.length > 0) {
+            tags.push(evidenceTags.supporting[Math.floor(rng.random() * evidenceTags.supporting.length)]);
+          }
+        }
+      } else if (tagType < 0.8) {
+        // 40%: Conflicting tag
+        const allMacros = ['grounded', 'engaged', 'connected', 'capable', 'pressured', 'blocked', 'overloaded', 'exhausted', 'down', 'averse', 'detached'];
+        const otherMacros = allMacros.filter(m => m !== baselineMacro);
+        if (otherMacros.length > 0) {
+          const conflictingMacro = otherMacros[Math.floor(rng.random() * otherMacros.length)];
+          const conflictingMicros = getMicrosForMacro(conflictingMacro);
+          if (conflictingMicros.length > 0) {
+            const conflictingMicro = conflictingMicros[Math.floor(rng.random() * conflictingMicros.length)];
+            const conflictingEvidenceTags = getMicroEvidenceTags(conflictingMicro.microKey);
+            if (conflictingEvidenceTags && conflictingEvidenceTags.supporting.length > 0) {
+              tags.push(conflictingEvidenceTags.supporting[Math.floor(rng.random() * conflictingEvidenceTags.supporting.length)]);
+            }
+          }
+        }
+      } else {
+        // 20%: Random/noise tags
+        const noiseTags = ['sig.context.work.deadline', 'sig.context.social.isolation', 'sig.context.health.stress', 'sig.context.family.tension'];
+        tags.push(noiseTags[Math.floor(rng.random() * noiseTags.length)]);
+      }
+    }
+    
+    // Add context tag (may conflict)
+    if (rng.random() < 0.6) {
+      const contextTags = ['sig.context.work.deadline', 'sig.context.social.isolation', 'sig.context.health.stress'];
+      tags.push(contextTags[Math.floor(rng.random() * contextTags.length)]);
+    }
+    
+    return [...new Set(tags)]; // Remove duplicates
   }
   
   // Enhanced metrics collection
@@ -238,6 +468,7 @@ async function main() {
       seed: config.seed,
       runs: baselineSubset.length,
       totalBaselines: BASELINE_COMBOS.length,
+      flow: config.flow, // Task AK3-DEEP-L1-2
     },
     totalPaths: 0,
     microCoverage: new Set(),
@@ -276,6 +507,16 @@ async function main() {
     microAxisOnlyCount: 0, // Selected with only axis tags
     microSpecificByMacro: {},
     microAxisOnlyByMacro: {},
+    // Task AK3-DEEP-L1-2: Steps metrics
+    stepsTaken: [], // Steps per run
+    stepsByFlow: {}, // Steps breakdown by flow mode (for comparison)
+    // Task AK3-DEEP-L1-2b: Invariant violations
+    invariantViolations: [], // List of invariant violations
+    invariantViolationCount: 0, // Total count of violations
+    invariantViolationsByReason: {}, // Breakdown by reason
+    // Task AK3-DEEP-L1-2c: Card sequence signatures
+    cardSequences: [], // Array of { flow, sequence: "c12>c07>c19" }
+    cardSequenceCounts: {}, // Map of sequence -> count per flow
   };
   
   // Run simulation
@@ -299,8 +540,17 @@ async function main() {
     if (baselineClarity) metrics.clarityBefore[baselineClarity]++;
     else metrics.clarityBefore.null++;
     
-    // Generate synthetic L1 responses (mode-specific)
-    const l1Responses = await generateSyntheticL1Responses(baselineMacro, config.mode, rng);
+    // Generate synthetic L1 responses (mode-specific, flow-aware)
+    const l1ResponseResult = await generateSyntheticL1Responses(baselineMacro, config.mode, rng, config.flow, baselineMetrics);
+    const l1Responses = l1ResponseResult.responses || [];
+    const stepsTaken = l1ResponseResult.stepsTaken || l1Responses.length;
+    
+    // Task AK3-DEEP-L1-2: Track steps taken
+    metrics.stepsTaken.push(stepsTaken);
+    if (!metrics.stepsByFlow[config.flow]) {
+      metrics.stepsByFlow[config.flow] = [];
+    }
+    metrics.stepsByFlow[config.flow].push(stepsTaken);
     
     // Count tags per run
     const totalTags = l1Responses.reduce((sum, r) => sum + (r.tags?.length || 0), 0);
@@ -620,6 +870,34 @@ async function main() {
     microAxisOnlyByMacroRates[macro] = macroTotal > 0 ? ((count / macroTotal) * 100).toFixed(2) : '0.00';
   }
   
+  // Task AK3-DEEP-L1-2: Calculate steps metrics
+  const avgSteps = metrics.stepsTaken.length > 0
+    ? (metrics.stepsTaken.reduce((a, b) => a + b, 0) / metrics.stepsTaken.length).toFixed(2)
+    : '0.00';
+  
+  // Calculate p95 steps
+  const sortedSteps = [...metrics.stepsTaken].sort((a, b) => a - b);
+  const p95Index = Math.floor(sortedSteps.length * 0.95);
+  const p95Steps = sortedSteps.length > 0 ? sortedSteps[p95Index] || sortedSteps[sortedSteps.length - 1] : 0;
+  
+  // Steps by flow mode (for comparison if running both modes)
+  const stepsByFlowStats = {};
+  for (const [flow, steps] of Object.entries(metrics.stepsByFlow)) {
+    if (Array.isArray(steps) && steps.length > 0) {
+      const avg = (steps.reduce((a, b) => a + b, 0) / steps.length).toFixed(2);
+      const sorted = [...steps].sort((a, b) => a - b);
+      const p95Idx = Math.floor(sorted.length * 0.95);
+      const p95 = sorted[p95Idx] || sorted[sorted.length - 1];
+      stepsByFlowStats[flow] = {
+        avg: parseFloat(avg),
+        p95: p95,
+        min: Math.min(...steps),
+        max: Math.max(...steps),
+        count: steps.length,
+      };
+    }
+  }
+  
   // Prepare JSON output
   const jsonOutput = {
     ...metrics,
@@ -650,6 +928,10 @@ async function main() {
       topTagsInFallbackByMacro,
       topCandidateScoreHistogram: scoreHistogram,
       topCandidateScoreHistogramPercentages: scoreHistogramPercentages,
+      // Task AK3-DEEP-L1-2: Steps metrics
+      avgSteps: parseFloat(avgSteps),
+      p95Steps,
+      stepsByFlow: stepsByFlowStats,
     },
     // Convert Sets to Arrays for JSON
     microCoverage: Array.from(metrics.microCoverage),
@@ -660,6 +942,7 @@ async function main() {
 
 **Generated:** ${new Date().toISOString()}
 **Mode:** ${config.mode}
+**Flow:** ${config.flow}
 **Seed:** ${config.seed}
 **Runs:** ${baselineSubset.length} / ${BASELINE_COMBOS.length} total baselines
 **Total paths:** ${metrics.totalPaths}
@@ -676,6 +959,8 @@ async function main() {
 - **Illegal flip rate:** ${illegalFlipRate}% (${metrics.illegalFlipCount} cases)
 - **Avg tags per run:** ${avgTagsPerRun}
 - **Must-have hit rate:** ${mustHaveHitRate}%
+- **Avg steps to finish:** ${avgSteps}
+- **P95 steps:** ${p95Steps}
 
 ## Micro Fallback Rate (Per Macro)
 
@@ -771,6 +1056,20 @@ ${Object.entries(microSpecificByMacroRates).length > 0 || Object.entries(microAx
       .join('\n\n')
   : '- (none)'}
 
+## Steps Metrics (Task AK3-DEEP-L1-2)
+
+- **Avg steps to finish:** ${avgSteps}
+- **P95 steps:** ${p95Steps}
+${Object.keys(stepsByFlowStats).length > 0
+  ? Object.entries(stepsByFlowStats).map(([flow, stats]) => `
+### ${flow} flow
+- **Avg steps:** ${stats.avg}
+- **P95 steps:** ${stats.p95}
+- **Min steps:** ${stats.min}
+- **Max steps:** ${stats.max}
+- **Runs:** ${stats.count}`).join('\n')
+  : ''}
+
 ## Weak Evidence Share (Per Macro)
 
 ${Object.entries(weakEvidenceByMacroRates).length > 0
@@ -837,12 +1136,16 @@ ${Object.entries(metrics.macroFlipPaths)
 
 ${metrics.suspiciousCases.length > 0
   ? metrics.suspiciousCases.slice(0, 10).map((c, i) => {
+      // Task P1.9: Show actual microKey and microSource if they exist, not micro=null
+      const microDisplay = c.deepResult.microKey 
+        ? `micro=${c.deepResult.microKey}, source=${c.deepResult.microSource || 'unknown'}`
+        : 'micro=null';
       return `### Case ${i + 1}
 - **Baseline:** ${JSON.stringify(c.baseline)}
 - **Baseline macro:** ${c.baselineMacro}
 - **Evidence tags:** ${c.evidenceTags.join(', ') || '(none)'}
 - **Total tags:** ${c.totalTags}
-- **Result:** macro=${c.deepResult.macroKey}, micro=null, confidence=${c.deepResult.confidenceBand}`;
+- **Result:** macro=${c.deepResult.macroKey}, ${microDisplay}, confidence=${c.deepResult.confidenceBand}`;
     }).join('\n\n')
   : '- (none)'}
 
@@ -853,6 +1156,7 @@ ${parseFloat(microFallbackRate) > 5 ? '❌' : parseFloat(microFallbackRate) > 8 
 ${parseFloat(illegalFlipRate) > 0 ? '❌' : '✅'} Illegal flip rate: ${illegalFlipRate}% (threshold: 0%)
 ${metrics.semanticViolations.length > 0 ? '❌' : '✅'} Semantic violations: ${metrics.semanticViolations.length} (threshold: 0)
 ${metrics.microCoverage.size < 33 ? '⚠️' : '✅'} Micro coverage: ${metrics.microCoverage.size}/33 (all reachable)
+${metrics.invariantViolationCount > 0 ? '❌' : '✅'} Invariant violations: ${metrics.invariantViolationCount} (threshold: 0) - Task AK3-DEEP-L1-2b
 
 ## Notes
 
@@ -860,6 +1164,8 @@ ${metrics.microCoverage.size < 33 ? '⚠️' : '✅'} Micro coverage: ${metrics.
 - 25% "Not sure" responses (low_clarity uncertainty)
 - Variable tag counts (0-4 tags per response)
 - Fixed seed: ${config.seed} for reproducibility
+- Flow mode: ${config.flow}${config.flow === 'fixed' ? ' (legacy behavior)' : ' (adaptive L1 selection)'}
+${config.flow === 'adaptive-l1' ? '- To compare fixed vs adaptive-l1, run two separate commands with --flow fixed and --flow adaptive-l1' : ''}
 `;
 
   // Ensure output directory exists
@@ -891,6 +1197,8 @@ ${metrics.microCoverage.size < 33 ? '⚠️' : '✅'} Micro coverage: ${metrics.
   console.log(`Illegal flip rate: ${illegalFlipRate}%`);
   console.log(`Avg tags per run: ${avgTagsPerRun}`);
   console.log(`Must-have hit rate: ${mustHaveHitRate}%`);
+  console.log(`Avg steps to finish: ${avgSteps}`);
+  console.log(`P95 steps: ${p95Steps}`);
   console.log('');
   console.log(`Worst macro by micro fallback: ${worstMacroByFallback ? `${worstMacroByFallback[0]} (${worstMacroByFallback[1]}%)` : 'N/A'}`);
   console.log(`Worst macro by weak evidence: ${worstMacroByWeak ? `${worstMacroByWeak[0]} (${worstMacroByWeak[1]}%)` : 'N/A'}`);

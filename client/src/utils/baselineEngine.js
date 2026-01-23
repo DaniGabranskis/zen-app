@@ -6,17 +6,19 @@ import { levelizeStateVec } from './stateEligibility.js';
 
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
-function norm7(v) {
+// Task AK3-DEEP-GATES-2: Baseline scale is 1-9 (not 1-7)
+// Confirmed: BaselineMetricCard.js and BaselineCheckInScreen.js use BASELINE_SCALE = 9
+function norm9(v) {
   const n = Number(v);
-  if (!Number.isFinite(n)) return 4;
-  return clamp(Math.round(n), 1, 7);
+  if (!Number.isFinite(n)) return 5; // Midpoint for 1-9 scale
+  return clamp(Math.round(n), 1, 9);
 }
 
 /**
- * Convert 1..7 to 0..1.
+ * Convert 1..9 to 0..1.
  */
-function toUnit7(v) {
-  return (norm7(v) - 1) / 6;
+function toUnit9(v) {
+  return (norm9(v) - 1) / 8;
 }
 
 /**
@@ -27,12 +29,13 @@ function toUnit7(v) {
 export function baselineToVector(metrics) {
   const m = metrics || {};
 
-  const valence = toUnit7(m.valence); // 0..1 (low -> good)
-  const energy  = toUnit7(m.energy);  // 0..1 (drained -> wired)
-  const tension = toUnit7(m.tension); // 0..1 (loose -> tight)
-  const clarity = toUnit7(m.clarity); // 0..1 (foggy -> clear)
-  const control = toUnit7(m.control); // 0..1 (reactive -> in charge)
-  const social  = toUnit7(m.social);
+  // Task AK3-DEEP-GATES-2: Use toUnit9 for 1-9 scale
+  const valence = toUnit9(m.valence); // 0..1 (low -> good)
+  const energy  = toUnit9(m.energy);  // 0..1 (drained -> wired)
+  const tension = toUnit9(m.tension); // 0..1 (loose -> tight)
+  const clarity = toUnit9(m.clarity); // 0..1 (foggy -> clear)
+  const control = toUnit9(m.control); // 0..1 (reactive -> in charge)
+  const social  = toUnit9(m.social);
 
   const vec = emptyState();
 

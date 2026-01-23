@@ -10,6 +10,7 @@ import {
   Animated,
   Modal,
   TextInput,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useStore from '../store/useStore';
@@ -39,6 +40,10 @@ function sameStringArrayAsSet(a, b) {
 }
 
 export default function L4DeepenScreen({ navigation, route }) {
+  const params = route?.params || {};
+  // Task AK3-DEEP-L4-ALWAYS-2: Get mode from params
+  const mode = params?.mode || 'deep';
+  
   // store actions
   const setTriggers = useStore((s) => s.setL4Triggers);
   const setBodyMind = useStore((s) => s.setL4BodyMind);
@@ -108,6 +113,16 @@ export default function L4DeepenScreen({ navigation, route }) {
   const next = () => {
     console.log('[L4] next from stage', stage, 'editSection', editSection);
 
+    // P1: Validate L4 - require at least 1 trigger before proceeding to body/mind
+    if (stage === 0 && localTriggers.length === 0) {
+      Alert.alert(
+        'Triggers required',
+        'Please select at least one trigger to continue.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
     // If we came here only to edit Triggers, finish immediately from stage 0
     if (editSection === 'triggers') {
       finish();
@@ -123,6 +138,16 @@ export default function L4DeepenScreen({ navigation, route }) {
 
   // finalize and navigate to L5Summary
   const finish = () => {
+    // P1: Validate L4 - require at least 1 body/mind before finishing
+    if (localBM.length === 0) {
+      Alert.alert(
+        'Body & Mind required',
+        'Please select at least one body & mind pattern to continue.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
     const triggersChanged = !sameStringArrayAsSet(storedTriggers, localTriggers);
     const bodyMindChanged = !sameStringArrayAsSet(storedBodyMind, localBM);
     const anyChanged = triggersChanged || bodyMindChanged;
@@ -130,7 +155,8 @@ export default function L4DeepenScreen({ navigation, route }) {
     // If we are in edit mode and nothing actually changed, do not consume the edit attempt.
     if (editSection && !anyChanged) {
       console.log('[L4] edit finish: no changes → return to L5 without consuming edit');
-      navigation.navigate('L5Summary', { fromEdit: true, noChanges: true, forceAi: false });
+      // Task AK3-DEEP-L4-ALWAYS-2: Pass mode when navigating to L5Summary
+      navigation.navigate('L5Summary', { mode, fromEdit: true, noChanges: true, forceAi: false });
       return;
     }
 
@@ -169,7 +195,8 @@ export default function L4DeepenScreen({ navigation, route }) {
     setIntensity(intensity);
 
     // IMPORTANT: tell L5 we came back from edit (so it must not call AI again)
-    navigation.navigate('L5Summary', { fromEdit: !!editSection, forceAi: !!editSection });
+    // Task AK3-DEEP-L4-ALWAYS-2: Pass mode when navigating to L5Summary
+    navigation.navigate('L5Summary', { mode, fromEdit: !!editSection, forceAi: !!editSection });
   };
 
     const openCustomModal = (type) => {

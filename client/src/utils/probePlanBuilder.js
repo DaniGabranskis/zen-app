@@ -21,15 +21,15 @@ export function buildProbePlan({
   // Map of state pairs to best discriminator questions
   const discriminatorMap = {
     // Uncertainty vs clarity states
-    'uncertain|capable': ['L2_clarity', 'L1_clarity', 'L2_uncertainty'],
+    'uncertain|capable': ['L2_uncertainty', 'L1_control', 'L2_clarity'],
     'uncertain|grounded': ['L2_clarity', 'L1_expectations'],
     
     // High vs low energy states
-    'exhausted|down': ['L2_heavy', 'L1_energy'],
+    'exhausted|down': ['L2_heavy', 'L2_regulation', 'L1_energy'],
     'exhausted|pressured': ['L2_heavy', 'L1_energy'],
     
     // Social vs internal states
-    'detached|down': ['L2_numb', 'L2_social_pain', 'L1_social'],
+    'detached|down': ['L2_numb', 'L2_positive_moments', 'L2_social_pain'],
     'detached|connected': ['L2_social_pain', 'L1_social'],
     
     // High vs low control states
@@ -39,9 +39,13 @@ export function buildProbePlan({
     // Tension-related states
     'threatened|pressured': ['L1_safety', 'L2_regulation', 'L1_pressure'],
     'pressured|overloaded': ['L2_source', 'L1_pressure'],
+    
+    // Depressed vs exhausted (Task B: avoid duplicate themes)
+    'depressed|exhausted': ['L2_meaning', 'L2_heavy', 'L1_energy'],
   };
 
   const candidates = [];
+  // Task P1.4: Filter out cards already asked in L1 phase to avoid UX repetition
   const used = new Set(alreadyAskedIds);
 
   // Try to find discriminator questions for this state pair
@@ -50,8 +54,9 @@ export function buildProbePlan({
     const key2 = `${top2}|${top1}`;
     const questions = discriminatorMap[key1] || discriminatorMap[key2] || [];
     
+    // Task P1.4: Skip questions already asked in L1
     for (const qId of questions) {
-      if (used.has(qId)) continue;
+      if (used.has(qId)) continue; // Filter out already asked cards
       candidates.push(qId);
       used.add(qId);
       if (candidates.length >= 2) break;
