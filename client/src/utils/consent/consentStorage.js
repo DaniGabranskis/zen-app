@@ -2,7 +2,7 @@
 // Utilities for loading/saving consent in AsyncStorage
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { CONSENT_STORAGE_KEY } from './consentConfig';
+import { CONSENT_STORAGE_KEY, CONSENT_VERSION } from './consentConfig';
 
 /**
  * Load consent data from AsyncStorage
@@ -31,20 +31,31 @@ export async function loadConsent() {
 
 /**
  * Save consent data to AsyncStorage
- * @param {Object} consent - Consent object with acceptedAt, version, checks
+ * Storage layer is the source of truth - it adds accepted, acceptedAt, version automatically
+ * @param {Object} checks - Object with checks: { terms: boolean, privacy: boolean, aiMedical: boolean }
  * @returns {Promise<boolean>} Success status
  */
-export async function saveConsent(consent) {
+export async function saveConsent(checks) {
   try {
-    if (!consent || typeof consent !== 'object') {
-      throw new Error('Invalid consent object');
+    if (!checks || typeof checks !== 'object') {
+      throw new Error('Invalid checks object');
     }
 
+    // Validate that all required checks are present and true
+    if (!checks.terms || !checks.privacy || !checks.aiMedical) {
+      throw new Error('All consent checks must be true');
+    }
+
+    // Storage layer adds audit-grade fields
     const data = {
       accepted: true,
-      acceptedAt: consent.acceptedAt || new Date().toISOString(),
-      version: consent.version,
-      checks: consent.checks || {},
+      acceptedAt: new Date().toISOString(),
+      version: CONSENT_VERSION,
+      checks: {
+        terms: Boolean(checks.terms),
+        privacy: Boolean(checks.privacy),
+        aiMedical: Boolean(checks.aiMedical),
+      },
     };
 
     await AsyncStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify(data));

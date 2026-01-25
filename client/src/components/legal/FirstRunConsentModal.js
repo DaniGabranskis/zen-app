@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import useThemeVars from '../../hooks/useThemeVars';
 import { legalDocs } from '../../data/legal/policies';
-import { saveConsent } from '../../utils/consent/consentStorage';
+import { saveConsent, loadConsent } from '../../utils/consent/consentStorage';
 import { CONSENT_VERSION } from '../../utils/consent/consentConfig';
 import LegalDocModal from './LegalDocModal';
 
@@ -66,16 +66,13 @@ export default function FirstRunConsentModal({ visible, onAccepted }) {
   const onStart = async () => {
     if (!allChecked) return;
 
-    const consent = {
-      acceptedAt: new Date().toISOString(),
-      version: CONSENT_VERSION,
-      checks: { ...checks },
-    };
-
-    const saved = await saveConsent(consent);
+    // Save consent - storage layer adds accepted, acceptedAt, version
+    const saved = await saveConsent(checks);
 
     if (saved && typeof onAccepted === 'function') {
-      onAccepted(consent);
+      // Load the saved consent to get the full audit-grade payload
+      const savedConsent = await loadConsent();
+      onAccepted(savedConsent);
       // Reset state for next time (if version changes)
       setChecks({
         terms: false,
@@ -94,17 +91,12 @@ export default function FirstRunConsentModal({ visible, onAccepted }) {
   return (
     <Modal visible={!!visible} transparent animationType="fade" statusBarTranslucent>
       <View style={[styles.backdrop, { backgroundColor: 'rgba(0,0,0,0.65)' }]}>
-        <View style={[styles.card, { backgroundColor: 'red', borderColor: colors.border }]}>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <ScrollView
             style={styles.scroll}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
           >
-            {/* DEBUG: Temporary diagnostic overlay */}
-            <View style={{ padding: 8, backgroundColor: 'rgba(255,0,0,0.25)', borderRadius: 10, marginBottom: 10 }}>
-              <Text style={{ color: '#fff', fontWeight: '800' }}>DEBUG: Consent modal content rendered</Text>
-            </View>
-
             <Text style={[styles.title, { color: colors.text }]}>Welcome to Zen</Text>
 
             <Text style={[styles.subtitle, { color: colors.textSecondary }]}>

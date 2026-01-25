@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert, Dimensions } from 'rea
 import useStore from '../store/useStore';
 import useThemeVars from '../hooks/useThemeVars';
 import ScreenWrapper from '../components/ScreenWrapper';
-import { resetConsent } from '../utils/consent/consentStorage';
+import { resetConsent, loadConsent } from '../utils/consent/consentStorage';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const P = Math.round(SCREEN_WIDTH * 0.05);
@@ -75,6 +75,26 @@ export default function SettingsScreen({ navigation }) {
         },
       ]
     );
+  };
+
+  // Dev utility: Print consent (for verification)
+  const handlePrintConsent = async () => {
+    const consent = await loadConsent();
+    if (consent) {
+      console.log('[consent] Current consent payload:', JSON.stringify(consent, null, 2));
+      Alert.alert(
+        'Consent Payload (Dev)',
+        JSON.stringify(consent, null, 2),
+        [{ text: 'OK' }]
+      );
+    } else {
+      console.log('[consent] No consent found');
+      Alert.alert(
+        'Consent Payload (Dev)',
+        'No consent found. Consent modal will appear on next app restart.',
+        [{ text: 'OK' }]
+      );
+    }
   };
 
   return (
@@ -167,6 +187,24 @@ export default function SettingsScreen({ navigation }) {
             ]}
           >
             🔧 Reset consent (dev)
+          </Text>
+        </TouchableOpacity>
+
+        {/* Dev utility: Print consent */}
+        <TouchableOpacity
+          style={[
+            styles.devButton,
+            { backgroundColor: cardBackground, borderColor: dividerColor },
+          ]}
+          onPress={handlePrintConsent}
+        >
+          <Text
+            style={[
+              styles.devText,
+              { color: textSecondary },
+            ]}
+          >
+            📄 Print consent (dev)
           </Text>
         </TouchableOpacity>
       </View>
