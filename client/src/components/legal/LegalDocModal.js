@@ -18,13 +18,13 @@ import useThemeVars from '../../hooks/useThemeVars';
  * @param {Object} props
  * @param {boolean} props.visible - Modal visibility
  * @param {Function} props.onClose - Close handler
- * @param {Object} props.policy - Policy object with title, version, sections[]
+ * @param {Object} props.doc - Document object with title, version, sections[]
  */
-export default function LegalDocModal({ visible, onClose, policy }) {
+export default function LegalDocModal({ visible, onClose, doc }) {
   const t = useThemeVars();
 
-  // Safety check: don't render if no policy or not visible
-  if (!visible || !policy) {
+  // Safety check: don't render if no doc or not visible
+  if (!visible || !doc) {
     return null;
   }
 
@@ -42,10 +42,10 @@ export default function LegalDocModal({ visible, onClose, policy }) {
           {/* Header */}
           <View style={s.header}>
             <Text style={[s.title, { color: t.textPrimary }]}>
-              {policy.title}
+              {doc.title}
             </Text>
             <Text style={[s.version, { color: t.textSecondary }]}>
-              Version {policy.version}
+              Version {doc.version}
             </Text>
             <TouchableOpacity
               style={s.closeButton}
@@ -62,8 +62,8 @@ export default function LegalDocModal({ visible, onClose, policy }) {
             contentContainerStyle={s.scrollContent}
             showsVerticalScrollIndicator={true}
           >
-            {policy.sections && policy.sections.length > 0 ? (
-              policy.sections.map((section, index) => (
+            {doc.sections && doc.sections.length > 0 ? (
+              doc.sections.map((section, index) => (
                 <View key={index} style={s.section}>
                   <Text style={[s.sectionHeading, { color: t.textPrimary }]}>
                     {section.heading}

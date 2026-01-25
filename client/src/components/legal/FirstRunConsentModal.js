@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import useThemeVars from '../../hooks/useThemeVars';
-import { policies as legalDocs } from '../../data/legal/policies';
+import { legalDocs } from '../../data/legal/policies';
 import { saveConsent } from '../../utils/consent/consentStorage';
 import { CONSENT_VERSION } from '../../utils/consent/consentConfig';
 import LegalDocModal from './LegalDocModal';
@@ -85,15 +85,26 @@ export default function FirstRunConsentModal({ visible, onAccepted }) {
     }
   };
 
+  // Guarantee content is always rendered when visible === true
+  // No early returns or conditional rendering that would hide content
+  if (!visible) {
+    return null;
+  }
+
   return (
     <Modal visible={!!visible} transparent animationType="fade" statusBarTranslucent>
       <View style={[styles.backdrop, { backgroundColor: 'rgba(0,0,0,0.65)' }]}>
-        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={[styles.card, { backgroundColor: 'red', borderColor: colors.border }]}>
           <ScrollView
             style={styles.scroll}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
           >
+            {/* DEBUG: Temporary diagnostic overlay */}
+            <View style={{ padding: 8, backgroundColor: 'rgba(255,0,0,0.25)', borderRadius: 10, marginBottom: 10 }}>
+              <Text style={{ color: '#fff', fontWeight: '800' }}>DEBUG: Consent modal content rendered</Text>
+            </View>
+
             <Text style={[styles.title, { color: colors.text }]}>Welcome to Zen</Text>
 
             <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
@@ -158,7 +169,7 @@ export default function FirstRunConsentModal({ visible, onAccepted }) {
 
       <LegalDocModal
         visible={!!openDocKey}
-        policy={openDocKey ? legalDocs[openDocKey] : null}
+        doc={openDocKey ? legalDocs[openDocKey] : null}
         onClose={() => setOpenDocKey(null)}
       />
     </Modal>

@@ -8,7 +8,7 @@
  */
 const POLICY_VERSION = '1.0.0';
 
-export const policies = {
+export const legalDocs = {
   terms: {
     title: 'Terms of Service',
     version: POLICY_VERSION,
@@ -109,7 +109,7 @@ export const policies = {
  * @returns {Object|null} Policy object or null if not found
  */
 export function getPolicy(key) {
-  return policies[key] || null;
+  return legalDocs[key] || null;
 }
 
 /**
@@ -117,5 +117,5 @@ export function getPolicy(key) {
  * @returns {string[]} Array of policy keys
  */
 export function getPolicyKeys() {
-  return Object.keys(policies);
+  return Object.keys(legalDocs);
 }
