@@ -168,6 +168,7 @@ const makeStyles = (t) => StyleSheet.create({
     elevation: 8,
     overflow: 'hidden',
     flexDirection: 'column',
+    display: 'flex',
   },
   header: {
     padding: 20,
@@ -175,6 +176,7 @@ const makeStyles = (t) => StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: t.dividerColor,
     position: 'relative',
+    flexShrink: 0,
   },
   title: {
     fontSize: 24,
@@ -197,6 +199,8 @@ const makeStyles = (t) => StyleSheet.create({
   bodyContainer: {
     flex: 1,
     minHeight: 200,
+    flexShrink: 1,
+    flexGrow: 1,
   },
   body: {
     flex: 1,
@@ -230,6 +234,7 @@ const makeStyles = (t) => StyleSheet.create({
     paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: t.dividerColor,
+    flexShrink: 0,
   },
   closeButtonLarge: {
     paddingVertical: 14,
