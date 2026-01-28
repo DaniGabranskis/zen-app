@@ -34,7 +34,9 @@ jobs:
       - name: Hygiene - Ensure no legacy deepEngine in deep screens
         working-directory: client
         run: |
-          if grep -r "utils/deepEngine" src/screens/DiagnosticFlowScreen.js src/screens/ReflectionFlowScreen.js > /dev/null 2>&1; then
+          # Check for import statements only (ignore comment lines)
+          # Look for lines containing 'utils/deepEngine' that are NOT comments
+          if grep -n "utils/deepEngine" src/screens/DiagnosticFlowScreen.js src/screens/ReflectionFlowScreen.js 2>/dev/null | grep -vE "^[[:space:]]*//|^[[:space:]]*/\*|^[[:space:]]*\*" > /dev/null; then
             echo "❌ Legacy deepEngine import detected in deep screens"
             echo "Deep screens must use adapter only, not legacy deepEngine"
             exit 1
