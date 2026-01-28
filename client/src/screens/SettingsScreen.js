@@ -172,41 +172,44 @@ export default function SettingsScreen({ navigation }) {
           </Text>
         </TouchableOpacity>
 
-        {/* Dev utility: Reset consent */}
-        <TouchableOpacity
-          style={[
-            styles.devButton,
-            { backgroundColor: cardBackground, borderColor: dividerColor },
-          ]}
-          onPress={handleResetConsent}
-        >
-          <Text
-            style={[
-              styles.devText,
-              { color: textSecondary },
-            ]}
-          >
-            🔧 Reset consent (dev)
-          </Text>
-        </TouchableOpacity>
+        {/* Dev utilities: only visible in development */}
+        {__DEV__ ? (
+          <>
+            <TouchableOpacity
+              style={[
+                styles.devButton,
+                { backgroundColor: cardBackground, borderColor: dividerColor },
+              ]}
+              onPress={handleResetConsent}
+            >
+              <Text
+                style={[
+                  styles.devText,
+                  { color: textSecondary },
+                ]}
+              >
+                🔧 Reset consent (dev)
+              </Text>
+            </TouchableOpacity>
 
-        {/* Dev utility: Print consent */}
-        <TouchableOpacity
-          style={[
-            styles.devButton,
-            { backgroundColor: cardBackground, borderColor: dividerColor },
-          ]}
-          onPress={handlePrintConsent}
-        >
-          <Text
-            style={[
-              styles.devText,
-              { color: textSecondary },
-            ]}
-          >
-            📄 Print consent (dev)
-          </Text>
-        </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.devButton,
+                { backgroundColor: cardBackground, borderColor: dividerColor },
+              ]}
+              onPress={handlePrintConsent}
+            >
+              <Text
+                style={[
+                  styles.devText,
+                  { color: textSecondary },
+                ]}
+              >
+                📄 Print consent (dev)
+              </Text>
+            </TouchableOpacity>
+          </>
+        ) : null}
       </View>
     </ScreenWrapper>
   );

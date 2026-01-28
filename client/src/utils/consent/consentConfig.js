@@ -4,8 +4,9 @@
 /**
  * Current consent version.
  * Increment this when policies change to force re-consent.
+ * Using ISO date format for clarity.
  */
-export const CONSENT_VERSION = '1.0.0';
+export const CONSENT_VERSION = '2026-01-25';
 
 /**
  * Storage key for consent data in AsyncStorage
