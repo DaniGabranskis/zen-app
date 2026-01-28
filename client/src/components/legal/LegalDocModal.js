@@ -66,6 +66,15 @@ export default function LegalDocModal({ visible, onClose, doc }) {
   const s = makeStyles(t);
   const sections = normalizeSections(doc);
 
+  // Debug: log sections to verify normalization
+  React.useEffect(() => {
+    if (visible && doc) {
+      console.log('[LegalDocModal] Doc title:', doc.title);
+      console.log('[LegalDocModal] Sections normalized:', sections.length);
+      console.log('[LegalDocModal] First section:', sections[0]);
+    }
+  }, [visible, doc, sections]);
+
   return (
     <Modal
       visible={visible}
@@ -183,12 +192,17 @@ const makeStyles = (t) => StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  bodyContainer: {
+    flex: 1,
+    minHeight: 200,
+  },
   body: {
     flex: 1,
     width: '100%',
   },
   bodyContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
+    paddingTop: 20,
     paddingBottom: 24,
   },
   section: {
