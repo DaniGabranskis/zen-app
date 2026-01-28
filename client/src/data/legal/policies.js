@@ -160,28 +160,100 @@ export const legalDocs = {
     version: CONSENT_VERSION,
     sections: [
       {
-        heading: '1. Information We Collect',
-        content: 'Zen collects information you provide directly, including emotional state data, reflection entries, and preferences. This data is stored locally on your device by default.',
+        h: '1. Introduction',
+        p: [
+          'This Privacy Policy explains how Zen? (the "App") handles information when you use the App.',
+          'Provider: SIA tmbaltic (Latvia). Contact: zen@gmail.com (placeholder).',
+        ],
       },
       {
-        heading: '2. How We Use Your Information',
-        content: 'Your information is used to provide personalized insights and improve your experience. We do not sell your personal data to third parties.',
+        h: '2. Key Summary (Local-First)',
+        p: [
+          'No account required: the App currently does not require registration or login.',
+          'Local-first storage: your reflections and entries are stored locally on your device.',
+          'No analytics (current version): we do not currently use third-party analytics or advertising SDKs inside the App.',
+          'AI processing: when AI-assisted features generate outputs, text you provide may be sent to a third-party AI provider (currently OpenAI) for processing.',
+        ],
       },
       {
-        heading: '3. Data Storage',
-        content: 'Your data is stored locally on your device using secure storage mechanisms. You can delete your data at any time through the application settings.',
+        h: '3. Information You Provide',
+        p: [
+          'You may enter text and other information during reflection sessions (your "User Content").',
+          'This may include mood/state selections, answers to prompts, and free-text notes you choose to provide.',
+        ],
       },
       {
-        heading: '4. Third-Party Services',
-        content: 'If you choose to use optional features that connect to third-party services, those services may have their own privacy policies. Please review them carefully.',
+        h: '4. How Your Data Is Stored',
+        p: [
+          'Your User Content is stored locally on your device by default.',
+          'We do not currently provide cloud backup or synchronization. If you use device-level backups (e.g., iOS or Android backups), your device/platform may store copies according to your device settings.',
+          'If you delete the App or clear its storage, your locally stored content may be permanently deleted.',
+        ],
       },
       {
-        heading: '5. Data Security',
-        content: 'We implement reasonable security measures to protect your information. However, no method of transmission over the internet or electronic storage is 100% secure.',
+        h: '5. AI Processing and Third Parties (OpenAI)',
+        p: [
+          'The App includes AI-assisted features used to generate certain results (including L5 outputs).',
+          'When AI-assisted outputs are generated, text and relevant context you provide may be transmitted to and processed by a third-party AI provider (currently OpenAI) to generate outputs.',
+          'We do not sell your User Content.',
+          'We do not store your reflection content on our own servers in the current version, except as required for providing AI requests (if applicable) and basic operational logging (if enabled in future).',
+        ],
       },
       {
-        heading: '6. Your Rights',
-        content: 'You have the right to access, modify, or delete your personal data at any time. You can do this through the application settings or by contacting support.',
+        h: '6. Purpose of Processing',
+        p: [
+          'We process information to: (a) provide core App functionality, (b) generate AI-assisted summaries and suggestions when enabled/used, (c) improve reliability and security.',
+          'We do not use your content for advertising.',
+        ],
+      },
+      {
+        h: '7. Data Sharing',
+        p: [
+          'We may share limited information only in these cases:',
+          'AI provider processing: when generating AI-assisted outputs, your submitted text may be processed by OpenAI.',
+          'Legal obligations: if required to comply with law, court order, or lawful requests.',
+          'Business safety: to protect rights, safety, and prevent abuse.',
+        ],
+      },
+      {
+        h: '8. Data Retention',
+        p: [
+          'Local retention: your entries remain on your device until you delete them, delete the App, or clear app storage.',
+          'AI processing retention: when you use AI features, the third-party AI provider may retain data according to its own policies. Please review the provider\'s terms and privacy documentation.',
+        ],
+      },
+      {
+        h: '9. Security',
+        p: [
+          'We use reasonable measures to protect the App, but no method of storage or transmission is 100% secure.',
+          'You are responsible for securing your device (e.g., passcode/biometrics).',
+        ],
+      },
+      {
+        h: '10. Your Choices and Rights',
+        p: [
+          'Local deletion: you can delete entries within the App (if the feature is available) or delete the App to remove locally stored content.',
+          'AI controls: the App may introduce settings to disable AI-assisted processing. If available, disabling AI may reduce certain features.',
+          'If you have questions or requests, contact us at zen@gmail.com (placeholder).',
+        ],
+      },
+      {
+        h: '11. Children\'s Privacy',
+        p: [
+          'The App is intended for users aged 16 and older. We do not knowingly collect personal information from children under 16.',
+        ],
+      },
+      {
+        h: '12. Changes to This Policy',
+        p: [
+          'We may update this Privacy Policy from time to time. If we make material changes, we will provide notice in the App and may require renewed acceptance.',
+        ],
+      },
+      {
+        h: '13. Contact',
+        p: [
+          'Questions about this Privacy Policy: zen@gmail.com (placeholder).',
+        ],
       },
     ],
   },

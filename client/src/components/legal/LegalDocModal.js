@@ -14,6 +14,41 @@ import { Ionicons } from '@expo/vector-icons';
 import useThemeVars from '../../hooks/useThemeVars';
 
 /**
+ * Normalize sections from various formats to a consistent structure
+ * Supports: { h, p }, { heading, content }, { content: string }
+ */
+function normalizeSections(doc) {
+  if (!doc) return [];
+
+  // English comments only:
+  // Support multiple legacy/new formats to avoid silent empty content.
+  if (Array.isArray(doc.sections)) {
+    return doc.sections.map((s) => {
+      const heading = s?.h ?? s?.heading ?? '';
+      const paragraphsRaw = s?.p ?? s?.content ?? s?.text ?? '';
+      const paragraphs = Array.isArray(paragraphsRaw)
+        ? paragraphsRaw.filter(Boolean)
+        : String(paragraphsRaw || '')
+            .split('\n')
+            .map((x) => x.trim())
+            .filter(Boolean);
+
+      return { heading, paragraphs };
+    }).filter((x) => x.heading || x.paragraphs.length);
+  }
+
+  // If doc has a single `content` string
+  if (typeof doc.content === 'string' && doc.content.trim()) {
+    return [{
+      heading: '',
+      paragraphs: doc.content.split('\n').map((x) => x.trim()).filter(Boolean),
+    }];
+  }
+
+  return [];
+}
+
+/**
  * LegalDocModal - Displays a legal document with title, version, and sections
  * @param {Object} props
  * @param {boolean} props.visible - Modal visibility
@@ -29,6 +64,7 @@ export default function LegalDocModal({ visible, onClose, doc }) {
   }
 
   const s = makeStyles(t);
+  const sections = normalizeSections(doc);
 
   return (
     <Modal
@@ -58,25 +94,31 @@ export default function LegalDocModal({ visible, onClose, doc }) {
 
           {/* Content */}
           <ScrollView
-            style={s.scrollView}
-            contentContainerStyle={s.scrollContent}
+            style={s.body}
+            contentContainerStyle={s.bodyContent}
             showsVerticalScrollIndicator={true}
           >
-            {doc.sections && doc.sections.length > 0 ? (
-              doc.sections.map((section, index) => (
-                <View key={index} style={s.section}>
-                  <Text style={[s.sectionHeading, { color: t.textPrimary }]}>
-                    {section.heading}
-                  </Text>
-                  <Text style={[s.sectionContent, { color: t.textSecondary }]}>
-                    {section.content}
-                  </Text>
-                </View>
-              ))
-            ) : (
+            {sections.length === 0 ? (
               <Text style={[s.emptyText, { color: t.textSecondary }]}>
                 No content available.
               </Text>
+            ) : (
+              sections.map((s, idx) => (
+                <View key={`${idx}-${s.heading}`} style={s.section}>
+                  {s.heading ? (
+                    <Text style={[s.sectionHeading, { color: t.textPrimary }]}>{s.heading}</Text>
+                  ) : null}
+
+                  {s.paragraphs.map((para, pIdx) => (
+                    <Text
+                      key={`${idx}-${pIdx}`}
+                      style={[s.paragraph, { color: t.textSecondary }]}
+                    >
+                      {para}
+                    </Text>
+                  ))}
+                </View>
+              ))
             )}
           </ScrollView>
 
@@ -114,6 +156,7 @@ const makeStyles = (t) => StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
     overflow: 'hidden',
+    flexDirection: 'column',
   },
   header: {
     padding: 20,
@@ -140,24 +183,26 @@ const makeStyles = (t) => StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  scrollView: {
+  body: {
     flex: 1,
+    width: '100%',
   },
-  scrollContent: {
-    padding: 20,
+  bodyContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 24,
   },
   section: {
-    marginBottom: 24,
+    marginTop: 14,
   },
   sectionHeading: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 15,
+    fontWeight: '800',
     marginBottom: 8,
   },
-  sectionContent: {
-    fontSize: 15,
-    lineHeight: 22,
-    fontWeight: '400',
+  paragraph: {
+    fontSize: 13,
+    lineHeight: 18,
+    marginBottom: 10,
   },
   emptyText: {
     fontSize: 14,
