@@ -57,16 +57,9 @@ function normalizeSections(doc) {
  */
 export default function LegalDocModal({ visible, onClose, doc }) {
   const t = useThemeVars();
+  const sections = normalizeSections(doc || {});
 
-  // Safety check: don't render if no doc or not visible
-  if (!visible || !doc) {
-    return null;
-  }
-
-  const s = makeStyles(t);
-  const sections = normalizeSections(doc);
-
-  // Debug: log sections to verify normalization
+  // Debug: log sections to verify normalization (must be before conditional return)
   React.useEffect(() => {
     if (visible && doc) {
       console.log('[LegalDocModal] Doc title:', doc.title);
@@ -74,6 +67,13 @@ export default function LegalDocModal({ visible, onClose, doc }) {
       console.log('[LegalDocModal] First section:', sections[0]);
     }
   }, [visible, doc, sections]);
+
+  // Safety check: don't render if no doc or not visible
+  if (!visible || !doc) {
+    return null;
+  }
+
+  const s = makeStyles(t);
 
   return (
     <Modal
