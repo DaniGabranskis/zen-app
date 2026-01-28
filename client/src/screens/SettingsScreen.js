@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert, Dimensions } from 'rea
 import useStore from '../store/useStore';
 import useThemeVars from '../hooks/useThemeVars';
 import ScreenWrapper from '../components/ScreenWrapper';
+import { resetConsent, loadConsent } from '../utils/consent/consentStorage';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const P = Math.round(SCREEN_WIDTH * 0.05);
@@ -12,7 +13,7 @@ const P_LARGE = Math.round(SCREEN_WIDTH * 0.08);
  * SettingsScreen — app settings and options.
  * Allows changing theme and clearing all history.
  */
-export default function SettingsScreen() {
+export default function SettingsScreen({ navigation }) {
   // Theme colors for this screen
   const {
     background,
@@ -30,13 +31,8 @@ export default function SettingsScreen() {
         ? 'rgba(0,0,0,0.06)'
         : 'rgba(255,255,255,0.16)';
 
-  // Store methods: reset history, current theme, and theme setter
+  // Store methods: reset history
   const resetHistory = useStore((state) => state.resetHistory);
-  const theme = useStore((state) => state.theme);
-  const setTheme = useStore((state) => state.setTheme);
-
-  // Switches app theme between light and dark
-  const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
 
   // Shows alert confirmation before clearing all data
   const confirmReset = () => {
@@ -50,6 +46,57 @@ export default function SettingsScreen() {
     );
   };
 
+  // Dev utility: Reset consent (for testing)
+  const handleResetConsent = async () => {
+    Alert.alert(
+      'Reset Consent (Dev)',
+      'This will clear your consent and show the consent modal again on next app restart. Continue?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Reset',
+          style: 'destructive',
+          onPress: async () => {
+            const success = await resetConsent();
+            if (success) {
+              Alert.alert(
+                'Consent Reset',
+                'Consent has been cleared. The consent modal will appear on next app restart.',
+                [{ text: 'OK' }]
+              );
+            } else {
+              Alert.alert(
+                'Error',
+                'Failed to reset consent. Please try again.',
+                [{ text: 'OK' }]
+              );
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  // Dev utility: Print consent (for verification)
+  const handlePrintConsent = async () => {
+    const consent = await loadConsent();
+    if (consent) {
+      console.log('[consent] Current consent payload:', JSON.stringify(consent, null, 2));
+      Alert.alert(
+        'Consent Payload (Dev)',
+        JSON.stringify(consent, null, 2),
+        [{ text: 'OK' }]
+      );
+    } else {
+      console.log('[consent] No consent found');
+      Alert.alert(
+        'Consent Payload (Dev)',
+        'No consent found. Consent modal will appear on next app restart.',
+        [{ text: 'OK' }]
+      );
+    }
+  };
+
   return (
     <ScreenWrapper style={[styles.container, { backgroundColor: background }]}>
       {/* Header */}
@@ -59,16 +106,21 @@ export default function SettingsScreen() {
       </View>
 
       <View style={styles.content}>
-        {/* Switch between Light and Dark theme */}
+        {/* P0: Personalize reflection windows */}
         <TouchableOpacity
           style={[
             styles.option,
             { borderTopWidth: 1, borderTopColor: rowDividerColor },
           ]}
-          onPress={toggleTheme}
+          onPress={() => {
+            // Navigate to Personalize screen
+            if (navigation) {
+              navigation.navigate('Personalize');
+            }
+          }}
         >
           <Text style={[styles.optionText, { color: textPrimary }]}>
-            Theme: {theme === 'light' ? 'Light' : 'Dark'}
+            Personalize
           </Text>
         </TouchableOpacity>
 
@@ -119,6 +171,45 @@ export default function SettingsScreen() {
             🗑 Clear reflection history
           </Text>
         </TouchableOpacity>
+
+        {/* Dev utilities: only visible in development */}
+        {__DEV__ ? (
+          <>
+            <TouchableOpacity
+              style={[
+                styles.devButton,
+                { backgroundColor: cardBackground, borderColor: dividerColor },
+              ]}
+              onPress={handleResetConsent}
+            >
+              <Text
+                style={[
+                  styles.devText,
+                  { color: textSecondary },
+                ]}
+              >
+                🔧 Reset consent (dev)
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.devButton,
+                { backgroundColor: cardBackground, borderColor: dividerColor },
+              ]}
+              onPress={handlePrintConsent}
+            >
+              <Text
+                style={[
+                  styles.devText,
+                  { color: textSecondary },
+                ]}
+              >
+                📄 Print consent (dev)
+              </Text>
+            </TouchableOpacity>
+          </>
+        ) : null}
       </View>
     </ScreenWrapper>
   );
@@ -182,5 +273,16 @@ const styles = StyleSheet.create({
     marginTop: Math.round(P_LARGE * 0.7),
     marginBottom: 6,
     letterSpacing: 0.2,
+  },
+  devButton: {
+    marginTop: P,
+    padding: Math.round(SCREEN_WIDTH * 0.04),
+    borderRadius: Math.round(SCREEN_WIDTH * 0.03),
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  devText: {
+    fontWeight: '600',
+    fontSize: Math.round(SCREEN_WIDTH * 0.04),
   },
 });
