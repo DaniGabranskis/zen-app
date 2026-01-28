@@ -102,34 +102,36 @@ export default function LegalDocModal({ visible, onClose, doc }) {
           </View>
 
           {/* Content */}
-          <ScrollView
-            style={s.body}
-            contentContainerStyle={s.bodyContent}
-            showsVerticalScrollIndicator={true}
-          >
-            {sections.length === 0 ? (
-              <Text style={[s.emptyText, { color: t.textSecondary }]}>
-                No content available.
-              </Text>
-            ) : (
-              sections.map((s, idx) => (
-                <View key={`${idx}-${s.heading}`} style={s.section}>
-                  {s.heading ? (
-                    <Text style={[s.sectionHeading, { color: t.textPrimary }]}>{s.heading}</Text>
-                  ) : null}
+          <View style={s.bodyContainer}>
+            <ScrollView
+              style={s.body}
+              contentContainerStyle={s.bodyContent}
+              showsVerticalScrollIndicator={true}
+            >
+              {sections.length === 0 ? (
+                <Text style={[s.emptyText, { color: t.textSecondary }]}>
+                  No content available.
+                </Text>
+              ) : (
+                sections.map((s, idx) => (
+                  <View key={`${idx}-${s.heading}`} style={s.section}>
+                    {s.heading ? (
+                      <Text style={[s.sectionHeading, { color: t.textPrimary }]}>{s.heading}</Text>
+                    ) : null}
 
-                  {s.paragraphs.map((para, pIdx) => (
-                    <Text
-                      key={`${idx}-${pIdx}`}
-                      style={[s.paragraph, { color: t.textSecondary }]}
-                    >
-                      {para}
-                    </Text>
-                  ))}
-                </View>
-              ))
-            )}
-          </ScrollView>
+                    {s.paragraphs.map((para, pIdx) => (
+                      <Text
+                        key={`${idx}-${pIdx}`}
+                        style={[s.paragraph, { color: t.textSecondary }]}
+                      >
+                        {para}
+                      </Text>
+                    ))}
+                  </View>
+                ))
+              )}
+            </ScrollView>
+          </View>
 
           {/* Footer */}
           <View style={s.footer}>
