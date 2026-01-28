@@ -84,7 +84,7 @@ export default function LegalDocModal({ visible, onClose, doc }) {
     >
       <View style={s.overlay}>
         <View style={[s.modal, { backgroundColor: t.cardBackground }]}>
-          {/* Header */}
+          {/* Header - fixed at top */}
           <View style={s.header}>
             <Text style={[s.title, { color: t.textPrimary }]}>
               {doc.title}
@@ -101,7 +101,7 @@ export default function LegalDocModal({ visible, onClose, doc }) {
             </TouchableOpacity>
           </View>
 
-          {/* Content */}
+          {/* Body - scrollable content in middle */}
           <View style={s.bodyContainer}>
             <ScrollView
               style={s.body}
@@ -133,7 +133,7 @@ export default function LegalDocModal({ visible, onClose, doc }) {
             </ScrollView>
           </View>
 
-          {/* Footer */}
+          {/* Footer - fixed at bottom with Close button */}
           <View style={s.footer}>
             <TouchableOpacity
               style={[s.closeButtonLarge, { backgroundColor: t.accent }]}
@@ -168,7 +168,6 @@ const makeStyles = (t) => StyleSheet.create({
     elevation: 8,
     overflow: 'hidden',
     flexDirection: 'column',
-    display: 'flex',
   },
   header: {
     padding: 20,
@@ -198,13 +197,10 @@ const makeStyles = (t) => StyleSheet.create({
   },
   bodyContainer: {
     flex: 1,
-    minHeight: 200,
-    flexShrink: 1,
-    flexGrow: 1,
+    minHeight: 0,
   },
   body: {
     flex: 1,
-    width: '100%',
   },
   bodyContent: {
     paddingHorizontal: 20,
