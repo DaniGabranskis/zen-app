@@ -2,8 +2,9 @@
 // Comments in English only.
 
 import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Share } from 'react-native';
 import { StackActions } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import ScreenWrapper from '../components/ScreenWrapper';
 import useThemeVars from '../hooks/useThemeVars';
@@ -14,10 +15,13 @@ import L1 from '../data/flow/L1.json';
 import L2 from '../data/flow/L2.json';
 
 import useStore from '../store/useStore';
-import { canonicalizeTags } from '../utils/canonicalizeTags';
+// Task A2.3: Switch GUI to domain tags
+import { canonicalizeTags } from '../domain/tags';
+// TASK 7: Legacy imports only for simplified mode, not deep
 import { routeStateFromCards } from '../utils/evidenceEngine';
 import { routeStateFromBaseline } from '../utils/baselineEngine';
-import { routeStateFromDeep } from '../utils/deepEngine'; // Task AF: Deep engine integration
+// A3.3-01: Replaced deepEngine with adapter (single source of truth)
+import { createDeepSession } from '../adapters/deepSessionAdapter';
 import { buildDiagnosticPlan } from '../utils/diagnosticPlanner';
 import { buildProbePlan } from '../utils/probePlanBuilder';
 import { pickNextL1Card, areMinimumGatesClosed } from '../utils/l1CardSelector'; // Task AK3-DEEP-L1-1b
@@ -52,8 +56,45 @@ export default function DiagnosticFlowScreen({ navigation }) {
   const isDeep = flowMode === 'deep';
 
   const baselineMetrics = useStore((s) => s.sessionDraft?.baseline?.metrics) || null;
-const sessionType = useStore((s) => s.sessionDraft?.sessionType || 'morning');
-const plans = useStore((s) => s.sessionDraft?.plans) || { focusTags: [], intensity: 'med' };
+  const sessionType = useStore((s) => s.sessionDraft?.sessionType || 'morning');
+  const history = useStore((s) => s.history || []);
+  
+  // EPIC: Flow vNext - P1: For evening, pull planTags from morning entry of today (if exists)
+  const plans = useMemo(() => {
+    const draftPlans = useStore.getState().sessionDraft?.plans || { focusTags: [], intensity: 'med' };
+    
+    // If morning session, use current plans
+    if (sessionType === 'morning') {
+      return draftPlans;
+    }
+    
+    // If evening session, try to get plans from morning entry today
+    const todayKey = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    const morningEntry = history.find((entry) => {
+      if (!entry) return false;
+      const entryDate = entry.date || entry.createdAt;
+      if (!entryDate) return false;
+      const entryDateObj = new Date(entryDate);
+      const entryLocal = new Date(entryDateObj.getTime() - entryDateObj.getTimezoneOffset() * 60000);
+      const entryKey = entryLocal.toISOString().slice(0, 10);
+      const entrySessionType = entry.sessionType || entry.session?.sessionType;
+      return entryKey === todayKey && entrySessionType === 'morning';
+    });
+    
+    if (morningEntry) {
+      const morningPlans = morningEntry.session?.plans || morningEntry.plans;
+      if (morningPlans && Array.isArray(morningPlans.focusTags) && morningPlans.focusTags.length > 0) {
+        console.log('[DiagnosticFlow] Using planTags from morning entry:', morningPlans.focusTags);
+        return {
+          focusTags: morningPlans.focusTags,
+          intensity: morningPlans.intensity || 'med',
+        };
+      }
+    }
+    
+    // Fallback to empty plans for evening
+    return { focusTags: [], intensity: 'med' };
+  }, [sessionType, history]);
 
   const allCards = useMemo(() => {
     const cards = [...normalizeCards(L1), ...normalizeCards(L2)];
@@ -100,6 +141,56 @@ const plan = useMemo(() => {
   const [isInProbePhase, setIsInProbePhase] = useState(false);
   const [adaptiveL1Enabled] = useState(isDeep); // Task AK3-DEEP-L1-1b: Enable adaptive L1 for deep flow
   
+  // A3.3-01: Session adapter (single source of truth for deep flow)
+  const sessionRef = useRef(null);
+  const isSubmittingRef = useRef(false); // A3.3-02: Double-commit protection
+  const [currentCardFromAdapter, setCurrentCardFromAdapter] = useState(null); // A3.3-01: Card from adapter
+  
+  // A3.3-01: Initialize session adapter for deep flow
+  useEffect(() => {
+    if (!isDeep || !baselineMetrics) {
+      sessionRef.current = null;
+      return;
+    }
+    
+    const flowConfig = {
+      maxL1: 5,
+      maxL2: 5,
+      minL1: 3,
+      minL2: 2,
+      stopOnGates: true,
+      notSureRate: 0.2,
+      profile: 'mix',
+    };
+    
+    sessionRef.current = createDeepSession({
+      flowConfig,
+      baselineMetrics,
+      seed: Date.now(),
+      fixtureTags: [],
+    });
+    
+    // Get first card
+    const firstCard = sessionRef.current.getNextCard();
+    setCurrentCardFromAdapter(firstCard);
+    
+    return () => {
+      sessionRef.current = null;
+    };
+  }, [isDeep, baselineMetrics]);
+
+  // TASK 11: Reset adapter on blur (no session "sticking")
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('blur', () => {
+      if (sessionRef.current) {
+        sessionRef.current?.reset?.();
+        sessionRef.current = null;
+        setCurrentCardFromAdapter(null);
+      }
+    });
+    return unsubscribe;
+  }, [navigation]);
+  
   // Task AK3-DEEP-RT-BUG-2: Maximum steps protection
   const MAX_STEPS = 12;
   
@@ -138,23 +229,27 @@ const plan = useMemo(() => {
       let finalCombined;
       
       if (isDeep) {
-        // Deep flow: use deepEngine with L1 responses
-        // P0: Use both selectedTags and tags to ensure deepEngine sees all tags
-        const getTags = (item) => item.selectedTags || item.tags || [];
-        const l1Responses = accepted
-          .filter(item => item.group === 'l1' || item.group === 'l2')
-          .map(item => ({
-            tags: getTags(item),
-            values: {},
-            uncertainty: item.isNotSure ? 'low_clarity' : null,
-          }));
-        
-        finalCombined = await routeStateFromDeep(baselineMetrics, l1Responses, {
-          evidenceWeight: 0.45,
-        });
-        
-        if (finalEvidence?.emotionKey) {
-          finalCombined.emotionKey = finalEvidence.emotionKey;
+        // Deep flow: use adapter state (A3.3-01: replaced deepEngine with adapter)
+        if (sessionRef.current) {
+          const adapterState = sessionRef.current.getState();
+          // Extract final state from adapter
+          finalCombined = {
+            macroKey: adapterState.macroKey || adapterState.stateKey,
+            microKey: adapterState.microKey,
+            confidenceBand: adapterState.confidenceBand,
+            clarityFlag: adapterState.clarityFlag,
+            needsRefine: adapterState.needsRefine,
+            emotionKey: finalEvidence?.emotionKey,
+          };
+        } else {
+          // Fallback: use baseline if adapter not available
+          finalCombined = routeStateFromBaseline(baselineMetrics, {
+            evidenceVector: finalEvidence?.vector,
+            evidenceWeight: 0.25,
+          });
+          if (finalEvidence?.emotionKey) {
+            finalCombined.emotionKey = finalEvidence.emotionKey;
+          }
         }
       } else {
         // Simplified flow: use baseline engine
@@ -403,16 +498,17 @@ const plan = useMemo(() => {
     }
   }, [adaptiveL1Enabled, isDeep, isInProbePhase, askedIdsArray, macroBase, evidenceTags, currentQuality, assertInvariants]);
 
-  // Determine current question: adaptive L1, main plan, or probe plan
-  const currentMainId = !isInProbePhase 
-    ? (adaptiveL1Enabled && adaptiveNextL1Id ? adaptiveNextL1Id : plan[index])
+  // A3.3-01: For deep flow, use card from adapter; otherwise use legacy logic
+  // Determine current question: adaptive L1, main plan, or probe plan (for simplified flow only)
+  const currentMainId = !isDeep && !isInProbePhase 
+    ? plan[index]
     : null;
   
   // Task AK3-POST-4c.1b: Store current selection result for logging
   const currentSelectionResult = adaptiveL1Enabled && !isInProbePhase ? adaptiveNextL1Result : null;
   const currentProbeId = isInProbePhase ? probePlan[probeIndex] : null;
-  const currentId = currentProbeId || currentMainId;
-  const currentCard = currentId ? allCards.byId[currentId] : null;
+  const currentId = isDeep ? (currentCardFromAdapter?.id || null) : (currentProbeId || currentMainId);
+  const currentCard = isDeep ? currentCardFromAdapter : (currentId ? allCards.byId[currentId] : null);
   const swipeCard = useMemo(() => toSwipeCard(currentCard), [currentCard]);
   const hintText = currentCard?.hint || '';
   
@@ -525,6 +621,12 @@ const plan = useMemo(() => {
 
   // Check if plan is finished and trigger finish in useEffect (not during render)
   useEffect(() => {
+    // TASK 7: Skip legacy logic when using adapter (deep mode)
+    if (isDeep && sessionRef.current) {
+      // Adapter handles all session end cases, skip legacy finalizeDeepFlow
+      return;
+    }
+    
     // Handle empty plan case (e.g., Morning Simplified should skip DiagnosticFlow)
     if (plan.length === 0 && !isFinished) {
       setIsFinished(true);
@@ -549,14 +651,11 @@ const plan = useMemo(() => {
       return;
     }
 
-    // Task AK3-DEEP-RT-BUG-2: Check MAX_STEPS protection
-    if (isDeep && !isFinished && askedIds.size >= MAX_STEPS) {
-      console.warn('[DeepFlow] MAX_STEPS reached, forcing finish', { askedCount: askedIds.size, maxSteps: MAX_STEPS });
-      finalizeDeepFlow({ endedBy: 'max_steps', reason: `reached_max_steps_${MAX_STEPS}` });
-      return;
-    }
+    // TASK 7: Legacy logic disabled - adapter handles all deep mode session end cases
+    // The code below was for legacy deep mode and is now disabled since we use adapter
+    // Keeping commented for reference, but it should never execute in adapter-based deep mode
     
-    // Task AK3-DEEP-RT-BUG-1: Handle no more cards case
+    /* Legacy code - disabled for adapter-based deep mode
     if (adaptiveL1Enabled && isDeep && !isFinished && !isInProbePhase && adaptiveNextL1Id === null) {
       const reason = adaptiveNextL1Result?.reason || 'unknown';
       
@@ -623,6 +722,7 @@ const plan = useMemo(() => {
       finalizeDeepFlow({ endedBy, reason: finalReason });
       return;
     }
+    */
 
     // Handle finished main plan case - check if probe is needed
     const planExhausted = adaptiveL1Enabled 
@@ -757,24 +857,28 @@ const plan = useMemo(() => {
         let finalCombined;
         
         if (isDeep) {
-          // Deep flow: use deepEngine with L1 responses
-          // P0: Use both selectedTags and tags to ensure deepEngine sees all tags
-          const getTags = (item) => item.selectedTags || item.tags || [];
-          const l1Responses = accepted
-            .filter(item => item.group === 'l1' || item.group === 'l2')
-            .map(item => ({
-              tags: getTags(item),
-              values: {},
-              uncertainty: item.isNotSure ? 'low_clarity' : null,
-            }));
-          
-          finalCombined = await routeStateFromDeep(baselineMetrics, l1Responses, {
-            evidenceWeight: 0.45,
-          });
-          
+          // Deep flow: use adapter state (A3.3-01: replaced deepEngine with adapter)
           const finalEvidence = routeStateFromCards(accepted);
-          if (finalEvidence?.emotionKey) {
-            finalCombined.emotionKey = finalEvidence.emotionKey;
+          if (sessionRef.current) {
+            const adapterState = sessionRef.current.getState();
+            // Extract final state from adapter
+            finalCombined = {
+              macroKey: adapterState.macroKey || adapterState.stateKey,
+              microKey: adapterState.microKey,
+              confidenceBand: adapterState.confidenceBand,
+              clarityFlag: adapterState.clarityFlag,
+              needsRefine: adapterState.needsRefine,
+              emotionKey: finalEvidence?.emotionKey,
+            };
+          } else {
+            // Fallback: use baseline if adapter not available
+            finalCombined = routeStateFromBaseline(baselineMetrics, {
+              evidenceVector: finalEvidence?.vector,
+              evidenceWeight: 0.25,
+            });
+            if (finalEvidence?.emotionKey) {
+              finalCombined.emotionKey = finalEvidence.emotionKey;
+            }
           }
           
           // Task AK3-POST-4c.1: Log final output for deep flow
@@ -868,7 +972,7 @@ const plan = useMemo(() => {
       <ScreenWrapper>
         <View style={{ padding: 16 }}>
           <Text style={{ color: t.textSecondary }}>
-            Unsupported card type for "{currentCard.id}"
+            Unsupported card type for "{currentCard?.id || 'unknown'}"
           </Text>
         </View>
       </ScreenWrapper>
@@ -888,15 +992,167 @@ const plan = useMemo(() => {
           <SwipeCard
           card={swipeCard}
           onSwipeLeft={() => {
-            const opt = currentCard.options[0];
-            pushAccepted(currentCard, 'A', opt?.label || 'A', opt?.tags || []);
+            if (isDeep && sessionRef.current && currentCard) {
+              // A3.3-02: Double-commit protection
+              if (isSubmittingRef.current) return;
+              isSubmittingRef.current = true;
+              
+              try {
+                const opt = currentCard.options[0];
+                const result = sessionRef.current.commitAnswer({
+                  cardId: currentCard.id,
+                  choice: 'A',
+                });
+                
+                if (result.error) {
+                  console.error('[DiagnosticFlow] commitAnswer error:', result.error);
+                  return;
+                }
+                
+                const state = sessionRef.current.getState();
+                const events = sessionRef.current.getEvents();
+                
+                // TASK 12: Persist only when phase === 'ENDED'
+                if (state?.phase === 'ENDED') {
+                  setIsFinished(true);
+                  
+                  // TASK 12: Persist completed session to store/history
+                  try {
+                    useStore.getState().addSession?.({ state, events });
+                  } catch (e) {
+                    // no-op: store API may not have addSession method
+                  }
+                  
+                  // TASK 8: Unified navigation contract
+                  navigation.navigate('L4Deepen', {
+                    sessionState: state,
+                    sessionEvents: events,
+                    mode: 'deep',
+                  });
+                  return;
+                }
+                
+                // Get next card
+                const next = sessionRef.current.getNextCard();
+                setCurrentCardFromAdapter(next);
+                
+                // Also update accepted for legacy compatibility
+                pushAccepted(currentCard, 'A', opt?.label || 'A', opt?.tags || []);
+              } finally {
+                isSubmittingRef.current = false;
+              }
+            } else {
+              const opt = currentCard.options[0];
+              pushAccepted(currentCard, 'A', opt?.label || 'A', opt?.tags || []);
+            }
           }}
           onSwipeRight={() => {
-            const opt = currentCard.options[1];
-            pushAccepted(currentCard, 'B', opt?.label || 'B', opt?.tags || []);
+            if (isDeep && sessionRef.current && currentCard) {
+              // A3.3-02: Double-commit protection
+              if (isSubmittingRef.current) return;
+              isSubmittingRef.current = true;
+              
+              try {
+                const opt = currentCard.options[1];
+                const result = sessionRef.current.commitAnswer({
+                  cardId: currentCard.id,
+                  choice: 'B',
+                });
+                
+                if (result.error) {
+                  console.error('[DiagnosticFlow] commitAnswer error:', result.error);
+                  return;
+                }
+                
+                const state = sessionRef.current.getState();
+                const events = sessionRef.current.getEvents();
+                
+                // TASK 12: Persist only when phase === 'ENDED'
+                if (state?.phase === 'ENDED') {
+                  setIsFinished(true);
+                  
+                  // TASK 12: Persist completed session to store/history
+                  try {
+                    useStore.getState().addSession?.({ state, events });
+                  } catch (e) {
+                    // no-op: store API may not have addSession method
+                  }
+                  
+                  // TASK 8: Unified navigation contract
+                  navigation.navigate('L4Deepen', {
+                    sessionState: state,
+                    sessionEvents: events,
+                    mode: 'deep',
+                  });
+                  return;
+                }
+                
+                // Get next card
+                const next = sessionRef.current.getNextCard();
+                setCurrentCardFromAdapter(next);
+                
+                // Also update accepted for legacy compatibility
+                pushAccepted(currentCard, 'B', opt?.label || 'B', opt?.tags || []);
+              } finally {
+                isSubmittingRef.current = false;
+              }
+            } else {
+              const opt = currentCard.options[1];
+              pushAccepted(currentCard, 'B', opt?.label || 'B', opt?.tags || []);
+            }
           }}
           onNotSure={() => {
-            pushAccepted(currentCard, 'NS', 'Not sure', [], true);
+            if (isDeep && sessionRef.current && currentCard) {
+              // A3.3-02: Double-commit protection
+              if (isSubmittingRef.current) return;
+              isSubmittingRef.current = true;
+              
+              try {
+                const result = sessionRef.current.commitAnswer({
+                  cardId: currentCard.id,
+                  choice: 'not_sure',
+                });
+                
+                if (result.error) {
+                  console.error('[DiagnosticFlow] commitAnswer error:', result.error);
+                  return;
+                }
+                
+                const state = sessionRef.current.getState();
+                const events = sessionRef.current.getEvents();
+                
+                // TASK 12: Persist only when phase === 'ENDED'
+                if (state?.phase === 'ENDED') {
+                  setIsFinished(true);
+                  
+                  // TASK 12: Persist completed session to store/history
+                  try {
+                    useStore.getState().addSession?.({ state, events });
+                  } catch (e) {
+                    // no-op: store API may not have addSession method
+                  }
+                  
+                  // TASK 8: Unified navigation contract
+                  navigation.navigate('L4Deepen', {
+                    sessionState: state,
+                    sessionEvents: events,
+                    mode: 'deep',
+                  });
+                  return;
+                }
+                
+                // Get next card
+                const next = sessionRef.current.getNextCard();
+                setCurrentCardFromAdapter(next);
+                
+                // Also update accepted for legacy compatibility
+                pushAccepted(currentCard, 'NS', 'Not sure', [], true);
+              } finally {
+                isSubmittingRef.current = false;
+              }
+            } else {
+              pushAccepted(currentCard, 'NS', 'Not sure', [], true);
+            }
           }}
           notSureLabel="Not sure"
           />
@@ -905,10 +1161,48 @@ const plan = useMemo(() => {
           {isInProbePhase
             ? `Clarifying ${probeIndex + 1} / ${probePlan.length}`
             : adaptiveL1Enabled && isDeep
-              ? `Question ${askedIds.size + 1}${currentCard ? ` / up to ${MAX_STEPS}` : ''}`
+              ? `Question ${askedIds.size + 1}${currentCardFromAdapter ? ` / up to ${MAX_STEPS}` : ''}`
               : `${Math.min(index + 1, plan.length)} / ${plan.length}`}
         </Text>
       </View>
+      
+      {/* TASK 10: DEV-only export button with Share */}
+      {__DEV__ && isDeep && sessionRef.current && (
+        <TouchableOpacity
+          style={{
+            position: 'absolute',
+            bottom: 20,
+            right: 20,
+            backgroundColor: '#666',
+            padding: 10,
+            borderRadius: 5,
+          }}
+          onPress={async () => {
+            try {
+              const state = sessionRef.current?.exportState?.() ?? sessionRef.current?.getState?.();
+              const events = sessionRef.current?.exportEvents?.() ?? sessionRef.current?.getEvents?.();
+              const config = sessionRef.current?.getState?.()?.config || {};
+              const payload = { state, events, config, timestamp: Date.now() };
+              const jsonString = JSON.stringify(payload, null, 2);
+              
+              // TASK 10: Share JSON string
+              await Share.share({
+                message: jsonString,
+                title: 'Session Export (DEV)',
+              });
+              
+              // Also save to AsyncStorage for backup
+              await AsyncStorage.setItem('debug_session_export', jsonString);
+              console.log('[DEV] Session exported via Share and AsyncStorage');
+            } catch (e) {
+              console.error('[DEV] Export failed:', e);
+              alert('Export failed: ' + e.message);
+            }
+          }}
+        >
+          <Text style={{ color: '#fff', fontSize: 12 }}>DEV: Tap to share JSON</Text>
+        </TouchableOpacity>
+      )}
     </ScreenWrapper>
   );
 }
