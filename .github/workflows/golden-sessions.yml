@@ -27,6 +27,10 @@ jobs:
           cache: 'npm'
           cache-dependency-path: client/package-lock.json
       
+      - name: Verify npm version
+        working-directory: client
+        run: npm --version
+      
       - name: Install dependencies
         working-directory: client
         run: npm ci
