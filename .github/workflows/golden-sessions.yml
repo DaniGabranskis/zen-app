@@ -33,7 +33,9 @@ jobs:
       
       - name: Install dependencies
         working-directory: client
-        run: npm ci
+        run: |
+          # Try npm ci first, fallback to npm install if it fails
+          npm ci || (echo "npm ci failed, trying npm install..." && npm install)
       
       - name: Hygiene - Ensure no legacy deepEngine in deep screens
         working-directory: client
