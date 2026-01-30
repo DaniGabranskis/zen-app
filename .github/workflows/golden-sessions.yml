@@ -35,10 +35,12 @@ jobs:
         working-directory: client
         run: |
           # Check for import statements only (ignore comment lines)
-          # Look for lines containing 'utils/deepEngine' that are NOT comments
-          # Filter out lines that start with // or /* or * (comment markers)
-          if grep "utils/deepEngine" src/screens/DiagnosticFlowScreen.js src/screens/ReflectionFlowScreen.js 2>/dev/null | grep -vE "^[[:space:]]*//|^[[:space:]]*/\*|^[[:space:]]*\*" > /dev/null; then
-            echo "❌ Legacy deepEngine import detected in deep screens"
+          # Look for lines containing both 'import' and 'utils/deepEngine' that are NOT comments
+          # First, find lines with 'import' and 'utils/deepEngine', then filter out comment lines
+          MATCHES=$(grep -E "(import|from).*utils/deepEngine" src/screens/DiagnosticFlowScreen.js src/screens/ReflectionFlowScreen.js 2>/dev/null | grep -vE "^[[:space:]]*//|^[[:space:]]*/\*|^[[:space:]]*\*" || true)
+          if [ -n "$MATCHES" ]; then
+            echo "❌ Legacy deepEngine import detected in deep screens:"
+            echo "$MATCHES"
             echo "Deep screens must use adapter only, not legacy deepEngine"
             exit 1
           fi
