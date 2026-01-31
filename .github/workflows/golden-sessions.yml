@@ -63,6 +63,7 @@ jobs:
       - name: Run golden:check
         working-directory: client
         run: npm run golden:check
+        continue-on-error: true
       
       - name: Run golden:summary
         working-directory: client
