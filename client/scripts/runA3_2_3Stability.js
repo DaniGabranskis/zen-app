@@ -501,6 +501,7 @@ async function main() {
       const reportPatterns = [
         path.join(outDir, `deep_balance_noisy_mixed_deep-realistic_seed${seed}.json`),
         path.join(outDir, `deep_balance_noisy_mixed_seed${seed}.json`),
+        path.join(outDir, `deep_balance_noisy_mixed.json`), // Fallback: file without suffixes
       ];
       
       let reportPath = null;
