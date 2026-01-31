@@ -1264,7 +1264,7 @@ async function main() {
         const canonicalAny = Array.from(new Set(canonicalTags));
         
         // Step 2: Derive sig.* from l1_* tags
-        const { deriveSigTagsFromArray } = await import('../src/utils/canonicalizeTags.js');
+        const { deriveSigTagsFromArray, canonicalizeTags } = await import('../src/domain/tags/index.js');
         const derivedSigTags = deriveSigTagsFromArray(canonicalAny);
         
         // Step 3: Combine canonical + derived (unique)
