@@ -170,8 +170,7 @@ function checkThresholds(report, flow, thresholds) {
     }
     
     // Task P3.7: Check individual gate hit rates (core gates use CardsOnly, load/social use Any)
-    const gateHitRatesAny = dr.gateHitRates || {};
-    const gateHitRatesCardsOnly = dr.gateHitCardsOnlyRates || {};
+    // Note: gateHitRatesAny and gateHitRatesCardsOnly already declared above (lines 149-150)
     
     // Core gates: check CardsOnly
     const failRatesCardsOnly = thresholds.fail?.gateCoverageRatesCardsOnly || {};
@@ -202,7 +201,7 @@ function checkThresholds(report, flow, thresholds) {
     }
     
     // Task P2.26: Check avgSteps is reasonable (not ask-all)
-    const avgSteps = derived.avgSteps || 0;
+    // Note: avgSteps already declared above (line 129)
     const maxSteps = maxL1 + maxL2;
     if (avgSteps >= maxSteps * 0.9) {
       warnings.push(`avgSteps (${avgSteps.toFixed(2)}) is close to max (${maxSteps}) - may be ask-all behavior`);
