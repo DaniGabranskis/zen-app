@@ -1,0 +1,29 @@
+{
+  "id": "GS03",
+  "description": "Detached/autopilot - mixed forced + profile",
+  "seed": 2025,
+  "flowConfigOverrides": {
+    "maxL1": 4,
+    "maxL2": 4,
+    "minL1": 2,
+    "minL2": 2,
+    "stopOnGates": true,
+    "notSureRate": 0.25,
+    "profile": "mix"
+  },
+  "baselineMetrics": {
+    "valence": 5,
+    "energy": 5,
+    "tension": 3,
+    "clarity": 4,
+    "control": 5,
+    "social": 5
+  },
+  "answerPolicy": {
+    "forcedAnswers": {
+      "L1_mood": "right",
+      "L1_energy": "right"
+    },
+    "profile": "uncertain"
+  }
+}

@@ -1,0 +1,95 @@
+name: Golden Sessions CI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'client/**'
+      - '.github/workflows/golden-sessions.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'client/**'
+      - '.github/workflows/golden-sessions.yml'
+
+jobs:
+  golden-sessions:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+      
+      - name: Verify npm version
+        working-directory: client
+        run: npm --version
+      
+      - name: Install dependencies
+        working-directory: client
+        run: |
+          # Try npm ci first, fallback to npm install if it fails
+          npm ci || (echo "npm ci failed, trying npm install..." && npm install)
+      
+      - name: Hygiene - Ensure no legacy deepEngine in deep screens
+        working-directory: client
+        run: npm run hygiene:check-deep-engine
+      
+      - name: Sanity - Tag pipeline vectors
+        working-directory: client
+        run: node scripts/testTagPipelineVectors.js
+        continue-on-error: false
+      
+      - name: Sanity - Deep balance thresholds
+        working-directory: client
+        run: node scripts/checkDeepBalanceThresholds.js
+        continue-on-error: false
+      
+      - name: Sanity - Replay smoke test (GS01)
+        working-directory: client
+        run: node scripts/replaySession.js --fixture scripts/goldenSessions/fixtures/GS01_down_work_overcommit.fixture.json --snapshot scripts/goldenSessions/snapshots/GS01.snapshot.json --debug
+      
+      - name: Run golden:doctor
+        working-directory: client
+        run: npm run golden:doctor
+      
+      - name: Run golden:check
+        working-directory: client
+        run: npm run golden:check
+      
+      - name: Run golden:summary
+        working-directory: client
+        run: npm run golden:summary
+
+      - name: Stability (smoke)
+        working-directory: client
+        timeout-minutes: 20
+        run: npm run stability:smoke
+
+      - name: Zero-score report
+        working-directory: client
+        run: npm run zero-score:report
+
+      - name: Stability diff gate
+        working-directory: client
+        run: npm run stability:diff
+
+      - name: Upload stability artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stability-artifacts
+          if-no-files-found: ignore
+          path: |
+            client/scripts/out/A3_2_3_STABILITY_SUMMARY.md
+            client/scripts/out/A3_2_3_STABILITY_SUMMARY.json
+            client/scripts/out/ZERO_SCORE_PICK_REPORT.md
+            client/scripts/out/micro_fallback_samples_*.jsonl
+            client/scripts/out/manifest_*.json
+            client/scripts/out/deep_balance_*.json

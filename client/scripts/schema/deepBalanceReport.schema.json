@@ -1,0 +1,231 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Deep Balance Report Schema",
+  "description": "Schema for deep balance simulation reports",
+  "type": "object",
+  "required": ["reportVersion", "metadata", "config", "totalPaths"],
+  "properties": {
+    "reportVersion": {
+      "type": "string",
+      "description": "Report format version (semver-like: X.Y.Z)",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["flow", "mode", "runs", "seed", "timestamp"],
+      "properties": {
+        "flow": {
+          "type": "string",
+          "enum": ["fixed", "l1-full", "deep-realistic"]
+        },
+        "mode": {
+          "type": "string"
+        },
+        "runs": {
+          "type": "number"
+        },
+        "seed": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "l1Count": {
+          "type": "number"
+        },
+        "l2Count": {
+          "type": "number"
+        },
+        "nodeVersion": {
+          "type": "string"
+        },
+        "baselineSampler": {
+          "type": "string"
+        }
+      }
+    },
+    "config": {
+      "type": "object",
+      "required": ["mode", "seed", "runs", "flow"],
+      "properties": {
+        "mode": {
+          "type": "string"
+        },
+        "seed": {
+          "type": "number"
+        },
+        "runs": {
+          "type": "number"
+        },
+        "flow": {
+          "type": "string"
+        },
+        "maxL1": {
+          "type": "number"
+        },
+        "maxL2": {
+          "type": "number"
+        },
+        "minL1": {
+          "type": "number"
+        },
+        "minL2": {
+          "type": "number"
+        },
+        "stopOnGates": {
+          "type": "boolean"
+        },
+        "notSureRate": {
+          "type": "number"
+        },
+        "profile": {
+          "type": "string"
+        }
+      }
+    },
+    "totalPaths": {
+      "type": "number"
+    },
+    "microCoverage": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "microDistribution": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "number"
+        }
+      }
+    },
+    "microNoneCount": {
+      "type": "number"
+    },
+    "microFallbackCount": {
+      "type": "number"
+    },
+    "microSelectedCount": {
+      "type": "number"
+    },
+    "derived": {
+      "type": "object",
+      "properties": {
+        "microFallbackRate": {
+          "type": "number"
+        },
+        "microZeroScorePickRate": {
+          "type": "number"
+        },
+        "microSelectedRate": {
+          "type": "number"
+        },
+        "scoringTagsEmptyRate": {
+          "type": "number"
+        },
+        "scoringTagsLenP50": {
+          "type": "number"
+        },
+        "scoringTagsLenP95": {
+          "type": "number"
+        },
+        "deepRealistic": {
+          "type": "object",
+          "properties": {
+            "askedL1": {
+              "type": "object",
+              "required": ["avg", "min", "max", "p50", "p95", "count"],
+              "properties": {
+                "avg": {
+                  "type": "number"
+                },
+                "min": {
+                  "type": "number"
+                },
+                "max": {
+                  "type": "number"
+                },
+                "p50": {
+                  "type": "number"
+                },
+                "p95": {
+                  "type": "number"
+                },
+                "count": {
+                  "type": "number"
+                },
+                "histogram": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "number"
+                  }
+                }
+              }
+            },
+            "askedL2": {
+              "type": "object",
+              "required": ["avg", "min", "max", "p50", "p95", "count"],
+              "properties": {
+                "avg": {
+                  "type": "number"
+                },
+                "min": {
+                  "type": "number"
+                },
+                "max": {
+                  "type": "number"
+                },
+                "p50": {
+                  "type": "number"
+                },
+                "p95": {
+                  "type": "number"
+                },
+                "count": {
+                  "type": "number"
+                },
+                "histogram": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "number"
+                  }
+                }
+              }
+            },
+            "fallbackReasonBreakdown": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "number"
+              }
+            },
+            "gateHitRatesCardsOnly": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "number"
+              }
+            },
+            "macroDistribution": {
+              "type": "object"
+            },
+            "macroDistributionFlat": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "number"
+              },
+              "description": "Flat macro distribution computed from microDistribution (excluding service buckets)"
+            },
+            "endedReasonBreakdown": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

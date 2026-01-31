@@ -1,0 +1,33 @@
+{
+  "id": "GS15",
+  "description": "Contradiction test: positive answers but down macro (intentional)",
+  "seed": 999,
+  "tags": ["intentional_contradiction"],
+  "flowConfigOverrides": {
+    "maxL1": 5,
+    "maxL2": 5,
+    "minL1": 3,
+    "minL2": 2,
+    "stopOnGates": true,
+    "notSureRate": 0.0,
+    "profile": "mix"
+  },
+  "baselineMetrics": {
+    "valence": 1,
+    "energy": 1,
+    "tension": 9,
+    "clarity": 1,
+    "control": 1,
+    "social": 1
+  },
+  "answerPolicy": {
+    "forcedAnswers": {
+      "L1_mood": "right",
+      "L1_energy": "right",
+      "L1_clarity": "right",
+      "L1_control": "right",
+      "L1_social": "right"
+    },
+    "forcedL1CardOrder": ["L1_mood", "L1_energy", "L1_clarity", "L1_control", "L1_social"]
+  }
+}

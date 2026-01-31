@@ -1,0 +1,29 @@
+{
+  "id": "GS08",
+  "description": "Edge case: max steps reached",
+  "seed": 111,
+  "flowConfigOverrides": {
+    "maxL1": 3,
+    "maxL2": 3,
+    "minL1": 2,
+    "minL2": 2,
+    "stopOnGates": false,
+    "notSureRate": 0.1,
+    "profile": "mix"
+  },
+  "baselineMetrics": {
+    "valence": 5,
+    "energy": 5,
+    "tension": 5,
+    "clarity": 5,
+    "control": 5,
+    "social": 5
+  },
+  "answerPolicy": {
+    "forcedAnswers": {
+      "L1_mood": "left",
+      "L1_energy": "right",
+      "L1_body": "left"
+    }
+  }
+}

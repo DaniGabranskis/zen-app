@@ -1,0 +1,31 @@
+{
+  "id": "GS10",
+  "description": "Low signal forced fallback - important for fallback testing",
+  "seed": 333,
+  "flowConfigOverrides": {
+    "maxL1": 5,
+    "maxL2": 5,
+    "minL1": 3,
+    "minL2": 2,
+    "stopOnGates": true,
+    "notSureRate": 0.3,
+    "profile": "mix"
+  },
+  "baselineMetrics": {
+    "valence": 5,
+    "energy": 5,
+    "tension": 5,
+    "clarity": 5,
+    "control": 5,
+    "social": 5
+  },
+  "answerPolicy": {
+    "forcedAnswers": {
+      "L1_mood": "not_sure",
+      "L1_energy": "not_sure",
+      "L1_body": "not_sure",
+      "L1_clarity": "not_sure",
+      "L1_control": "not_sure"
+    }
+  }
+}

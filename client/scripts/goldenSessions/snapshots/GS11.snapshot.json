@@ -1,0 +1,433 @@
+{
+  "config": {
+    "configHash": "f1faab076884c85ccf3d7ca62cf9116400132b48",
+    "fixtureHash": "539dda89cee0c5e4cbb5f0b8d4325566937878ad",
+    "flow": "deep-realistic",
+    "maxL1": 5,
+    "maxL2": 0,
+    "minL1": 3,
+    "minL2": 0,
+    "mode": "noisy-mixed",
+    "notSureRate": 0,
+    "profile": "mix",
+    "seed": 42,
+    "snapshotVersion": "1.2.0",
+    "stopOnGates": true
+  },
+  "coverage": {
+    "coverageFirstPicks": [
+      {
+        "cardId": "L1_self_worth",
+        "reason": "golden_forced",
+        "step": 0
+      },
+      {
+        "cardId": "L1_clarity",
+        "reason": "golden_forced",
+        "step": 1
+      },
+      {
+        "cardId": "L1_pressure",
+        "reason": "golden_forced",
+        "step": 2
+      }
+    ],
+    "gateFirstHitStep": {
+      "agency": 0,
+      "arousal": 0,
+      "clarity": 0,
+      "load": 2,
+      "social": 0,
+      "valence": 0
+    }
+  },
+  "events": [
+    {
+      "i": 0,
+      "step": 0,
+      "type": "session_start"
+    },
+    {
+      "i": 1,
+      "step": 0,
+      "tags": [
+        "sig.agency.low",
+        "sig.arousal.mid",
+        "sig.clarity.low",
+        "sig.fatigue.mid",
+        "sig.social.low",
+        "sig.tension.mid",
+        "sig.valence.neutral"
+      ],
+      "type": "baseline_injected"
+    },
+    {
+      "i": 2,
+      "step": 0,
+      "tags": [
+        "sig.agency.low",
+        "sig.arousal.mid",
+        "sig.clarity.low",
+        "sig.fatigue.mid",
+        "sig.social.low",
+        "sig.tension.mid",
+        "sig.valence.neutral"
+      ],
+      "type": "evidence_added"
+    },
+    {
+      "gate": "valence",
+      "i": 3,
+      "scope": "any",
+      "step": 0,
+      "type": "gate_hit"
+    },
+    {
+      "gate": "arousal",
+      "i": 4,
+      "scope": "any",
+      "step": 0,
+      "type": "gate_hit"
+    },
+    {
+      "gate": "agency",
+      "i": 5,
+      "scope": "any",
+      "step": 0,
+      "type": "gate_hit"
+    },
+    {
+      "gate": "clarity",
+      "i": 6,
+      "scope": "any",
+      "step": 0,
+      "type": "gate_hit"
+    },
+    {
+      "gate": "social",
+      "i": 7,
+      "scope": "any",
+      "step": 0,
+      "type": "gate_hit"
+    },
+    {
+      "cardId": "L1_self_worth",
+      "i": 8,
+      "step": 0,
+      "type": "card_shown"
+    },
+    {
+      "cardId": "L1_self_worth",
+      "choice": "B",
+      "i": 9,
+      "step": 0,
+      "type": "answer_committed"
+    },
+    {
+      "cardId": "L1_self_worth",
+      "i": 10,
+      "step": 0,
+      "tags": [
+        "l1_worth_high",
+        "sig.agency.high",
+        "sig.self_worth.high"
+      ],
+      "type": "evidence_added"
+    },
+    {
+      "cardId": "L1_self_worth",
+      "gate": "agency",
+      "i": 11,
+      "scope": "cardsOnly",
+      "step": 0,
+      "type": "gate_hit"
+    },
+    {
+      "i": 12,
+      "micro": {
+        "reason": "matched",
+        "selected": "detached.autopilot",
+        "source": "selected",
+        "topCandidate": null
+      },
+      "step": 1,
+      "type": "micro_selected"
+    },
+    {
+      "cardId": "L1_clarity",
+      "i": 13,
+      "step": 1,
+      "type": "card_shown"
+    },
+    {
+      "cardId": "L1_clarity",
+      "choice": "B",
+      "i": 14,
+      "step": 1,
+      "type": "answer_committed"
+    },
+    {
+      "cardId": "L1_clarity",
+      "i": 15,
+      "step": 1,
+      "tags": [
+        "l1_clarity_high",
+        "sig.clarity.high"
+      ],
+      "type": "evidence_added"
+    },
+    {
+      "cardId": "L1_clarity",
+      "gate": "clarity",
+      "i": 16,
+      "scope": "cardsOnly",
+      "step": 1,
+      "type": "gate_hit"
+    },
+    {
+      "i": 17,
+      "micro": {
+        "reason": "matched",
+        "selected": "detached.autopilot",
+        "source": "selected",
+        "topCandidate": null
+      },
+      "step": 2,
+      "type": "micro_selected"
+    },
+    {
+      "cardId": "L1_pressure",
+      "i": 18,
+      "step": 2,
+      "type": "card_shown"
+    },
+    {
+      "cardId": "L1_pressure",
+      "choice": "A",
+      "i": 19,
+      "step": 2,
+      "type": "answer_committed"
+    },
+    {
+      "cardId": "L1_pressure",
+      "i": 20,
+      "step": 2,
+      "tags": [
+        "l1_pressure_high",
+        "sig.context.work.deadline",
+        "sig.context.work.overcommit",
+        "sig.context.work.pressure.high"
+      ],
+      "type": "evidence_added"
+    },
+    {
+      "cardId": "L1_pressure",
+      "gate": "load",
+      "i": 21,
+      "scope": "any",
+      "step": 2,
+      "type": "gate_hit"
+    },
+    {
+      "cardId": "L1_pressure",
+      "gate": "load",
+      "i": 22,
+      "scope": "cardsOnly",
+      "step": 2,
+      "type": "gate_hit"
+    },
+    {
+      "i": 23,
+      "micro": {
+        "reason": "matched",
+        "selected": "detached.autopilot",
+        "source": "selected",
+        "topCandidate": null
+      },
+      "step": 3,
+      "type": "micro_selected"
+    },
+    {
+      "cardId": "L1_mood",
+      "i": 24,
+      "step": 3,
+      "type": "card_shown"
+    },
+    {
+      "cardId": "L1_mood",
+      "choice": "B",
+      "i": 25,
+      "step": 3,
+      "type": "answer_committed"
+    },
+    {
+      "cardId": "L1_mood",
+      "i": 26,
+      "step": 3,
+      "tags": [
+        "l1_mood_pos",
+        "sig.valence.pos"
+      ],
+      "type": "evidence_added"
+    },
+    {
+      "cardId": "L1_mood",
+      "gate": "valence",
+      "i": 27,
+      "scope": "cardsOnly",
+      "step": 3,
+      "type": "gate_hit"
+    },
+    {
+      "i": 28,
+      "micro": {
+        "reason": "matched",
+        "selected": "detached.autopilot",
+        "source": "selected",
+        "topCandidate": null
+      },
+      "step": 4,
+      "type": "micro_selected"
+    },
+    {
+      "cardId": "L1_energy",
+      "i": 29,
+      "step": 4,
+      "type": "card_shown"
+    },
+    {
+      "cardId": "L1_energy",
+      "choice": "B",
+      "i": 30,
+      "step": 4,
+      "type": "answer_committed"
+    },
+    {
+      "cardId": "L1_energy",
+      "i": 31,
+      "step": 4,
+      "tags": [
+        "l1_energy_high",
+        "sig.arousal.high",
+        "sig.fatigue.low"
+      ],
+      "type": "evidence_added"
+    },
+    {
+      "cardId": "L1_energy",
+      "gate": "arousal",
+      "i": 32,
+      "scope": "cardsOnly",
+      "step": 4,
+      "type": "gate_hit"
+    },
+    {
+      "i": 33,
+      "step": 4,
+      "type": "expected_macro_computed"
+    },
+    {
+      "endedReason": "gates_closed",
+      "i": 34,
+      "step": 4,
+      "type": "session_end"
+    }
+  ],
+  "final": {
+    "askedL1Count": 5,
+    "askedL2Count": 0,
+    "axisTagCount": 0,
+    "baselineEvidenceTags": [
+      "sig.agency.low",
+      "sig.arousal.mid",
+      "sig.clarity.low",
+      "sig.fatigue.mid",
+      "sig.social.low",
+      "sig.tension.mid",
+      "sig.valence.neutral"
+    ],
+    "cardEvidenceTags": [
+      "l1_clarity_high",
+      "l1_energy_high",
+      "l1_mood_pos",
+      "l1_pressure_high",
+      "l1_worth_high",
+      "sig.agency.high",
+      "sig.arousal.high",
+      "sig.clarity.high",
+      "sig.context.work.deadline",
+      "sig.context.work.overcommit",
+      "sig.context.work.pressure.high",
+      "sig.fatigue.low",
+      "sig.self_worth.high",
+      "sig.valence.pos"
+    ],
+    "eligibleForContradiction": true,
+    "endedBy": "l1",
+    "endedReason": "gates_closed",
+    "evidenceTags": [
+      "l1_clarity_high",
+      "l1_energy_high",
+      "l1_mood_pos",
+      "l1_pressure_high",
+      "l1_worth_high",
+      "sig.agency.high",
+      "sig.agency.low",
+      "sig.arousal.high",
+      "sig.arousal.mid",
+      "sig.clarity.high",
+      "sig.clarity.low",
+      "sig.context.work.deadline",
+      "sig.context.work.overcommit",
+      "sig.context.work.pressure.high",
+      "sig.fatigue.low",
+      "sig.fatigue.mid",
+      "sig.self_worth.high",
+      "sig.social.low",
+      "sig.tension.mid",
+      "sig.valence.neutral",
+      "sig.valence.pos"
+    ],
+    "expectedMacro": "up",
+    "gatesHitAny": {
+      "agency": true,
+      "arousal": true,
+      "clarity": true,
+      "load": true,
+      "social": true,
+      "valence": true
+    },
+    "gatesHitCardsOnly": {
+      "agency": true,
+      "arousal": true,
+      "clarity": true,
+      "load": true,
+      "social": false,
+      "valence": true
+    },
+    "hasContradiction": false,
+    "macroAfterL1": "detached",
+    "macroAfterL2": null,
+    "macroBeforeCards": "detached",
+    "micro": {
+      "reason": "matched",
+      "selected": "detached.autopilot",
+      "source": "selected",
+      "topCandidate": null
+    },
+    "notSureCount": 0,
+    "phase": "ENDED",
+    "scoringTagCount": 18,
+    "signalScore": 5,
+    "topSignals": [
+      "sig.valence.pos",
+      "sig.agency.high",
+      "sig.clarity.high",
+      "sig.arousal.high"
+    ]
+  },
+  "fixture": {
+    "id": "GS11",
+    "seed": 42
+  }
+}
