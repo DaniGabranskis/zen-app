@@ -1,7 +1,8 @@
 // Evidence Accumulator (AE2)
 // Collects and normalizes evidence tags from L1 card responses
 
-import { normalizeTags, validateTagsNormalized } from '../data/tagAliasMap.js';
+import { canonicalizeTags } from '../domain/tags/index.js';
+import { validateTagsNormalized, getInvalidTagsStats, resetInvalidTagsStats } from '../data/tagAliasMap.js';
 
 /**
  * Accumulates evidence tags from L1 card responses
@@ -12,19 +13,31 @@ export function accumulateEvidence(l1Responses) {
   const evidenceTags = [];
   const uncertaintySignals = [];
   
+  // TAGS-01: Reset stats at start (if called from script context)
+  if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
+    resetInvalidTagsStats();
+  }
+  
   for (const response of l1Responses) {
     // Extract tags from response
     // P0: Support both tags and selectedTags fields
     const responseTags = response.tags || response.selectedTags || [];
-    const normalizedTags = normalizeTags(responseTags, response.values || {});
+    // TAGS-01: Use canonicalizeTags from domain/tags (handles L1_* tags correctly)
+    const canonicalTags = canonicalizeTags(responseTags);
     
-    // Validate normalized tags
-    if (!validateTagsNormalized(normalizedTags)) {
-      console.warn('[evidenceAccumulator] Invalid tags in response:', response);
+    // TAGS-01: Validate with context for better diagnostics
+    const context = {
+      cardId: response.id || response.cardId || 'unknown',
+      flow: response.flow || 'unknown',
+      source: 'l1_response',
+    };
+    
+    if (!validateTagsNormalized(canonicalTags, context)) {
+      // Warning logged in validateTagsNormalized (only first 5 occurrences)
     }
     
     // Add to evidence
-    evidenceTags.push(...normalizedTags);
+    evidenceTags.push(...canonicalTags);
     
     // Handle "Not sure / both" responses
     if (response.uncertainty) {

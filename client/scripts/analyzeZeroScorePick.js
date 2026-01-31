@@ -34,7 +34,7 @@ function topNCounts(map, limit = 10) {
     .slice(0, limit);
 }
 
-function main() {
+async function main() {
   const outDir = path.join(__dirname, 'out');
   let files = [];
   try {
@@ -138,10 +138,39 @@ function main() {
     md += '\n';
   }
 
+  // ZS-REPORT-01: Add section for invalid tags (if TAGS-01 stats available)
+  try {
+    const { getInvalidTagsStats } = await import('../src/data/tagAliasMap.js');
+    const invalidTagsStats = getInvalidTagsStats();
+    if (invalidTagsStats.total > 0) {
+      md += '## Most common raw tags that failed normalization (top-20)\n\n';
+      md += `**Total invalid tag occurrences:** ${invalidTagsStats.total}\n\n`;
+      if (invalidTagsStats.top20.length > 0) {
+        md += '| Tag | Count | Sample Contexts |\n|-----|-------|----------------|\n';
+        for (const { tag, count, sampleContexts } of invalidTagsStats.top20) {
+          const contextsStr = sampleContexts
+            .map(ctx => `${ctx.cardId || 'unknown'} (${ctx.flow || 'unknown'})`)
+            .join('; ');
+          md += `| \`${tag}\` | ${count} | ${contextsStr || 'N/A'} |\n`;
+        }
+        md += '\n';
+      } else {
+        md += '_No invalid tags tracked._\n\n';
+      }
+    }
+  } catch (e) {
+    // Stats not available (e.g., in production mode or if TAGS-01 not implemented)
+    md += '## Most common raw tags that failed normalization\n\n';
+    md += '_Tag normalization stats not available. Run with TAGS-01 implementation enabled._\n\n';
+  }
+
   const outPath = path.join(__dirname, 'out', 'ZERO_SCORE_PICK_REPORT.md');
   writeFileSync(outPath, md, 'utf8');
   console.log(`[analyzeZeroScorePick] Report written to ${outPath}`);
 }
 
-main();
+main().catch((e) => {
+  console.error('[analyzeZeroScorePick] Fatal error:', e);
+  process.exit(1);
+});
 

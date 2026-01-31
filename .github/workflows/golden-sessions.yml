@@ -54,7 +54,6 @@ jobs:
       - name: Sanity - Replay smoke test (GS01)
         working-directory: client
         run: node scripts/replaySession.js --fixture scripts/goldenSessions/fixtures/GS01_down_work_overcommit.fixture.json --snapshot scripts/goldenSessions/snapshots/GS01.snapshot.json --debug
-        continue-on-error: true
       
       - name: Run golden:doctor
         working-directory: client
@@ -63,7 +62,6 @@ jobs:
       - name: Run golden:check
         working-directory: client
         run: npm run golden:check
-        continue-on-error: true
       
       - name: Run golden:summary
         working-directory: client
@@ -71,9 +69,8 @@ jobs:
 
       - name: Stability (smoke)
         working-directory: client
-        timeout-minutes: 30
+        timeout-minutes: 20
         run: npm run stability:smoke
-        continue-on-error: true
 
       - name: Zero-score report
         working-directory: client

@@ -799,6 +799,9 @@ async function main() {
   console.log(`Running deep simulation (${config.mode} mode)...`);
   let processed = 0;
   const reportInterval = Math.max(1, Math.floor(baselineSubset.length / 10));
+  // STAB-RUNTIME-01: Progress log every 250/500 runs (smoke/full)
+  const progressInterval = baselineSubset.length >= 10000 ? 500 : 250;
+  const startTime = Date.now();
 
   // TASK POST-02: micro fallback sample sink
   const microFallbackSamples = [];
@@ -1091,6 +1094,19 @@ async function main() {
     });
     const distinctTagsCount = new Set(allTagsFlat).size;
     metrics.tagsDistinctPerRun.push(distinctTagsCount);
+    
+    // STAB-RUNTIME-01: Progress log with ETA
+    processed++;
+    if (processed % progressInterval === 0 || processed === baselineSubset.length) {
+      const elapsed = (Date.now() - startTime) / 1000; // seconds
+      const rate = processed / elapsed; // runs per second
+      const remaining = baselineSubset.length - processed;
+      const eta = remaining / rate; // seconds
+      const etaMin = Math.floor(eta / 60);
+      const etaSec = Math.floor(eta % 60);
+      const pct = ((processed / baselineSubset.length) * 100).toFixed(1);
+      console.log(`[Progress] ${processed}/${baselineSubset.length} (${pct}%) | Rate: ${rate.toFixed(1)} runs/s | ETA: ${etaMin}m ${etaSec}s`);
+    }
     
     // Check for must-have tags (handle both tags and selectedTags)
     const allTags = l1Responses.flatMap(r => {
@@ -3039,6 +3055,19 @@ ${config.flow === 'adaptive-l1' ? '- To compare fixed vs adaptive-l1, run two se
     if (askedL2Avg === 0) {
       throw new Error(`Deep-realistic produced askedL2.avg=0 with maxL2=${config.maxL2}. Run is not realistic. Check simulation parameters.`);
     }
+  }
+  
+  // TAGS-01: Add invalid tags stats to report if available
+  try {
+    const { getInvalidTagsStats } = await import('../src/data/tagAliasMap.js');
+    const invalidTagsStats = getInvalidTagsStats();
+    if (invalidTagsStats.total > 0) {
+      jsonOutput.invalidTagsStats = invalidTagsStats;
+      console.log(`\n⚠️  Invalid tags detected: ${invalidTagsStats.total} total`);
+      console.log(`   Top invalid tags: ${invalidTagsStats.top20.slice(0, 5).map(x => `${x.tag} (${x.count})`).join(', ')}`);
+    }
+  } catch (e) {
+    // Stats not available (e.g., in production mode)
   }
   
   fs.writeFileSync(jsonPath, JSON.stringify(jsonOutput, null, 2), 'utf8');

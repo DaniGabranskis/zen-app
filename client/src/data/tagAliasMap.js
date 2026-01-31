@@ -18,8 +18,11 @@ export const TAG_ALIAS_MAP = {
 };
 
 // Validate normalized tag format
+// TAGS-01: Accept both sig.* and l1_* tags as valid normalized tags
 export function isValidNormalizedTag(tag) {
-  return tag.startsWith('sig.');
+  if (!tag || typeof tag !== 'string') return false;
+  const lower = tag.toLowerCase();
+  return lower.startsWith('sig.') || lower.startsWith('l1_');
 }
 
 // Normalize a tag (legacy → new schema)
@@ -81,11 +84,54 @@ export function normalizeTags(tags, values = {}) {
   }).filter(tag => tag !== null);
 }
 
+// TAGS-01: Track invalid tags with context
+let invalidTagsCounter = new Map(); // tag -> { count, contexts: [{ cardId, flow, source }] }
+let invalidTagsTotal = 0;
+
+export function getInvalidTagsStats() {
+  const top20 = Array.from(invalidTagsCounter.entries())
+    .sort((a, b) => b[1].count - a[1].count)
+    .slice(0, 20)
+    .map(([tag, data]) => ({
+      tag,
+      count: data.count,
+      sampleContexts: data.contexts.slice(0, 3), // Top 3 contexts
+    }));
+  
+  return {
+    total: invalidTagsTotal,
+    top20,
+  };
+}
+
+export function resetInvalidTagsStats() {
+  invalidTagsCounter.clear();
+  invalidTagsTotal = 0;
+}
+
 // Validate all tags are normalized
-export function validateTagsNormalized(tags) {
+export function validateTagsNormalized(tags, context = {}) {
   const invalid = tags.filter(tag => !isValidNormalizedTag(tag));
   if (invalid.length > 0) {
-    console.warn('[tagAliasMap] Invalid normalized tags:', invalid);
+    invalidTagsTotal += invalid.length;
+    
+    for (const tag of invalid) {
+      const existing = invalidTagsCounter.get(tag) || { count: 0, contexts: [] };
+      existing.count += 1;
+      if (existing.contexts.length < 10) { // Keep up to 10 sample contexts
+        existing.contexts.push({
+          cardId: context.cardId || context.id || 'unknown',
+          flow: context.flow || 'unknown',
+          source: context.source || 'unknown',
+        });
+      }
+      invalidTagsCounter.set(tag, existing);
+    }
+    
+    // Only log first occurrence to avoid spam
+    if (invalidTagsTotal <= 5) {
+      console.warn('[tagAliasMap] Invalid normalized tags:', invalid, 'Context:', context);
+    }
     return false;
   }
   return true;
