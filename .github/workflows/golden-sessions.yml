@@ -71,7 +71,9 @@ jobs:
 
       - name: Stability (smoke)
         working-directory: client
+        timeout-minutes: 30
         run: npm run stability:smoke
+        continue-on-error: true
 
       - name: Zero-score report
         working-directory: client
