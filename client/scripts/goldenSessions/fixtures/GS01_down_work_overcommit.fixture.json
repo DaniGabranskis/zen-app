@@ -1,0 +1,25 @@
+{
+  "id": "GS01",
+  "description": "Down/work overcommit - realistic profile-driven",
+  "seed": 42,
+  "flowConfigOverrides": {
+    "maxL1": 5,
+    "maxL2": 5,
+    "minL1": 3,
+    "minL2": 2,
+    "stopOnGates": true,
+    "notSureRate": 0.2,
+    "profile": "mix"
+  },
+  "baselineMetrics": {
+    "valence": 3,
+    "energy": 4,
+    "tension": 6,
+    "clarity": 5,
+    "control": 4,
+    "social": 5
+  },
+  "answerPolicy": {
+    "profile": "mix"
+  }
+}

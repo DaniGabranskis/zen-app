@@ -1,0 +1,396 @@
+{
+  "config": {
+    "configHash": "6808d4f4a65a87cc709a2cd3f7cf95221c6d5090",
+    "fixtureHash": "823dec6766be7f9b241bfaefb3db1e52beff555e",
+    "flow": "deep-realistic",
+    "maxL1": 5,
+    "maxL2": 5,
+    "minL1": 3,
+    "minL2": 2,
+    "mode": "noisy-mixed",
+    "notSureRate": 0.3,
+    "profile": "mix",
+    "seed": 333,
+    "snapshotVersion": "1.2.0",
+    "stopOnGates": true
+  },
+  "coverage": {
+    "coverageFirstPicks": [
+      {
+        "cardId": "L1_social",
+        "reason": "macro_specific_connected",
+        "step": 0
+      },
+      {
+        "cardId": "L1_mood",
+        "reason": "macro_specific_connected",
+        "step": 1
+      },
+      {
+        "cardId": "L1_energy",
+        "reason": "macro_specific_connected",
+        "step": 2
+      }
+    ],
+    "gateFirstHitStep": {
+      "agency": 0,
+      "arousal": 0,
+      "clarity": 0,
+      "social": 0,
+      "valence": 0
+    }
+  },
+  "events": [
+    {
+      "i": 0,
+      "step": 0,
+      "type": "session_start"
+    },
+    {
+      "i": 1,
+      "step": 0,
+      "tags": [
+        "sig.agency.mid",
+        "sig.arousal.mid",
+        "sig.clarity.mid",
+        "sig.fatigue.mid",
+        "sig.social.mid",
+        "sig.tension.mid",
+        "sig.valence.neutral"
+      ],
+      "type": "baseline_injected"
+    },
+    {
+      "i": 2,
+      "step": 0,
+      "tags": [
+        "sig.agency.mid",
+        "sig.arousal.mid",
+        "sig.clarity.mid",
+        "sig.fatigue.mid",
+        "sig.social.mid",
+        "sig.tension.mid",
+        "sig.valence.neutral"
+      ],
+      "type": "evidence_added"
+    },
+    {
+      "gate": "valence",
+      "i": 3,
+      "scope": "any",
+      "step": 0,
+      "type": "gate_hit"
+    },
+    {
+      "gate": "arousal",
+      "i": 4,
+      "scope": "any",
+      "step": 0,
+      "type": "gate_hit"
+    },
+    {
+      "gate": "agency",
+      "i": 5,
+      "scope": "any",
+      "step": 0,
+      "type": "gate_hit"
+    },
+    {
+      "gate": "clarity",
+      "i": 6,
+      "scope": "any",
+      "step": 0,
+      "type": "gate_hit"
+    },
+    {
+      "gate": "social",
+      "i": 7,
+      "scope": "any",
+      "step": 0,
+      "type": "gate_hit"
+    },
+    {
+      "cardId": "L1_social",
+      "i": 8,
+      "step": 0,
+      "type": "card_shown"
+    },
+    {
+      "cardId": "L1_social",
+      "choice": "NS",
+      "i": 9,
+      "step": 0,
+      "type": "answer_committed"
+    },
+    {
+      "cardId": "L1_social",
+      "i": 10,
+      "step": 0,
+      "tags": [
+        "sig.axis.unknown",
+        "sig.uncertainty.high"
+      ],
+      "type": "evidence_added"
+    },
+    {
+      "i": 11,
+      "micro": {
+        "reason": "matched",
+        "selected": "connected.social_flow",
+        "source": "selected",
+        "topCandidate": null
+      },
+      "step": 1,
+      "type": "micro_selected"
+    },
+    {
+      "cardId": "L1_mood",
+      "i": 12,
+      "step": 1,
+      "type": "card_shown"
+    },
+    {
+      "cardId": "L1_mood",
+      "choice": "NS",
+      "i": 13,
+      "step": 1,
+      "type": "answer_committed"
+    },
+    {
+      "cardId": "L1_mood",
+      "i": 14,
+      "step": 1,
+      "tags": [
+        "sig.axis.unknown",
+        "sig.uncertainty.high"
+      ],
+      "type": "evidence_added"
+    },
+    {
+      "i": 15,
+      "micro": {
+        "reason": "matched",
+        "selected": "connected.social_flow",
+        "source": "selected",
+        "topCandidate": null
+      },
+      "step": 2,
+      "type": "micro_selected"
+    },
+    {
+      "cardId": "L1_energy",
+      "i": 16,
+      "step": 2,
+      "type": "card_shown"
+    },
+    {
+      "cardId": "L1_energy",
+      "choice": "NS",
+      "i": 17,
+      "step": 2,
+      "type": "answer_committed"
+    },
+    {
+      "cardId": "L1_energy",
+      "i": 18,
+      "step": 2,
+      "tags": [
+        "sig.axis.unknown",
+        "sig.uncertainty.high"
+      ],
+      "type": "evidence_added"
+    },
+    {
+      "i": 19,
+      "micro": {
+        "reason": "matched",
+        "selected": "connected.social_flow",
+        "source": "selected",
+        "topCandidate": null
+      },
+      "step": 3,
+      "type": "micro_selected"
+    },
+    {
+      "cardId": "L1_body",
+      "i": 20,
+      "step": 3,
+      "type": "card_shown"
+    },
+    {
+      "cardId": "L1_body",
+      "choice": "NS",
+      "i": 21,
+      "step": 3,
+      "type": "answer_committed"
+    },
+    {
+      "cardId": "L1_body",
+      "i": 22,
+      "step": 3,
+      "tags": [
+        "sig.axis.unknown",
+        "sig.uncertainty.high"
+      ],
+      "type": "evidence_added"
+    },
+    {
+      "i": 23,
+      "micro": {
+        "reason": "matched",
+        "selected": "connected.social_flow",
+        "source": "selected",
+        "topCandidate": null
+      },
+      "step": 4,
+      "type": "micro_selected"
+    },
+    {
+      "cardId": "L1_control",
+      "i": 24,
+      "step": 4,
+      "type": "card_shown"
+    },
+    {
+      "cardId": "L1_control",
+      "choice": "NS",
+      "i": 25,
+      "step": 4,
+      "type": "answer_committed"
+    },
+    {
+      "cardId": "L1_control",
+      "i": 26,
+      "step": 4,
+      "tags": [
+        "sig.axis.unknown",
+        "sig.uncertainty.high"
+      ],
+      "type": "evidence_added"
+    },
+    {
+      "i": 27,
+      "micro": {
+        "reason": "matched",
+        "selected": "connected.social_flow",
+        "source": "selected",
+        "topCandidate": null
+      },
+      "step": 5,
+      "type": "micro_selected"
+    },
+    {
+      "cardId": "L2_uncertainty",
+      "i": 28,
+      "step": 5,
+      "type": "card_shown"
+    },
+    {
+      "cardId": "L2_uncertainty",
+      "choice": "NS",
+      "i": 29,
+      "step": 5,
+      "type": "answer_committed"
+    },
+    {
+      "cardId": "L2_uncertainty",
+      "i": 30,
+      "step": 5,
+      "tags": [
+        "sig.axis.unknown",
+        "sig.uncertainty.high"
+      ],
+      "type": "evidence_added"
+    },
+    {
+      "i": 31,
+      "micro": {
+        "reason": "matched",
+        "selected": "connected.social_flow",
+        "source": "selected",
+        "topCandidate": null
+      },
+      "step": 6,
+      "type": "micro_selected"
+    },
+    {
+      "i": 32,
+      "step": 6,
+      "type": "expected_macro_computed"
+    },
+    {
+      "endedReason": "l2_plan_completed",
+      "i": 33,
+      "step": 6,
+      "type": "session_end"
+    }
+  ],
+  "final": {
+    "askedL1Count": 5,
+    "askedL2Count": 1,
+    "axisTagCount": 6,
+    "baselineEvidenceTags": [
+      "sig.agency.mid",
+      "sig.arousal.mid",
+      "sig.clarity.mid",
+      "sig.fatigue.mid",
+      "sig.social.mid",
+      "sig.tension.mid",
+      "sig.valence.neutral"
+    ],
+    "cardEvidenceTags": [
+      "sig.axis.unknown",
+      "sig.uncertainty.high"
+    ],
+    "eligibleForContradiction": false,
+    "endedBy": "l2",
+    "endedReason": "l2_plan_completed",
+    "evidenceTags": [
+      "sig.agency.mid",
+      "sig.arousal.mid",
+      "sig.axis.unknown",
+      "sig.clarity.mid",
+      "sig.fatigue.mid",
+      "sig.social.mid",
+      "sig.tension.mid",
+      "sig.uncertainty.high",
+      "sig.valence.neutral"
+    ],
+    "expectedMacro": "mixed",
+    "gatesHitAny": {
+      "agency": true,
+      "arousal": true,
+      "clarity": true,
+      "load": false,
+      "social": true,
+      "valence": true
+    },
+    "gatesHitCardsOnly": {
+      "agency": false,
+      "arousal": false,
+      "clarity": false,
+      "load": false,
+      "social": false,
+      "valence": false
+    },
+    "hasContradiction": false,
+    "macroAfterL1": "connected",
+    "macroAfterL2": "connected",
+    "macroBeforeCards": "connected",
+    "micro": {
+      "reason": "matched",
+      "selected": "connected.social_flow",
+      "source": "selected",
+      "topCandidate": null
+    },
+    "notSureCount": 6,
+    "phase": "ENDED",
+    "scoringTagCount": 19,
+    "signalScore": 0,
+    "topSignals": []
+  },
+  "fixture": {
+    "id": "GS10",
+    "seed": 333
+  }
+}

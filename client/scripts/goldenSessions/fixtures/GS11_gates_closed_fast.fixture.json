@@ -1,0 +1,32 @@
+{
+  "id": "GS11",
+  "description": "Gates closed fast - early stop after minQuota",
+  "seed": 42,
+  "flowConfigOverrides": {
+    "maxL1": 5,
+    "maxL2": 0,
+    "minL1": 3,
+    "minL2": 0,
+    "stopOnGates": true,
+    "notSureRate": 0.0,
+    "profile": "mix"
+  },
+  "baselineMetrics": {
+    "valence": 5,
+    "energy": 5,
+    "tension": 4,
+    "clarity": 3,
+    "control": 2,
+    "social": 3
+  },
+  "forcedL1CardOrder": ["L1_self_worth", "L1_clarity", "L1_pressure", "L1_mood", "L1_energy"],
+  "answerPolicy": {
+    "forcedAnswers": {
+      "L1_self_worth": "right",
+      "L1_clarity": "right",
+      "L1_pressure": "left",
+      "L1_mood": "right",
+      "L1_energy": "right"
+    }
+  }
+}

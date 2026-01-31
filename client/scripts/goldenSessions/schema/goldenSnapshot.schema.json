@@ -1,0 +1,297 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Golden Session Snapshot Schema",
+  "description": "Schema for Golden Sessions snapshot files (deterministic test outputs)",
+  "type": "object",
+  "required": ["config", "final", "events"],
+  "properties": {
+    "config": {
+      "type": "object",
+      "required": [
+        "snapshotVersion",
+        "fixtureHash",
+        "configHash",
+        "flow",
+        "mode",
+        "seed",
+        "maxL1",
+        "maxL2",
+        "minL1",
+        "minL2",
+        "stopOnGates",
+        "notSureRate",
+        "profile"
+      ],
+      "properties": {
+        "snapshotVersion": {
+          "type": "string",
+          "description": "Version of snapshot format (must match GOLDEN_SNAPSHOT_VERSION)"
+        },
+        "fixtureHash": {
+          "type": "string",
+          "description": "Hash of fixture file (detects fixture changes)"
+        },
+        "configHash": {
+          "type": "string",
+          "description": "Hash of resolved config (detects config resolution changes)"
+        },
+        "flow": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "string"
+        },
+        "seed": {
+          "type": ["number", "null"]
+        },
+        "maxL1": {
+          "type": "number"
+        },
+        "maxL2": {
+          "type": "number"
+        },
+        "minL1": {
+          "type": "number"
+        },
+        "minL2": {
+          "type": "number"
+        },
+        "stopOnGates": {
+          "type": "boolean"
+        },
+        "notSureRate": {
+          "type": "number"
+        },
+        "profile": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "final": {
+      "type": "object",
+      "required": [
+        "phase",
+        "endedReason",
+        "askedL1Count",
+        "askedL2Count",
+        "notSureCount"
+      ],
+      "properties": {
+        "phase": {
+          "type": "string",
+          "enum": ["L1", "L2", "ENDED"]
+        },
+        "endedReason": {
+          "type": ["string", "null"]
+        },
+        "endedBy": {
+          "type": ["string", "null"]
+        },
+        "askedL1Count": {
+          "type": "number",
+          "minimum": 0
+        },
+        "askedL2Count": {
+          "type": "number",
+          "minimum": 0
+        },
+        "notSureCount": {
+          "type": "number",
+          "minimum": 0
+        },
+        "macroBeforeCards": {
+          "type": ["string", "null"]
+        },
+        "macroAfterL1": {
+          "type": ["string", "null"]
+        },
+        "macroAfterL2": {
+          "type": ["string", "null"]
+        },
+        "micro": {
+          "type": ["object", "null"],
+          "properties": {
+            "selected": {
+              "type": ["string", "null"]
+            },
+            "source": {
+              "type": ["string", "null"]
+            },
+            "reason": {
+              "type": ["string", "null"]
+            },
+            "topCandidate": {
+              "type": ["string", "null", "object"]
+            }
+          }
+        },
+        "gatesHitAny": {
+          "type": "object",
+          "properties": {
+            "valence": { "type": "boolean" },
+            "arousal": { "type": "boolean" },
+            "agency": { "type": "boolean" },
+            "clarity": { "type": "boolean" },
+            "social": { "type": "boolean" },
+            "load": { "type": "boolean" }
+          }
+        },
+        "gatesHitCardsOnly": {
+          "type": "object",
+          "properties": {
+            "valence": { "type": "boolean" },
+            "arousal": { "type": "boolean" },
+            "agency": { "type": "boolean" },
+            "clarity": { "type": "boolean" },
+            "social": { "type": "boolean" },
+            "load": { "type": "boolean" }
+          }
+        },
+        "baselineEvidenceTags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "cardEvidenceTags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "evidenceTags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "expectedMacro": {
+          "type": "string",
+          "enum": ["up", "down", "exhausted", "mixed"]
+        },
+        "signalScore": {
+          "type": "number"
+        },
+        "scoringTagCount": {
+          "type": "number",
+          "minimum": 0
+        },
+        "axisTagCount": {
+          "type": "number",
+          "minimum": 0
+        },
+        "eligibleForContradiction": {
+          "type": "boolean"
+        },
+        "hasContradiction": {
+          "type": "boolean"
+        },
+        "topSignals": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "events": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["i", "type"],
+        "properties": {
+          "i": {
+            "type": "number",
+            "minimum": 0
+          },
+          "step": {
+            "type": ["number", "null"]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "session_start",
+              "baseline_injected",
+              "card_shown",
+              "answer_committed",
+              "evidence_added",
+              "gate_hit",
+              "macro_updated",
+              "micro_selected",
+              "expected_macro_computed",
+              "session_end"
+            ]
+          },
+          "cardId": {
+            "type": ["string", "null"]
+          },
+          "choice": {
+            "type": ["string", "null"]
+          },
+          "tags": {
+            "type": ["array", "null"],
+            "items": { "type": "string" }
+          },
+          "gate": {
+            "type": ["string", "null"]
+          },
+          "scope": {
+            "type": ["string", "null"]
+          },
+          "macro": {
+            "type": ["string", "null"]
+          },
+          "micro": {
+            "type": ["object", "null"],
+            "properties": {
+              "selected": { "type": ["string", "null"] },
+              "source": { "type": ["string", "null"] },
+              "reason": { "type": ["string", "null"] },
+              "topCandidate": { "type": ["string", "null", "object"] }
+            }
+          },
+          "endedReason": {
+            "type": ["string", "null"]
+          },
+          "expectedMacro": {
+            "type": ["string", "null"]
+          },
+          "signalScore": {
+            "type": ["number", "null"]
+          },
+          "scoringTagCount": {
+            "type": ["number", "null"]
+          },
+          "topSignals": {
+            "type": ["array", "null"],
+            "items": { "type": "string" }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "properties": {
+        "coverageFirstPicks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "cardId": { "type": "string" },
+              "reason": { "type": "string" },
+              "step": { "type": "number" }
+            }
+          }
+        },
+        "gateFirstHitStep": {
+          "type": "object",
+          "additionalProperties": { "type": "number" }
+        }
+      }
+    },
+    "fixture": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "seed": { "type": ["number", "null"] }
+      }
+    }
+  },
+  "additionalProperties": false
+}

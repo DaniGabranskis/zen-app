@@ -1,0 +1,393 @@
+{
+  "config": {
+    "configHash": "4302ce10b499e7cfae456584ebfff8c44b9a9e07",
+    "fixtureHash": "15ec39725eb0c2a9764582ff00122b8ffdf61af5",
+    "flow": "deep-realistic",
+    "maxL1": 5,
+    "maxL2": 5,
+    "minL1": 3,
+    "minL2": 2,
+    "mode": "noisy-mixed",
+    "notSureRate": 0.1,
+    "profile": "mix",
+    "seed": 999,
+    "snapshotVersion": "1.2.0",
+    "stopOnGates": true
+  },
+  "coverage": {
+    "coverageFirstPicks": [
+      {
+        "cardId": "L1_body",
+        "reason": "macro_specific_averse",
+        "step": 0
+      },
+      {
+        "cardId": "L1_safety",
+        "reason": "macro_specific_averse",
+        "step": 1
+      },
+      {
+        "cardId": "L1_mood",
+        "reason": "macro_specific_averse",
+        "step": 2
+      }
+    ],
+    "gateFirstHitStep": {
+      "agency": 0,
+      "arousal": 0,
+      "clarity": 0,
+      "social": 0,
+      "valence": 0
+    }
+  },
+  "events": [
+    {
+      "i": 0,
+      "step": 0,
+      "type": "session_start"
+    },
+    {
+      "i": 1,
+      "step": 0,
+      "tags": [
+        "sig.agency.low",
+        "sig.arousal.mid",
+        "sig.clarity.mid",
+        "sig.fatigue.mid",
+        "sig.social.low",
+        "sig.tension.high",
+        "sig.valence.neg"
+      ],
+      "type": "baseline_injected"
+    },
+    {
+      "i": 2,
+      "step": 0,
+      "tags": [
+        "sig.agency.low",
+        "sig.arousal.mid",
+        "sig.clarity.mid",
+        "sig.fatigue.mid",
+        "sig.social.low",
+        "sig.tension.high",
+        "sig.valence.neg"
+      ],
+      "type": "evidence_added"
+    },
+    {
+      "gate": "valence",
+      "i": 3,
+      "scope": "any",
+      "step": 0,
+      "type": "gate_hit"
+    },
+    {
+      "gate": "arousal",
+      "i": 4,
+      "scope": "any",
+      "step": 0,
+      "type": "gate_hit"
+    },
+    {
+      "gate": "agency",
+      "i": 5,
+      "scope": "any",
+      "step": 0,
+      "type": "gate_hit"
+    },
+    {
+      "gate": "clarity",
+      "i": 6,
+      "scope": "any",
+      "step": 0,
+      "type": "gate_hit"
+    },
+    {
+      "gate": "social",
+      "i": 7,
+      "scope": "any",
+      "step": 0,
+      "type": "gate_hit"
+    },
+    {
+      "cardId": "L1_body",
+      "i": 8,
+      "step": 0,
+      "type": "card_shown"
+    },
+    {
+      "cardId": "L1_body",
+      "choice": "A",
+      "i": 9,
+      "step": 0,
+      "type": "answer_committed"
+    },
+    {
+      "cardId": "L1_body",
+      "i": 10,
+      "step": 0,
+      "tags": [
+        "l1_body_tension"
+      ],
+      "type": "evidence_added"
+    },
+    {
+      "i": 11,
+      "micro": {
+        "reason": "matched",
+        "selected": "averse.irritated",
+        "source": "selected",
+        "topCandidate": null
+      },
+      "step": 1,
+      "type": "micro_selected"
+    },
+    {
+      "cardId": "L1_safety",
+      "i": 12,
+      "step": 1,
+      "type": "card_shown"
+    },
+    {
+      "cardId": "L1_safety",
+      "choice": "A",
+      "i": 13,
+      "step": 1,
+      "type": "answer_committed"
+    },
+    {
+      "cardId": "L1_safety",
+      "i": 14,
+      "step": 1,
+      "tags": [
+        "l1_safety_low"
+      ],
+      "type": "evidence_added"
+    },
+    {
+      "i": 15,
+      "micro": {
+        "reason": "matched",
+        "selected": "averse.irritated",
+        "source": "selected",
+        "topCandidate": null
+      },
+      "step": 2,
+      "type": "micro_selected"
+    },
+    {
+      "cardId": "L1_mood",
+      "i": 16,
+      "step": 2,
+      "type": "card_shown"
+    },
+    {
+      "cardId": "L1_mood",
+      "choice": "A",
+      "i": 17,
+      "step": 2,
+      "type": "answer_committed"
+    },
+    {
+      "cardId": "L1_mood",
+      "i": 18,
+      "step": 2,
+      "tags": [
+        "l1_mood_neg",
+        "sig.valence.neg"
+      ],
+      "type": "evidence_added"
+    },
+    {
+      "cardId": "L1_mood",
+      "gate": "valence",
+      "i": 19,
+      "scope": "cardsOnly",
+      "step": 2,
+      "type": "gate_hit"
+    },
+    {
+      "i": 20,
+      "micro": {
+        "reason": "matched",
+        "selected": "averse.irritated",
+        "source": "selected",
+        "topCandidate": null
+      },
+      "step": 3,
+      "type": "micro_selected"
+    },
+    {
+      "cardId": "L1_energy",
+      "i": 21,
+      "step": 3,
+      "type": "card_shown"
+    },
+    {
+      "cardId": "L1_energy",
+      "choice": "B",
+      "i": 22,
+      "step": 3,
+      "type": "answer_committed"
+    },
+    {
+      "cardId": "L1_energy",
+      "i": 23,
+      "step": 3,
+      "tags": [
+        "l1_energy_high",
+        "sig.arousal.high",
+        "sig.fatigue.low"
+      ],
+      "type": "evidence_added"
+    },
+    {
+      "cardId": "L1_energy",
+      "gate": "arousal",
+      "i": 24,
+      "scope": "cardsOnly",
+      "step": 3,
+      "type": "gate_hit"
+    },
+    {
+      "i": 25,
+      "micro": {
+        "reason": "matched",
+        "selected": "averse.angry",
+        "source": "selected",
+        "topCandidate": null
+      },
+      "step": 4,
+      "type": "micro_selected"
+    },
+    {
+      "cardId": "L1_social",
+      "i": 26,
+      "step": 4,
+      "type": "card_shown"
+    },
+    {
+      "cardId": "L1_social",
+      "choice": "NS",
+      "i": 27,
+      "step": 4,
+      "type": "answer_committed"
+    },
+    {
+      "cardId": "L1_social",
+      "i": 28,
+      "step": 4,
+      "tags": [
+        "sig.axis.unknown",
+        "sig.uncertainty.high"
+      ],
+      "type": "evidence_added"
+    },
+    {
+      "i": 29,
+      "micro": {
+        "reason": "matched",
+        "selected": "averse.angry",
+        "source": "selected",
+        "topCandidate": null
+      },
+      "step": 5,
+      "type": "micro_selected"
+    },
+    {
+      "i": 30,
+      "step": 5,
+      "type": "expected_macro_computed"
+    },
+    {
+      "endedReason": "no_l2_candidates",
+      "i": 31,
+      "step": 5,
+      "type": "session_end"
+    }
+  ],
+  "final": {
+    "askedL1Count": 5,
+    "askedL2Count": 0,
+    "axisTagCount": 1,
+    "baselineEvidenceTags": [
+      "sig.agency.low",
+      "sig.arousal.mid",
+      "sig.clarity.mid",
+      "sig.fatigue.mid",
+      "sig.social.low",
+      "sig.tension.high",
+      "sig.valence.neg"
+    ],
+    "cardEvidenceTags": [
+      "l1_body_tension",
+      "l1_energy_high",
+      "l1_mood_neg",
+      "l1_safety_low",
+      "sig.arousal.high",
+      "sig.axis.unknown",
+      "sig.fatigue.low",
+      "sig.uncertainty.high",
+      "sig.valence.neg"
+    ],
+    "eligibleForContradiction": false,
+    "endedBy": "l2",
+    "endedReason": "no_l2_candidates",
+    "evidenceTags": [
+      "l1_body_tension",
+      "l1_energy_high",
+      "l1_mood_neg",
+      "l1_safety_low",
+      "sig.agency.low",
+      "sig.arousal.high",
+      "sig.arousal.mid",
+      "sig.axis.unknown",
+      "sig.clarity.mid",
+      "sig.fatigue.low",
+      "sig.fatigue.mid",
+      "sig.social.low",
+      "sig.tension.high",
+      "sig.uncertainty.high",
+      "sig.valence.neg"
+    ],
+    "expectedMacro": "mixed",
+    "gatesHitAny": {
+      "agency": true,
+      "arousal": true,
+      "clarity": true,
+      "load": false,
+      "social": true,
+      "valence": true
+    },
+    "gatesHitCardsOnly": {
+      "agency": false,
+      "arousal": true,
+      "clarity": false,
+      "load": false,
+      "social": false,
+      "valence": true
+    },
+    "hasContradiction": false,
+    "macroAfterL1": "averse",
+    "macroAfterL2": null,
+    "macroBeforeCards": "averse",
+    "micro": {
+      "reason": "matched",
+      "selected": "averse.angry",
+      "source": "selected",
+      "topCandidate": null
+    },
+    "notSureCount": 1,
+    "phase": "ENDED",
+    "scoringTagCount": 16,
+    "signalScore": -1,
+    "topSignals": [
+      "sig.valence.neg",
+      "sig.arousal.high"
+    ]
+  },
+  "fixture": {
+    "id": "GS04",
+    "seed": 999
+  }
+}

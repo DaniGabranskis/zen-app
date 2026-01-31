@@ -1,0 +1,25 @@
+{
+  "id": "GS09",
+  "description": "Heavy not_sure usage",
+  "seed": 555,
+  "flowConfigOverrides": {
+    "maxL1": 5,
+    "maxL2": 5,
+    "minL1": 3,
+    "minL2": 2,
+    "stopOnGates": true,
+    "notSureRate": 0.5,
+    "profile": "uncertain"
+  },
+  "baselineMetrics": {
+    "valence": 5,
+    "energy": 5,
+    "tension": 5,
+    "clarity": 3,
+    "control": 4,
+    "social": 5
+  },
+  "answerPolicy": {
+    "profile": "uncertain"
+  }
+}

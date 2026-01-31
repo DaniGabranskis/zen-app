@@ -1,0 +1,31 @@
+{
+  "id": "GS13",
+  "description": "Micro selected in down.* - guaranteed micro selection",
+  "seed": 42,
+  "flowConfigOverrides": {
+    "maxL1": 5,
+    "maxL2": 5,
+    "minL1": 3,
+    "minL2": 2,
+    "stopOnGates": true,
+    "notSureRate": 0.1,
+    "profile": "mix"
+  },
+  "baselineMetrics": {
+    "valence": 2,
+    "energy": 3,
+    "tension": 5,
+    "clarity": 4,
+    "control": 3,
+    "social": 4
+  },
+  "answerPolicy": {
+    "forcedAnswers": {
+      "L1_mood": "left",
+      "L1_energy": "left",
+      "L1_control": "left",
+      "L1_clarity": "left",
+      "L1_body": "left"
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "id": "GS04",
+  "description": "Averse/irritated - deterministic",
+  "seed": 999,
+  "flowConfigOverrides": {
+    "maxL1": 5,
+    "maxL2": 5,
+    "minL1": 3,
+    "minL2": 2,
+    "stopOnGates": true,
+    "notSureRate": 0.1,
+    "profile": "mix"
+  },
+  "baselineMetrics": {
+    "valence": 2,
+    "energy": 6,
+    "tension": 7,
+    "clarity": 5,
+    "control": 3,
+    "social": 3
+  },
+  "answerPolicy": {
+    "forcedAnswers": {
+      "L1_mood": "left",
+      "L1_body": "left",
+      "L1_energy": "right",
+      "L1_control": "left",
+      "L1_clarity": "left"
+    }
+  }
+}
