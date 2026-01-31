@@ -96,6 +96,7 @@ async function replayFixture(fixturePath, snapshotPath = null, debug = false) {
   // Run session (simulate user answers)
   const answerPolicy = fixture.answerPolicy || {};
   const forcedAnswers = answerPolicy.forcedAnswers || {};
+  let stepCount = 0;
   
   while (true) {
     const nextCard = runner.getNextCard();
@@ -113,7 +114,13 @@ async function replayFixture(fixturePath, snapshotPath = null, debug = false) {
       // Use answer sampler (from deps)
       const card = deps.decksById.L1[cardId] || deps.decksById.L2[cardId];
       if (card && card.options && card.options.length >= 2) {
-        const sampled = deps.answerSampler({ card, choice: null });
+        const sampled = deps.answerSampler.sample({ 
+          fixture, 
+          state: runner.getState(), 
+          nextCardId: cardId, 
+          stepIndex: stepCount, 
+          rng: rng 
+        });
         choice = sampled === 'A' ? 'left' : sampled === 'B' ? 'right' : 'not_sure';
       } else {
         choice = 'not_sure';
